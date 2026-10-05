@@ -32,6 +32,11 @@ export const BUILTIN_TEMPLATES: RingSpec[] = [
     s.stone = { ...s.stone, shape: 'oval', carat: 1.2, setting: 'prong-4', prongTip: 'claw' }
     s.accents = { ...s.accents, style: 'three-stone', sideRatio: 0.6, side: { ...s.accents.side, shape: 'pear', rotationDeg: 90, mirror: true } }
   }),
+  make('Green pear trio', (s) => {
+    s.band = { ...s.band, profile: 'court', widthMm: 1.8, metal: 'yellow-gold-18k', headMetal: 'match', taper: 0.85 }
+    s.stone = { ...s.stone, shape: 'pear', carat: 2, gem: 'green-sapphire', setting: 'prong-6', prongTip: 'claw', settingHeightMm: 2.6 }
+    s.accents = { ...s.accents, style: 'three-stone', gem: 'diamond', sideRatio: 0.55, side: { ...s.accents.side, shape: 'pear', rotationDeg: 90, mirror: true, setting: 'prong-4', gapMm: 0.2, height: 0.8 } }
+  }),
   make('Vintage bezel', (s) => {
     s.band = { ...s.band, profile: 'half-round', widthMm: 2.5, metal: 'rose-gold-18k', headMetal: 'match', finish: 'satin' }
     s.stone = { ...s.stone, shape: 'cushion', carat: 1, gem: 'morganite', setting: 'bezel', settingHeightMm: 2.5 }
