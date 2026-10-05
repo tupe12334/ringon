@@ -21,6 +21,12 @@ describe('sharing', () => {
     expect(specFromHash(new URL(url).hash)).toEqual(spec)
     expect(decodeSpec(encodeSpec(spec))).toEqual(spec)
   })
+  it('compresses: a design fits in a short link', () => {
+    for (const t of BUILTIN_TEMPLATES) expect((specHash(t)).length).toBeLessThan(600)
+  })
+  it('opens older plain #d= links', () => {
+    expect(specFromHash(`#d=${btoa(JSON.stringify(DEFAULT_SPEC)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')}`)).toEqual(DEFAULT_SPEC)
+  })
   it('keeps the design in the camera view hash', () => {
     const hash = specHash(DEFAULT_SPEC, true)
     expect(isTryOnHash(hash)).toBe(true)
@@ -30,6 +36,7 @@ describe('sharing', () => {
   })
   it('rejects garbage', () => {
     expect(decodeSpec('!!!')).toBeNull()
+    expect(decodeSpec('abcd')).toBeNull()
     expect(specFromHash('#nothing')).toBeNull()
   })
   it('imports one design or a list, sanitising each', () => {

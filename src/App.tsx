@@ -24,7 +24,7 @@ export default function App() {
   const setSpec = useStore((s) => s.setSpec)
   const pushed = useRef(false)
 
-  // Open a shared design (#d=...), on load or when a link is followed in an open tab.
+  // Open a shared design (#r=... or an older #d=...), on load or when a link is followed in an open tab.
   useEffect(() => {
     const open = () => {
       const shared = specFromHash()

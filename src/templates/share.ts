@@ -1,26 +1,28 @@
-// Designs travel as JSON: in a file, or base64url-encoded in the URL hash (#d=..., #try&d=... in
-// the camera view). The address bar always carries the design on screen, so it is a share link.
+// Designs travel as JSON: in a file, or in the URL hash. The address bar always carries the design
+// on screen (#r=..., #try&r=... in the camera view), so it is a share link.
+// #r= is deflated JSON, base64url; #d= (older links) is plain JSON, base64url.
 
+import { deflateSync, inflateSync, strFromU8, strToU8 } from 'fflate'
 import { sanitizeSpec, type RingSpec } from '../ring/spec'
 
-const toBase64Url = (s: string) =>
-  btoa(String.fromCharCode(...new TextEncoder().encode(s)))
+const toBase64Url = (bytes: Uint8Array) =>
+  btoa(String.fromCharCode(...bytes))
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=+$/, '')
 
 const fromBase64Url = (s: string) => {
   const b64 = s.replace(/-/g, '+').replace(/_/g, '/')
-  const bin = atob(b64 + '='.repeat((4 - (b64.length % 4)) % 4))
-  return new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)))
+  return Uint8Array.from(atob(b64 + '='.repeat((4 - (b64.length % 4)) % 4)), (c) => c.charCodeAt(0))
 }
 
-export const encodeSpec = (spec: RingSpec) => toBase64Url(JSON.stringify(spec))
+export const encodeSpec = (spec: RingSpec) => toBase64Url(deflateSync(strToU8(JSON.stringify(spec)), { level: 9 }))
 
-/** Null when the value is not a decodable design. */
-export function decodeSpec(encoded: string): RingSpec | null {
+/** Null when the value is not a decodable design. `plain` reads an older #d= link. */
+export function decodeSpec(encoded: string, plain = false): RingSpec | null {
   try {
-    return sanitizeSpec(JSON.parse(fromBase64Url(encoded)))
+    const bytes = fromBase64Url(encoded)
+    return sanitizeSpec(JSON.parse(strFromU8(plain ? bytes : inflateSync(bytes))))
   } catch {
     return null
   }
@@ -28,7 +30,7 @@ export function decodeSpec(encoded: string): RingSpec | null {
 
 export const isTryOnHash = (hash = location.hash) => /^#try(&|$)/.test(hash)
 
-export const specHash = (spec: RingSpec, tryOn = false) => `#${tryOn ? 'try&' : ''}d=${encodeSpec(spec)}`
+export const specHash = (spec: RingSpec, tryOn = false) => `#${tryOn ? 'try&' : ''}r=${encodeSpec(spec)}`
 
 export function shareUrl(spec: RingSpec, base = location.href) {
   const url = new URL(base)
@@ -37,8 +39,8 @@ export function shareUrl(spec: RingSpec, base = location.href) {
 }
 
 export function specFromHash(hash = location.hash): RingSpec | null {
-  const m = /[#&]d=([A-Za-z0-9_-]+)/.exec(hash)
-  return m ? decodeSpec(m[1]) : null
+  const m = /[#&]([rd])=([A-Za-z0-9_-]+)/.exec(hash)
+  return m ? decodeSpec(m[2], m[1] === 'd') : null
 }
 
 /** Parse an exported file: a single design or a list of designs. */

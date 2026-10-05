@@ -50,7 +50,7 @@ test('opens a shared design link', async ({ page }) => {
   const spec = { name: 'Shared', band: { metal: 'platinum' }, stone: { shape: 'heart', carat: 2, gem: 'ruby' } }
   await page.goto(`/#d=${Buffer.from(JSON.stringify(spec)).toString('base64url')}`)
   await expect(page.getByTestId('summary')).toContainText('2.00 ct heart ruby · Platinum')
-  await expect(page).toHaveURL(/#d=/)
+  await expect(page).toHaveURL(/#r=/)
 })
 
 test('the address bar always links to the design on screen', async ({ page, browser }) => {
@@ -61,6 +61,7 @@ test('the address bar always links to the design on screen', async ({ page, brow
   const fresh = await browser.newPage()
   await fresh.goto(page.url())
   await expect(fresh.getByTestId('summary')).toHaveText(summary!)
+  expect(page.url().length).toBeLessThan(700)
   await fresh.close()
 })
 
