@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { ringTo3mf } from '../ring/export3mf'
+import { DesignIcon } from '../customizer/icons'
 import { BUILTIN_TEMPLATES } from './builtin'
 import { parseImport, shareUrl } from './share'
 import { useStore } from './store'
@@ -98,6 +99,7 @@ export function TemplatesPanel() {
           {templates.map((t) => (
             <li key={t.id}>
               <button type="button" className="template" onClick={() => setSpec(t.spec)}>
+                <DesignIcon spec={t.spec} />
                 {t.spec.name}
               </button>
               <button type="button" className="icon" aria-label={`Delete ${t.spec.name}`} onClick={() => remove(t.id)}>
@@ -120,6 +122,7 @@ export function TemplatesPanel() {
                 setName(t.name)
               }}
             >
+              <DesignIcon spec={t} />
               {t.name}
             </button>
           </li>

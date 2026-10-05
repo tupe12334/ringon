@@ -34,7 +34,30 @@ import {
   type StoneShape,
 } from '../ring/spec'
 import { useStore } from '../templates/store'
-import { Chips, ColorInput, Field, Select, Slider, Toggle } from './controls'
+import { Chips, ColorInput, Field, Slider, Toggle } from './controls'
+import {
+  ShapeIcon,
+  SidePresetIcon,
+  TaperIcon,
+  accentIcons,
+  autoIcon,
+  bezelEdgeIcons,
+  fieldIcons as fi,
+  finishIcons,
+  fontIcons,
+  gemIcons,
+  haloRowIcons,
+  haloStyleIcons,
+  halfWallIcons,
+  matchIcon,
+  metalIcons,
+  profileIcons,
+  prongTipIcons,
+  settingIcons,
+  shapeIcons,
+  sideCountIcons,
+  sideLayoutIcons,
+} from './icons'
 
 const label = <T extends string>(info: Record<T, { label: string } | string>) =>
   Object.fromEntries(
@@ -59,12 +82,13 @@ export function SizePanel() {
     <>
       <Chips
         label="Size system"
+        icon={fi.system}
         value={system}
         options={SIZE_SYSTEMS.map((s) => s.id)}
         labels={Object.fromEntries(SIZE_SYSTEMS.map((s) => [s.id, s.label]))}
         onChange={setSystem}
       />
-      <Field label="Ring size" hint={`${mm(spec.innerDiameterMm)} inside · ${(spec.innerDiameterMm * Math.PI).toFixed(1)} mm around`}>
+      <Field label="Ring size" icon={fi.size} hint={`${mm(spec.innerDiameterMm)} inside · ${(spec.innerDiameterMm * Math.PI).toFixed(1)} mm around`}>
         <select
           aria-label="Ring size"
           value={current.label}
@@ -94,11 +118,12 @@ export function BandPanel() {
   const update = useStore((s) => s.update)
   return (
     <>
-      <Chips label="Profile" value={band.profile} options={PROFILES} labels={PROFILE_INFO} onChange={(v) => update((d) => void (d.band.profile = v))} />
-      <Slider label="Width" value={band.widthMm} min={LIMITS.widthMm[0]} max={LIMITS.widthMm[1]} step={0.1} format={mm} onChange={(v) => update((d) => void (d.band.widthMm = v))} />
-      <Slider label="Thickness" value={band.thicknessMm} min={LIMITS.thicknessMm[0]} max={LIMITS.thicknessMm[1]} step={0.1} format={mm} onChange={(v) => update((d) => void (d.band.thicknessMm = v))} />
+      <Chips label="Profile" value={band.profile} options={PROFILES} labels={PROFILE_INFO} icons={profileIcons} onChange={(v) => update((d) => void (d.band.profile = v))} />
+      <Slider label="Width" icon={fi.width} value={band.widthMm} min={LIMITS.widthMm[0]} max={LIMITS.widthMm[1]} step={0.1} format={mm} onChange={(v) => update((d) => void (d.band.widthMm = v))} />
+      <Slider label="Thickness" icon={fi.thickness} value={band.thicknessMm} min={LIMITS.thicknessMm[0]} max={LIMITS.thicknessMm[1]} step={0.1} format={mm} onChange={(v) => update((d) => void (d.band.thicknessMm = v))} />
       <Slider
         label="Shank taper"
+        icon={<TaperIcon taper={band.taper} />}
         value={band.taper}
         min={LIMITS.taper[0]}
         max={LIMITS.taper[1]}
@@ -106,7 +131,7 @@ export function BandPanel() {
         format={(v) => (v >= 1 ? 'none' : `${Math.round((1 - v) * 100)}% narrower underneath`)}
         onChange={(v) => update((d) => void (d.band.taper = v))}
       />
-      <Toggle label="Comfort fit (domed inside)" value={band.comfortFit} onChange={(v) => update((d) => void (d.band.comfortFit = v))} />
+      <Toggle label="Comfort fit (domed inside)" icon={fi.comfort} value={band.comfortFit} onChange={(v) => update((d) => void (d.band.comfortFit = v))} />
     </>
   )
 }
@@ -116,10 +141,12 @@ export function MetalPanel() {
   const update = useStore((s) => s.update)
   return (
     <>
-      <Select label="Band metal" value={band.metal} options={METALS} labels={metalLabels} onChange={(v) => update((d) => void (d.band.metal = v))} />
-      <Chips label="Finish" value={band.finish} options={FINISHES} labels={label(FINISH_INFO)} onChange={(v) => update((d) => void (d.band.finish = v))} />
-      <Select
+      <Chips label="Band metal" value={band.metal} options={METALS} labels={metalLabels} icons={metalIcons} onChange={(v) => update((d) => void (d.band.metal = v))} />
+      <Chips label="Finish" value={band.finish} options={FINISHES} labels={label(FINISH_INFO)} icons={finishIcons} onChange={(v) => update((d) => void (d.band.finish = v))} />
+      <Chips
         label="Head metal (prongs, bezel, halo)"
+        icon={fi.headMetal}
+        icons={{ match: matchIcon, ...metalIcons }}
         value={band.headMetal}
         options={['match', ...METALS] as const}
         labels={{ match: 'Same as band', ...metalLabels }}
@@ -133,7 +160,7 @@ export function MetalPanel() {
 function GemPicker({ value, color, onGem, onColor, title = 'Gem' }: { value: Gem; color: string; onGem: (g: Gem) => void; onColor: (c: string) => void; title?: string }) {
   return (
     <>
-      <Select label={title} value={value} options={GEMS} labels={gemLabels} onChange={onGem} />
+      <Chips label={title} value={value} options={GEMS} labels={gemLabels} icons={gemIcons(color)} onChange={onGem} />
       {value === 'custom' && <ColorInput label={`${title} colour`} value={color} onChange={onColor} />}
     </>
   )
@@ -145,12 +172,13 @@ export function StonePanel() {
   const dims = stoneDimensions(stone.shape, stone.carat, stone.gem)
   return (
     <>
-      <Toggle label="Centre stone" value={stone.enabled} onChange={(v) => update((d) => void (d.stone.enabled = v))} />
+      <Toggle label="Centre stone" icon={fi.stone} value={stone.enabled} onChange={(v) => update((d) => void (d.stone.enabled = v))} />
       {stone.enabled && (
         <>
-          <Chips label="Shape" value={stone.shape} options={STONE_SHAPES} labels={label(SHAPE_INFO)} onChange={(v) => update((d) => void (d.stone.shape = v))} />
+          <Chips label="Shape" value={stone.shape} options={STONE_SHAPES} labels={label(SHAPE_INFO)} icons={shapeIcons} onChange={(v) => update((d) => void (d.stone.shape = v))} />
           <Slider
             label="Carat"
+            icon={<ShapeIcon shape={stone.shape} size={8 + 14 * Math.cbrt(stone.carat / LIMITS.carat[1])} rotate={stone.rotationDeg} />}
             value={stone.carat}
             min={LIMITS.carat[0]}
             max={LIMITS.carat[1]}
@@ -166,6 +194,7 @@ export function StonePanel() {
           />
           <Slider
             label="Orientation"
+            icon={<ShapeIcon shape={stone.shape} rotate={stone.rotationDeg} />}
             value={stone.rotationDeg}
             min={LIMITS.rotationDeg[0]}
             max={LIMITS.rotationDeg[1]}
@@ -186,9 +215,10 @@ export function BezelControls() {
   const set = (patch: Partial<typeof bz>) => update((d) => void Object.assign(d.stone.bezel, patch))
   return (
     <>
-      {half && <Chips label="Half-bezel walls" value={bz.halfWalls} options={HALF_BEZEL_WALLS} labels={{ sides: 'On the sides (open ends)', ends: 'On the ends (open sides)' }} onChange={(v) => set({ halfWalls: v })} />}
+      {half && <Chips label="Half-bezel walls" value={bz.halfWalls} options={HALF_BEZEL_WALLS} icons={halfWallIcons} labels={{ sides: 'On the sides (open ends)', ends: 'On the ends (open sides)' }} onChange={(v) => set({ halfWalls: v })} />}
       <Slider
         label="Bezel wall"
+        icon={fi.wall}
         value={bz.wallMm}
         min={LIMITS.bezelWallMm[0]}
         max={LIMITS.bezelWallMm[1]}
@@ -198,6 +228,7 @@ export function BezelControls() {
       />
       <Slider
         label="Bezel lip"
+        icon={fi.lip}
         value={bz.lip}
         min={LIMITS.bezelLip[0]}
         max={LIMITS.bezelLip[1]}
@@ -205,7 +236,7 @@ export function BezelControls() {
         format={(v) => (v === 0 ? 'flush with the girdle' : `${Math.round(v * 100)}% up the crown`)}
         onChange={(v) => set({ lip: v })}
       />
-      <Chips label="Bezel edge" value={bz.edge} options={BEZEL_EDGES} labels={{ plain: 'Plain', rounded: 'Rounded', milgrain: 'Milgrain' }} onChange={(v) => set({ edge: v })} />
+      <Chips label="Bezel edge" value={bz.edge} options={BEZEL_EDGES} icons={bezelEdgeIcons} labels={{ plain: 'Plain', rounded: 'Rounded', milgrain: 'Milgrain' }} onChange={(v) => set({ edge: v })} />
     </>
   )
 }
@@ -221,12 +252,13 @@ export function SettingPanel() {
   const bezel = stone.setting === 'bezel' || stone.setting === 'half-bezel'
   return (
     <>
-      <Chips label="Setting" value={stone.setting} options={SETTINGS} labels={SETTING_INFO} onChange={(v) => update((d) => void (d.stone.setting = v))} />
-      {prongs && <Chips label="Prong tips" value={stone.prongTip} options={PRONG_TIPS} labels={PRONG_TIP_INFO} onChange={(v) => update((d) => void (d.stone.prongTip = v))} />}
+      <Chips label="Setting" value={stone.setting} options={SETTINGS} labels={SETTING_INFO} icons={settingIcons} onChange={(v) => update((d) => void (d.stone.setting = v))} />
+      {prongs && <Chips label="Prong tips" value={stone.prongTip} options={PRONG_TIPS} labels={PRONG_TIP_INFO} icons={prongTipIcons} onChange={(v) => update((d) => void (d.stone.prongTip = v))} />}
       {(bezel || sideBezel || bandBezel) && <BezelControls />}
       {stone.setting !== 'tension' && (
         <Slider
           label="Setting height"
+          icon={fi.height}
           value={stone.settingHeightMm}
           min={LIMITS.settingHeightMm[0]}
           max={LIMITS.settingHeightMm[1]}
@@ -235,14 +267,14 @@ export function SettingPanel() {
           onChange={(v) => update((d) => void (d.stone.settingHeightMm = v))}
         />
       )}
-      <Toggle label="Halo" value={halo.enabled} onChange={(v) => update((d) => void (d.halo.enabled = v))} />
+      <Toggle label="Halo" icon={fi.halo} value={halo.enabled} onChange={(v) => update((d) => void (d.halo.enabled = v))} />
       {halo.enabled && (
         <>
-          <Chips label="Halo style" value={halo.style} options={HALO_STYLES} labels={{ classic: 'Classic (around the stone)', hidden: 'Hidden (under the stone)' }} onChange={(v) => update((d) => void (d.halo.style = v))} />
+          <Chips label="Halo style" value={halo.style} options={HALO_STYLES} icons={haloStyleIcons} labels={{ classic: 'Classic (around the stone)', hidden: 'Hidden (under the stone)' }} onChange={(v) => update((d) => void (d.halo.style = v))} />
           {halo.style === 'classic' && (
-            <Chips label="Halo rows" value={String(halo.rows)} options={['1', '2'] as const} labels={{ '1': 'Single', '2': 'Double' }} onChange={(v) => update((d) => void (d.halo.rows = Number(v)))} />
+            <Chips label="Halo rows" value={String(halo.rows)} options={['1', '2'] as const} icons={haloRowIcons} labels={{ '1': 'Single', '2': 'Double' }} onChange={(v) => update((d) => void (d.halo.rows = Number(v)))} />
           )}
-          <Slider label="Halo stone size" value={halo.stoneMm} min={LIMITS.haloStoneMm[0]} max={LIMITS.haloStoneMm[1]} step={0.05} format={(v) => `${mm(v)} · ${meleeCarat(v).toFixed(3)} ct each`} onChange={(v) => update((d) => void (d.halo.stoneMm = v))} />
+          <Slider label="Halo stone size" icon={fi.melee} value={halo.stoneMm} min={LIMITS.haloStoneMm[0]} max={LIMITS.haloStoneMm[1]} step={0.05} format={(v) => `${mm(v)} · ${meleeCarat(v).toFixed(3)} ct each`} onChange={(v) => update((d) => void (d.halo.stoneMm = v))} />
           <GemPicker title="Halo gem" value={halo.gem} color={halo.customColor} onGem={(v) => update((d) => void (d.halo.gem = v))} onColor={(v) => update((d) => void (d.halo.customColor = v))} />
         </>
       )}
@@ -287,20 +319,22 @@ export function SidesPanel() {
   })
   return (
     <>
-      <Chips label="Layout" value={side.layout} options={SIDE_LAYOUTS} labels={{ both: 'Both sides', 'toi-et-moi': 'Toi et moi (pair)' }} onChange={(v) => set({ layout: v, count: v === 'both' && !side.count ? 1 : side.count })} />
+      <Chips label="Layout" value={side.layout} options={SIDE_LAYOUTS} icons={sideLayoutIcons} labels={{ both: 'Both sides', 'toi-et-moi': 'Toi et moi (pair)' }} onChange={(v) => set({ layout: v, count: v === 'both' && !side.count ? 1 : side.count })} />
       {!toi && (
         <Chips
           label="Side stones"
           value={String(side.count)}
           options={['0', '1', '2', '3'] as const}
           labels={Object.fromEntries(SIDE_COUNT_LABELS.map((l, i) => [String(i), l]))}
+          icons={Object.fromEntries(sideCountIcons.map((c, i) => [String(i), c]))}
           onChange={(v) => set({ count: Number(v) })}
         />
       )}
       {on && (
         <>
-          <Select
+          <Chips
             label="Side stone shape"
+            icons={{ match: <ShapeIcon shape={stone.shape} fill="currentColor" />, ...shapeIcons }}
             value={side.shape}
             options={['match', ...STONE_SHAPES] as const}
             labels={{ match: `Same as centre (${shapeLabels[stone.shape]})`, ...shapeLabels }}
@@ -309,6 +343,7 @@ export function SidesPanel() {
           <GemPicker title="Side stone gem" value={side.gem} color={side.customColor} onGem={(v) => set({ gem: v })} onColor={(v) => set({ customColor: v })} />
           <Slider
             label={toi ? 'Partner stone size' : 'Side stone size'}
+            icon={fi.ratio}
             value={side.ratio}
             min={LIMITS.sideRatio[0]}
             max={LIMITS.sideRatio[1]}
@@ -319,6 +354,7 @@ export function SidesPanel() {
           {!toi && side.count > 1 && (
             <Slider
               label="Graduation"
+              icon={fi.graduation}
               value={side.graduation}
               min={LIMITS.graduation[0]}
               max={LIMITS.graduation[1]}
@@ -327,25 +363,27 @@ export function SidesPanel() {
               onChange={(v) => set({ graduation: v })}
             />
           )}
-          <Field label="Orientation">
-            <div className="chips" role="group" aria-label="Side stone orientation presets">
+          <Field label="Orientation" icon={fi.orientation}>
+            <div className="chips tiles" role="group" aria-label="Side stone orientation presets">
               {/* A toi et moi has one partner stone, so "both one way" means nothing there. */}
               {presetsFor(shape).filter(([, , mirror]) => !toi || mirror).map(([name, rot, mirror]) => {
                 const active = side.rotationDeg === rot && (toi || side.mirror === mirror)
                 return (
                   <button key={name} type="button" aria-pressed={active} className={active ? 'chip on' : 'chip'} onClick={() => set({ rotationDeg: rot, mirror })}>
-                    {name}
+                    <SidePresetIcon shape={shape} rotate={rot} mirror={mirror} pair={toi} />
+                    <span>{name}</span>
                   </button>
                 )
               })}
             </div>
           </Field>
-          <Slider label="Side stone rotation" value={side.rotationDeg} min={LIMITS.sideRotationDeg[0]} max={LIMITS.sideRotationDeg[1]} step={5} format={(v) => `${v}°`} onChange={(v) => set({ rotationDeg: v })} />
-          {!toi && <Toggle label="Mirror left stones" value={side.mirror} onChange={(v) => set({ mirror: v })} />}
-          <Chips label="Side stone setting" value={side.setting} options={SIDE_SETTINGS} labels={SIDE_SETTING_LABELS} onChange={(v) => set({ setting: v })} />
-          <Slider label="Gap" value={side.gapMm} min={LIMITS.sideGapMm[0]} max={LIMITS.sideGapMm[1]} step={0.05} format={mm} onChange={(v) => set({ gapMm: v })} />
+          <Slider label="Side stone rotation" icon={<ShapeIcon shape={shape} rotate={side.rotationDeg} />} value={side.rotationDeg} min={LIMITS.sideRotationDeg[0]} max={LIMITS.sideRotationDeg[1]} step={5} format={(v) => `${v}°`} onChange={(v) => set({ rotationDeg: v })} />
+          {!toi && <Toggle label="Mirror left stones" icon={fi.mirror} value={side.mirror} onChange={(v) => set({ mirror: v })} />}
+          <Chips label="Side stone setting" value={side.setting} options={SIDE_SETTINGS} labels={SIDE_SETTING_LABELS} icons={settingIcons} onChange={(v) => set({ setting: v })} />
+          <Slider label="Gap" icon={fi.gap} value={side.gapMm} min={LIMITS.sideGapMm[0]} max={LIMITS.sideGapMm[1]} step={0.05} format={mm} onChange={(v) => set({ gapMm: v })} />
           <Slider
             label={toi ? 'Diagonal offset' : 'Offset along finger'}
+            icon={fi.offset}
             value={side.offsetMm}
             min={LIMITS.sideOffsetMm[0]}
             max={LIMITS.sideOffsetMm[1]}
@@ -353,7 +391,7 @@ export function SidesPanel() {
             format={(v) => (v === 0 ? 'in line' : mm(v))}
             onChange={(v) => set({ offsetMm: v })}
           />
-          <Slider label="Side stone height" value={side.height} min={LIMITS.sideHeight[0]} max={LIMITS.sideHeight[1]} step={0.05} format={(v) => `${Math.round(v * 100)}% of centre`} onChange={(v) => set({ height: v })} />
+          <Slider label="Side stone height" icon={fi.height} value={side.height} min={LIMITS.sideHeight[0]} max={LIMITS.sideHeight[1]} step={0.05} format={(v) => `${Math.round(v * 100)}% of centre`} onChange={(v) => set({ height: v })} />
         </>
       )}
     </>
@@ -367,15 +405,16 @@ export function AccentsPanel() {
   const maxRows = Math.max(1, Math.min(LIMITS.rows[1], Math.floor(bandWidth / (Math.min(accents.stoneMm, bandWidth * 0.85) * 1.05))))
   return (
     <>
-      <Chips label="Band stones" value={accents.style} options={ACCENTS} labels={ACCENT_INFO} onChange={(v) => update((d) => void (d.accents.style = v))} />
+      <Chips label="Band stones" value={accents.style} options={ACCENTS} labels={ACCENT_INFO} icons={accentIcons} onChange={(v) => update((d) => void (d.accents.style = v))} />
       {accents.style !== 'none' && (
         <>
-          <Slider label="Stone size" value={accents.stoneMm} min={LIMITS.accentStoneMm[0]} max={LIMITS.accentStoneMm[1]} step={0.05} format={(v) => `${mm(v)} across the band`} onChange={(v) => update((d) => void (d.accents.stoneMm = v))} />
-          <Select label="Cut" value={accents.meleeCut} options={['auto', ...STONE_SHAPES] as const} labels={{ auto: 'Auto (round, princess in a channel)', ...shapeLabels }} onChange={(v) => update((d) => void (d.accents.meleeCut = v))} />
-          <Toggle label="Bezel-set (each stone in its own rim)" value={accents.bezelSet} onChange={(v) => update((d) => void (d.accents.bezelSet = v))} />
+          <Slider label="Stone size" icon={fi.melee} value={accents.stoneMm} min={LIMITS.accentStoneMm[0]} max={LIMITS.accentStoneMm[1]} step={0.05} format={(v) => `${mm(v)} across the band`} onChange={(v) => update((d) => void (d.accents.stoneMm = v))} />
+          <Chips label="Cut" value={accents.meleeCut} options={['auto', ...STONE_SHAPES] as const} icons={{ auto: autoIcon, ...shapeIcons }} labels={{ auto: 'Auto (round, princess in a channel)', ...shapeLabels }} onChange={(v) => update((d) => void (d.accents.meleeCut = v))} />
+          <Toggle label="Bezel-set (each stone in its own rim)" icon={fi.wall} value={accents.bezelSet} onChange={(v) => update((d) => void (d.accents.bezelSet = v))} />
           {accents.bezelSet && <BezelControls />}
           <Slider
             label="Spacing"
+            icon={fi.spacing}
             value={accents.spacingMm}
             min={LIMITS.spacingMm[0]}
             max={LIMITS.spacingMm[1]}
@@ -386,6 +425,7 @@ export function AccentsPanel() {
           {(accents.style === 'pave' || accents.style === 'channel') && (
             <Slider
               label="Coverage"
+              icon={fi.coverage}
               value={accents.coverageDeg}
               min={LIMITS.coverageDeg[0]}
               max={LIMITS.coverageDeg[1]}
@@ -397,6 +437,7 @@ export function AccentsPanel() {
           {accents.style !== 'channel' && (
             <Slider
               label="Rows"
+              icon={fi.rows}
               value={accents.rows}
               min={LIMITS.rows[0]}
               max={LIMITS.rows[1]}
@@ -417,7 +458,7 @@ export function EngravePanel() {
   const update = useStore((s) => s.update)
   return (
     <>
-      <Field label="Inside engraving" hint={`${engraving.text.length}/${LIMITS.engravingLength[1]}`}>
+      <Field label="Inside engraving" icon={fi.engrave} hint={`${engraving.text.length}/${LIMITS.engravingLength[1]}`}>
         <input
           type="text"
           aria-label="Inside engraving"
@@ -427,7 +468,7 @@ export function EngravePanel() {
           onChange={(e) => update((d) => void (d.engraving.text = e.target.value))}
         />
       </Field>
-      <Chips label="Font" value={engraving.font} options={FONTS} labels={{ serif: 'Serif', sans: 'Sans', script: 'Script' }} onChange={(v) => update((d) => void (d.engraving.font = v))} />
+      <Chips label="Font" value={engraving.font} options={FONTS} icons={fontIcons} labels={{ serif: 'Serif', sans: 'Sans', script: 'Script' }} onChange={(v) => update((d) => void (d.engraving.font = v))} />
     </>
   )
 }
