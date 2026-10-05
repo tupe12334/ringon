@@ -42,12 +42,12 @@ export const PROFILE_INFO: Record<Profile, string> = {
  */
 export const GEM_INFO: Record<
   Gem,
-  { label: string; color: string; density: number; ior: number; dispersion: number }
+  { label: string; color: string; density: number; ior: number; dispersion: number; opaque?: boolean }
 > = {
   diamond: { label: 'Diamond', color: '#ffffff', density: 3.52, ior: 2.42, dispersion: 0.044 },
   'lab-diamond': { label: 'Lab diamond', color: '#ffffff', density: 3.52, ior: 2.42, dispersion: 0.044 },
   moissanite: { label: 'Moissanite', color: '#fbfdf6', density: 3.21, ior: 2.65, dispersion: 0.104 },
-  'black-diamond': { label: 'Black diamond', color: '#1a1a1d', density: 3.52, ior: 2.42, dispersion: 0.044 },
+  'black-diamond': { label: 'Black diamond', color: '#1a1a1d', density: 3.52, ior: 2.42, dispersion: 0.044, opaque: true },
   sapphire: { label: 'Blue sapphire', color: '#1f4fd1', density: 4.0, ior: 1.77, dispersion: 0.018 },
   'pink-sapphire': { label: 'Pink sapphire', color: '#f27fb3', density: 4.0, ior: 1.77, dispersion: 0.018 },
   ruby: { label: 'Ruby', color: '#c4122f', density: 4.0, ior: 1.77, dispersion: 0.018 },

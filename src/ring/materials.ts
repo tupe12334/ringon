@@ -19,7 +19,7 @@ export function metalMaterial(metal: Metal, finish: RingSpec['band']['finish']) 
 export function gemMaterial(gem: Gem, customColor: string, sizeMm: number) {
   const info = GEM_INFO[gem]
   const color = new THREE.Color(gemColor(gem, customColor))
-  if (gem === 'black-diamond')
+  if (info.opaque)
     return new THREE.MeshPhysicalMaterial({ color, metalness: 0.2, roughness: 0.05, clearcoat: 1, envMapIntensity: 2 })
   const colourless = info.color === '#ffffff' || gem === 'moissanite'
   return new THREE.MeshPhysicalMaterial({

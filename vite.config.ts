@@ -30,7 +30,7 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,hdr}'],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         // The hand-tracking model and runtime are large: cache them on first use.
         runtimeCaching: [
