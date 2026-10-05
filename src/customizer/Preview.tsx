@@ -84,11 +84,14 @@ function PathTracer({
   useEffect(() => {
     const e = engine.current
     return () => {
-      for (const part of [e.warm, e.main]) {
-        if (!part) continue
-        part.tracer.dispose()
-        releaseRenderer(part.renderer)
+      if (e.warm) {
+        e.warm.tracer.dispose()
+        releaseRenderer(e.warm.renderer)
       }
+      // The overlay canvas outlives this component; a later renderer reuses its context, so
+      // dispose without forcing the context lost.
+      e.main?.tracer.dispose()
+      e.main?.renderer.dispose()
       e.warm = e.main = undefined
     }
   }, [])
