@@ -1,5 +1,5 @@
 import { defineConfig, devices } from '@playwright/test'
-import { BACK_OF_HAND_FEED, PALM_FEED } from './e2e/fake-camera'
+import { BACK_OF_HAND_FEED, PALM_FEED, STILL_HAND_FEED } from './e2e/fake-camera'
 
 /** An emulated phone whose camera plays `feed`. */
 const phone = (feed: string) => ({
@@ -30,7 +30,8 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
   projects: [
-    { name: 'phone', testIgnore: /real-hand/, use: phone(BACK_OF_HAND_FEED) },
+    { name: 'phone', testIgnore: /real-hand|still-hand/, use: phone(BACK_OF_HAND_FEED) },
+    { name: 'phone-still-hand', testMatch: /still-hand/, use: phone(STILL_HAND_FEED) },
     { name: 'phone-real-hand', testMatch: /real-hand/, use: phone(PALM_FEED) },
   ],
   webServer: {

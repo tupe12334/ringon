@@ -54,8 +54,32 @@ interface TrackedRingProps {
   onPose: (p: RingPose | null) => void
 }
 
+/** Ring shadow on the skin; `?shadow=0` turns it off (for comparisons). */
+const SHADOWS = typeof location === 'undefined' || new URLSearchParams(location.search).get('shadow') !== '0'
+
+/** Every mesh of the ring casts a shadow, whatever the design adds or removes. */
+const markShadowCasters = (ring: THREE.Object3D) =>
+  ring.traverse((o) => {
+    if ((o as THREE.Mesh).isMesh) o.castShadow = true
+  })
+
+/** Keep the shadow light just above-front of the ring and its shadow box around it (px). */
+function aimShadowLight(light: THREE.DirectionalLight | null, ring: THREE.Object3D, extentPx: number) {
+  if (!light) return
+  light.target = ring
+  light.position.copy(ring.position).add(new THREE.Vector3(0.05, 0.8, 1).multiplyScalar(4 * extentPx))
+  const cam = light.shadow.camera
+  cam.left = cam.bottom = -extentPx
+  cam.right = cam.top = extentPx
+  cam.near = 1
+  cam.far = 10 * extentPx
+  cam.updateProjectionMatrix()
+}
+
 function TrackedRing({ spec, video, landmarker, mirrored, finger, flip, fit, onStatus, onPose }: TrackedRingProps) {
   const group = useRef<THREE.Group>(null)
+  const light = useRef<THREE.DirectionalLight>(null)
+  const ringModel = useRef<THREE.Group>(null)
   const size = useThree((s) => s.size)
   const smoother = useMemo(() => new PoseSmoother(), [])
   const hand = useMemo(() => new PalmSideVote(), [])
@@ -95,6 +119,8 @@ function TrackedRing({ spec, video, landmarker, mirrored, finger, flip, fit, onS
       g.quaternion.copy(p.quaternion)
       g.scale.setScalar(p.pxPerMm * fit)
       g.visible = true
+      aimShadowLight(light.current, g, p.pxPerMm * fit * (innerR + spec.band.thicknessMm + 12))
+      if (ringModel.current) markShadowCasters(ringModel.current)
       last.current.seen = now
       status = 'tracking'
       onPose(p)
@@ -116,14 +142,29 @@ function TrackedRing({ spec, video, landmarker, mirrored, finger, flip, fit, onS
   })
 
   return (
-    <group ref={group} visible={false} name="tracked-ring">
-      {/* Invisible finger: hides the part of the band behind it. */}
-      <mesh renderOrder={-1}>
-        <cylinderGeometry args={[innerR * 0.98, innerR * 0.98, 70, 32]} />
-        <meshBasicMaterial colorWrite={false} />
-      </mesh>
-      <RingModel spec={spec} />
-    </group>
+    <>
+      {SHADOWS && (
+        // Key light from above the camera; it only adds the ring's shadow on the skin.
+        <directionalLight ref={light} intensity={0.5} castShadow shadow-mapSize={[256, 256]} shadow-bias={-0.002} shadow-normalBias={0.5} />
+      )}
+      <group ref={group} visible={false} name="tracked-ring">
+        {/* Invisible finger: hides the part of the band behind it. */}
+        <mesh renderOrder={-1}>
+          <cylinderGeometry args={[innerR * 0.98, innerR * 0.98, 70, 32]} />
+          <meshBasicMaterial colorWrite={false} />
+        </mesh>
+        {SHADOWS && (
+          // The finger's skin, as a shadow catcher: shows only the ring's contact shadow.
+          <mesh receiveShadow name="skin-shadow" renderOrder={-0.5}>
+            <cylinderGeometry args={[innerR * 0.985, innerR * 0.985, spec.band.widthMm + 30, 48, 1, true]} />
+            <shadowMaterial opacity={0.3} depthWrite={false} />
+          </mesh>
+        )}
+        <group ref={ringModel}>
+          <RingModel spec={spec} />
+        </group>
+      </group>
+    </>
   )
 }
 
@@ -209,6 +250,8 @@ export function TryOn({ onBack }: { onBack: () => void }) {
     <div className="tryon">
       <Canvas
         orthographic
+        // PCF soft shadows: accurate where the band touches the skin; a small map keeps them soft.
+        shadows="soft"
         camera={{ position: [0, 0, 1000], near: 1, far: 3000, zoom: 1 }}
         gl={{ antialias: true, preserveDrawingBuffer: true, toneMapping: THREE.NeutralToneMapping }}
         // The camera image is ~720p: more pixels than this only costs phones battery and frames.
