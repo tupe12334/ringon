@@ -41,20 +41,33 @@ export const unzoom = (l: NormalizedLandmark): NormalizedLandmark => ({
   z: l.z * ZOOM_OUT,
 })
 
+const NONE: HandLandmarkerResult = { landmarks: [], worldLandmarks: [], handedness: [], handednesses: [] }
+
 class Tracker implements HandTracker {
   private canvas = document.createElement('canvas')
   /** The zoomed-out landmarker found the hand last time: try it first. */
   private zoomedFirst = false
 
   private full: HandLandmarker
-  private zoomed: HandLandmarker
+  /** Loaded after the first one, so it doesn't delay tracking; null until then. */
+  private zoomed: HandLandmarker | null = null
 
-  constructor(full: HandLandmarker, zoomed: HandLandmarker) {
+  constructor(full: HandLandmarker) {
     this.full = full
-    this.zoomed = zoomed
+    createLandmarker().then(
+      (z) => {
+        // The first detection compiles the graph and stalls the page (seconds on a slow
+        // device): do it now, while the camera starts, rather than mid-tracking.
+        Object.assign(this.canvas, { width: 64, height: 64 })
+        z.detectForVideo(this.canvas, performance.now())
+        this.zoomed = z
+      },
+      () => {}, // without it, hands that fill the frame just aren't found
+    )
   }
 
   private detectZoomed(video: HTMLVideoElement, timeMs: number): HandLandmarkerResult {
+    if (!this.zoomed) return NONE
     const { videoWidth: w, videoHeight: h } = video
     const c = this.canvas
     if (c.width !== w || c.height !== h) Object.assign(c, { width: w, height: h })
@@ -78,7 +91,7 @@ class Tracker implements HandTracker {
 let loading: Promise<HandTracker> | null = null
 
 export function loadHandTracker(): Promise<HandTracker> {
-  loading ??= Promise.all([createLandmarker(), createLandmarker()]).then(([full, zoomed]) => new Tracker(full, zoomed))
+  loading ??= createLandmarker().then((full) => new Tracker(full))
   loading.catch(() => (loading = null))
   return loading
 }

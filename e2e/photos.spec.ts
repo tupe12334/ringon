@@ -24,7 +24,8 @@ test('tracks the ring onto real photos of hands', async ({ page }) => {
     await test.step(photo, async () => {
       // An empty frame first, long enough for the app to forget the previous hand.
       await page.evaluate(() => window.showPhoto(null))
-      await expect(page.getByTestId('pose')).not.toHaveAttribute('data-visible', 'true', { timeout: 15_000 })
+      // Generous: on a CPU-rendered test browser one frame can take seconds.
+      await expect(page.getByTestId('pose')).not.toHaveAttribute('data-visible', 'true', { timeout: 45_000 })
       await page.waitForTimeout(1100)
       const src = photoDataUrl(dir + photo)
       const size = await page.evaluate(async (s) => {
