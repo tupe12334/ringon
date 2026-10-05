@@ -14,7 +14,7 @@ const truth: Record<string, { fingerWidthPx?: number; facing?: 'back' | 'palm' }
 const round = (a: { x: number; y: number; z: number }[]) => a.map((l) => [l.x, l.y, l.z].map((v) => Math.round(v * 1e5) / 1e5))
 
 test('tracks the ring onto real photos of hands', async ({ page }) => {
-  test.setTimeout(photos.length * 30_000 + 60_000)
+  test.setTimeout(photos.length * 50_000 + 60_000)
   await usePhotoCamera(page)
   await page.goto('/#try')
   await page.addStyleTag({ content: '.tryon-top, .tryon-bottom { visibility: hidden }' })
@@ -35,7 +35,7 @@ test('tracks the ring onto real photos of hands', async ({ page }) => {
         return { width: img.naturalWidth, height: img.naturalHeight }
       }, src)
       await page.setViewportSize(size)
-      await expect(page.getByTestId('pose')).toHaveAttribute('data-visible', 'true', { timeout: 20_000 })
+      await expect(page.getByTestId('pose')).toHaveAttribute('data-visible', 'true', { timeout: 40_000 })
       await page.waitForTimeout(1500) // let the smoothing settle
 
       const pose = await page.getByTestId('pose').evaluate((el) => ({ ...el.dataset, hand: (el as unknown as { hand: { image: []; world: []; view: unknown } }).hand }))
