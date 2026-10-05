@@ -1,4 +1,6 @@
 import { Component, type ReactNode } from 'react'
+import { DEFAULT_SPEC } from './ring/spec'
+import { useStore } from './templates/store'
 
 const hasWebGL = () => {
   try {
@@ -35,7 +37,8 @@ export class Crash extends Component<{ children: ReactNode }, { error?: unknown 
           {!stale && (
             <button
               onClick={() => {
-                // A bad share link can be the cause: open the app without it.
+                // The design on screen (from a link or saved) can be the cause: drop it, keep saved templates.
+                useStore.getState().setSpec(DEFAULT_SPEC)
                 location.replace(location.pathname)
               }}
             >
