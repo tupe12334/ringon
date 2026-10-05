@@ -47,9 +47,16 @@ pnpm install
 pnpm dev        # http://localhost:5173 — open on a phone via `pnpm dev --host` + an HTTPS tunnel
 pnpm test       # unit tests
 pnpm e2e        # browser tests, incl. live tracking on a fake camera feed (needs ffmpeg)
+PORT=4199 pnpm e2e --project photos   # try-on on real hand photos; another port if 4173 is taken
 ```
+
+Try-on accuracy is checked on real photos of hands in [`e2e/fixtures/photos/`](e2e/fixtures/photos):
+[`truth.json`](e2e/fixtures/photos/truth.json) holds what was measured on them by hand (where real
+rings sit, finger widths, which side faces the camera). `DUMP=1` on the photos project refreshes
+the landmarks that [`src/tryon/photos.test.ts`](src/tryon/photos.test.ts) checks the pose against.
 
 ## License
 
 MIT. The bundled hand landmark model (`public/models/hand_landmarker.task`) and the test hand
-image are from Google MediaPipe, Apache-2.0.
+image are from Google MediaPipe, Apache-2.0. Test photos: see
+[`e2e/fixtures/photos/ATTRIBUTION.md`](e2e/fixtures/photos/ATTRIBUTION.md).
