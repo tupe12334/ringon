@@ -475,38 +475,66 @@ export function buildRing(spec: RingSpec): RingParts {
   // Accent stones along the band or beside the centre stone.
   const a = spec.accents
   if (a.style === 'three-stone' && s.enabled) {
-    const sideCarat = s.carat * a.sideRatio ** 3
-    const sd = stoneDimensions(s.shape, sideCarat, a.gem)
-    const gemGeom = buildGem(s.shape, sd.length, sd.width)
-    const offset = dims.width / 2 + 0.4 + sd.width / 2
-    const z = ro + Math.max(1, s.settingHeightMm * 0.7)
-    const matrices = [-1, 1].map((side) => new THREE.Matrix4().makeTranslation(side * offset, 0, z))
-    stones.push({ key: 'side', gem: a.gem, customColor: a.customColor, geometry: gemGeom, matrices })
+    const o = a.side
+    const shape = o.shape === 'match' ? s.shape : o.shape
+    const sd = stoneDimensions(shape, s.carat * a.sideRatio ** 3, a.gem)
+    const gemGeom = buildGem(shape, sd.length, sd.width)
+    const sidePts = outline(shape, sd.length, sd.width, 48)
+    // Clear the centre stone (its halo, bezel walls) as it actually sits, rotated on the finger.
+    const centreOutline = outline(s.shape, dims.length, dims.width, 48)
+    const centreWall = spec.halo.enabled ? spec.halo.stoneMm + 0.25 : s.setting === 'bezel' || s.setting === 'half-bezel' ? 0.5 : 0
+    const sideWall = o.setting === 'bezel' ? 0.4 : 0
+    const centreZ = tension ? ro - spec.band.thicknessMm * 0.35 : ro + s.settingHeightMm
+    const z = ro + Math.max(0.5, (centreZ - ro) * o.height)
     const prongR = THREE.MathUtils.clamp(sd.width * 0.08, 0.3, 0.55)
-    const sidePts = outline(s.shape, sd.length, sd.width, 48)
+    const matrices: THREE.Matrix4[] = []
     const sideParts: THREE.BufferGeometry[] = []
-    for (const side of [-1, 1])
-      for (const p of prongPoints(s.shape, sidePts, 4)) {
-        const tip = new THREE.Vector3(side * offset + p[0] * 1.03, p[1] * 1.03, z + sd.crown * 0.35)
-        const base = new THREE.Vector3(side * offset * 0.7 + p[0] * 0.3, p[1] * 0.3, ro - 0.3)
-        sideParts.push(cylinderBetween(base, tip, prongR * 0.85, prongR))
-        sideParts.push(new THREE.SphereGeometry(prongR * 1.1, 10, 6).translate(tip.x, tip.y, tip.z))
-      }
+    for (const side of [-1, 1]) {
+      const deg = side < 0 && o.mirror ? -o.rotationDeg : o.rotationDeg
+      // Gap between the facing edges: the centre's edge toward this side, the side stone's edge toward the centre.
+      const cx = side * (reachX(centreOutline, s.rotationDeg, side) + centreWall + o.gapMm + sideWall + reachX(sidePts, deg, -side))
+      const place = new THREE.Matrix4().makeTranslation(cx, 0, 0).multiply(new THREE.Matrix4().makeRotationZ((deg * Math.PI) / 180))
+      matrices.push(new THREE.Matrix4().makeTranslation(0, 0, z).multiply(place))
+      if (o.setting === 'bezel') {
+        const cup = bezel(sidePts, z - sd.pavilion * 0.75, z + sd.crown * 0.3, 0.4)
+        cup.forEach((g) => g.applyMatrix4(place))
+        sideParts.push(...cup)
+        for (const p of prongPoints(shape, sidePts, 4)) {
+          const [x, y] = rotate2(p, deg)
+          sideParts.push(cylinderBetween(new THREE.Vector3(cx * 0.8 + x * 0.25, y * 0.25, ro - 0.3), new THREE.Vector3(cx + x * 0.6, y * 0.6, z - sd.pavilion * 0.7), 0.35))
+        }
+      } else
+        for (const p of prongPoints(shape, sidePts, o.setting === 'prong-6' ? 6 : 4)) {
+          const [x, y] = rotate2(p, deg)
+          const tip = new THREE.Vector3(cx + x * 1.03, y * 1.03, z + sd.crown * 0.35)
+          const base = new THREE.Vector3(cx * 0.7 + x * 0.3, y * 0.3, ro - 0.3)
+          sideParts.push(cylinderBetween(base, tip, prongR * 0.85, prongR))
+          sideParts.push(new THREE.SphereGeometry(prongR * 1.1, 10, 6).translate(tip.x, tip.y, tip.z))
+        }
+      extent = Math.max(extent, z + sd.crown)
+    }
+    stones.push({ key: 'side', gem: a.gem, customColor: a.customColor, geometry: gemGeom, matrices })
     parts.push(merge(sideParts))
   } else if (a.style !== 'none' && a.style !== 'three-stone') {
+    const cut = a.meleeCut === 'auto' ? (a.style === 'channel' ? 'princess' : 'round') : a.meleeCut
+    // d runs across the band; a baguette is half as long along it.
     const d = Math.min(a.stoneMm, spec.band.widthMm * 0.85)
-    const crown = d * 0.15
-    const melee = buildGem(a.style === 'channel' ? 'princess' : 'round', d, d)
-    const pitch = (d * (a.style === 'channel' ? 1.0 : 1.1)) / ro
-    const headClear = s.enabled ? ((s.setting === 'tension' ? dims.width * 0.5 : dims.width / 2 + (spec.halo.enabled ? spec.halo.stoneMm + 0.5 : 0)) + d / 2 + 0.5) / ro : 0
-    const span = a.style === 'eternity' ? Math.PI : a.style === 'half-eternity' ? Math.PI / 2 : Math.PI / 3
+    const along = cut === 'baguette' ? d * 0.5 : d
+    const crown = along * 0.15
+    const melee = cut === 'baguette' ? buildGem('emerald', d, along) : buildGem(cut, d, d)
+    const pitch = (along * (a.style === 'channel' ? 1.0 : 1.1)) / ro
+    const headClear = s.enabled ? ((s.setting === 'tension' ? dims.width * 0.5 : dims.width / 2 + (spec.halo.enabled ? spec.halo.stoneMm + 0.5 : 0)) + along / 2 + 0.5) / ro : 0
     const start = s.enabled ? Math.max(headClear, pitch / 2) : a.style === 'eternity' ? 0 : pitch / 2
+    // Coverage counts from the top; always place at least one stone past the head.
+    const span = a.style === 'eternity' ? Math.PI : a.style === 'half-eternity' ? Math.PI / 2 : Math.max(start, (a.coverageDeg * Math.PI) / 180)
     const matrices: THREE.Matrix4[] = []
-    const rowCount = spec.band.widthMm >= d * 2.2 && a.style === 'pave' ? 2 : 1
+    const fit = Math.floor(spec.band.widthMm / (d * 1.05))
+    const rows = a.rows || (a.style === 'pave' && spec.band.widthMm >= d * 2.2 ? 2 : 1)
+    const rowCount = a.style === 'channel' ? 1 : Math.max(1, Math.min(rows, fit))
     for (let theta = start; theta <= span + 1e-6; theta += pitch)
       for (const sign of theta === 0 ? [1] : [1, -1])
         for (let row = 0; row < rowCount; row++) {
-          const y = rowCount === 1 ? 0 : (row - 0.5) * d * 1.05
+          const y = (row - (rowCount - 1) / 2) * d * 1.05
           matrices.push(onBand(sign * theta, y, ro - crown * 0.3))
         }
     if (a.style === 'eternity' && !s.enabled) matrices.push(onBand(Math.PI, 0, ro - crown * 0.3))
@@ -521,6 +549,16 @@ export function buildRing(spec: RingSpec): RingParts {
     engraving: spec.engraving.text.trim() ? { radius: innerR - 0.01, width: spec.band.widthMm * 0.5 } : null,
     extent,
   }
+}
+
+function rotate2([x, y]: Pt, deg: number): Pt {
+  const t = (deg * Math.PI) / 180
+  return [x * Math.cos(t) - y * Math.sin(t), x * Math.sin(t) + y * Math.cos(t)]
+}
+
+/** How far an outline turned by `deg` reaches from its centre toward +x (dir 1) or −x (dir −1). */
+export function reachX(pts: Pt[], deg: number, dir: number) {
+  return Math.max(...pts.map((p) => dir * rotate2(p, deg)[0]))
 }
 
 /** Outline points where prongs go: diagonals for 4, every 60° for 6, tips for pointed shapes. */

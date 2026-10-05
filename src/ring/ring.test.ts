@@ -179,3 +179,84 @@ describe('full ring', () => {
     }
   })
 })
+
+describe('accent controls', () => {
+  const threeStone = (side: Partial<RingSpec['accents']['side']>, stone: Partial<RingSpec['stone']> = {}) =>
+    buildRing({
+      ...DEFAULT_SPEC,
+      stone: { ...DEFAULT_SPEC.stone, ...stone },
+      accents: { ...DEFAULT_SPEC.accents, style: 'three-stone', side: { ...DEFAULT_SPEC.accents.side, ...side } },
+    })
+  const sideStones = (parts: ReturnType<typeof buildRing>) => parts.stones.find((s) => s.key === 'side')!
+
+  it('fills side-stone defaults into old specs and clamps bad values', () => {
+    const old = sanitizeSpec({ accents: { style: 'three-stone', sideRatio: 0.5 } })
+    expect(old.accents.side).toEqual(DEFAULT_SPEC.accents.side)
+    const bad = sanitizeSpec({ accents: { rows: 9.7, side: { shape: 'blob', gapMm: -4, rotationDeg: 999 } } })
+    expect(bad.accents.rows).toBe(3)
+    expect(bad.accents.side.shape).toBe('match')
+    expect(bad.accents.side.gapMm).toBe(0.1)
+    expect(bad.accents.side.rotationDeg).toBe(-81) // 999° wraps
+  })
+
+  it('uses the chosen side shape, mirrored around the centre', () => {
+    const parts = threeStone({ shape: 'pear', rotationDeg: 90, mirror: true })
+    const [left, right] = sideStones(parts).matrices.map((m) => {
+      const p = new THREE.Vector3(), q = new THREE.Quaternion()
+      m.decompose(p, q, new THREE.Vector3())
+      return { x: p.x, angle: new THREE.Euler().setFromQuaternion(q).z }
+    })
+    expect(left.x).toBeCloseTo(-right.x)
+    expect(right.angle).toBeCloseTo(Math.PI / 2)
+    expect(left.angle).toBeCloseTo(-Math.PI / 2)
+    // Pear points +y; turned 90° the right stone's tip faces the centre (−x).
+    const tip = new THREE.Vector3(0, 1, 0).applyAxisAngle(new THREE.Vector3(0, 0, 1), right.angle)
+    expect(tip.x).toBeLessThan(-0.99)
+  })
+
+  it('keeps the gap to the centre stone when either stone turns', () => {
+    for (const [centreRot, sideRot, shape] of [[0, 0, 'emerald'], [90, 0, 'emerald'], [0, 90, 'emerald'], [45, 30, 'emerald'], [0, 50, 'pear'], [30, -120, 'heart']] as const) {
+      const gap = 0.6
+      const parts = threeStone({ shape, rotationDeg: sideRot, gapMm: gap }, { shape: 'pear', rotationDeg: centreRot })
+      const right = sideStones(parts).matrices[1]
+      const centre = parts.stones.find((s) => s.key === 'center')!
+      const box = (g: THREE.BufferGeometry, m: THREE.Matrix4) => new THREE.Box3().setFromObject(new THREE.Mesh(g.clone().applyMatrix4(m)))
+      const c = box(centre.geometry, centre.matrices[0])
+      const r = box(sideStones(parts).geometry, right)
+      expect(r.min.x - c.max.x).toBeCloseTo(gap, 1)
+    }
+  })
+
+  it('places more pavé with more coverage and rows', () => {
+    const count = (accents: Partial<RingSpec['accents']>) =>
+      buildRing({ ...DEFAULT_SPEC, band: { ...DEFAULT_SPEC.band, widthMm: 4 }, accents: { ...DEFAULT_SPEC.accents, style: 'pave', stoneMm: 1.2, ...accents } })
+        .stones.find((s) => s.key === 'accents')!.matrices.length
+    expect(count({ coverageDeg: 120 })).toBeGreaterThan(count({ coverageDeg: 60 }))
+    expect(count({ rows: 3 })).toBe(count({ rows: 1 }) * 3)
+    // Old designs (no rows field) keep the automatic second row on a wide pavé band.
+    expect(count({ rows: 0 })).toBe(count({ rows: 2 }))
+    // Coverage below the head clearance still places stones.
+    expect(count({ coverageDeg: 15 })).toBeGreaterThan(0)
+    // Rows are capped by what fits across the band.
+    expect(count({ rows: 3, stoneMm: 1.6 })).toBe(count({ rows: 2, stoneMm: 1.6 }))
+  })
+
+  it.each(['round', 'princess', 'baguette'] as const)('builds a %s channel', (meleeCut) => {
+    const parts = buildRing({ ...DEFAULT_SPEC, accents: { ...DEFAULT_SPEC.accents, style: 'channel', meleeCut } })
+    expect(finite(parts.stones.find((s) => s.key === 'accents')!.geometry)).toBe(true)
+  })
+
+  it('clears a halo and bezel walls', () => {
+    const bare = threeStone({})
+    const halo = buildRing({ ...DEFAULT_SPEC, halo: { ...DEFAULT_SPEC.halo, enabled: true }, accents: { ...DEFAULT_SPEC.accents, style: 'three-stone' } })
+    const bezel = threeStone({ setting: 'bezel' })
+    const x = (p: ReturnType<typeof buildRing>) => new THREE.Vector3().setFromMatrixPosition(sideStones(p).matrices[1]).x
+    expect(x(halo) - x(bare)).toBeCloseTo(DEFAULT_SPEC.halo.stoneMm + 0.25)
+    expect(x(bezel) - x(bare)).toBeCloseTo(0.4)
+  })
+
+  it.each(['prong-4', 'prong-6', 'bezel'] as const)('builds %s side stones', (setting) => {
+    const parts = threeStone({ setting, shape: 'heart', rotationDeg: 45, mirror: false })
+    expect(finite(parts.head!)).toBe(true)
+  })
+})

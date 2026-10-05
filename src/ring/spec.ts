@@ -66,6 +66,13 @@ export type ProngTip = (typeof PRONG_TIPS)[number]
 export const ACCENTS = ['none', 'pave', 'channel', 'three-stone', 'eternity', 'half-eternity'] as const
 export type Accent = (typeof ACCENTS)[number]
 
+/** Melee cut for band accents; "auto" = princess in a channel, round otherwise. */
+export const MELEE_CUTS = ['auto', 'round', 'princess', 'baguette'] as const
+export type MeleeCut = (typeof MELEE_CUTS)[number]
+
+export const SIDE_SETTINGS = ['prong-4', 'prong-6', 'bezel'] as const
+export type SideSetting = (typeof SIDE_SETTINGS)[number]
+
 export const FONTS = ['serif', 'sans', 'script'] as const
 export type EngravingFont = (typeof FONTS)[number]
 
@@ -116,6 +123,24 @@ export interface RingSpec {
     customColor: string
     /** For three-stone: side stone size relative to the centre stone. */
     sideRatio: number
+    /** Pavé / channel: how far the stones run down each side of the band, degrees from the top. */
+    coverageDeg: number
+    /** Pavé / eternity: rows across the band, capped by what fits; 0 = auto (two on a wide pavé band). */
+    rows: number
+    meleeCut: MeleeCut
+    /** Three-stone side stones. */
+    side: {
+      shape: StoneShape | 'match'
+      /** Rotation of the right stone, degrees; 0 = long axis along the finger, 90 = across. */
+      rotationDeg: number
+      /** Left stone is the mirror image of the right (pears/hearts point the same way relative to the centre). */
+      mirror: boolean
+      setting: SideSetting
+      /** Metal gap between the centre and each side stone, mm. */
+      gapMm: number
+      /** Side stone girdle height relative to the centre stone's, 0.5 – 1. */
+      height: number
+    }
   }
   engraving: {
     text: string
@@ -149,7 +174,17 @@ export const DEFAULT_SPEC: RingSpec = {
     rotationDeg: 0,
   },
   halo: { enabled: false, stoneMm: 1.2, gem: 'diamond', customColor: '#ffffff' },
-  accents: { style: 'none', stoneMm: 1.3, gem: 'diamond', customColor: '#ffffff', sideRatio: 0.6 },
+  accents: {
+    style: 'none',
+    stoneMm: 1.3,
+    gem: 'diamond',
+    customColor: '#ffffff',
+    sideRatio: 0.6,
+    coverageDeg: 60,
+    rows: 0,
+    meleeCut: 'auto',
+    side: { shape: 'match', rotationDeg: 0, mirror: true, setting: 'prong-4', gapMm: 0.4, height: 0.7 },
+  },
   engraving: { text: '', font: 'script' },
 }
 
@@ -165,6 +200,11 @@ export const LIMITS = {
   haloStoneMm: [0.8, 2],
   accentStoneMm: [0.8, 3],
   sideRatio: [0.3, 1],
+  coverageDeg: [15, 175],
+  rows: [0, 3],
+  sideRotationDeg: [-180, 180],
+  sideGapMm: [0.1, 3],
+  sideHeight: [0.4, 1],
   engravingLength: [0, 40],
 } as const
 
@@ -193,6 +233,8 @@ export function sanitizeSpec(input: unknown): RingSpec {
   const stone = obj(i.stone)
   const halo = obj(i.halo)
   const accents = obj(i.accents)
+  const side = obj(accents.side)
+  const ds = d.accents.side
   const engraving = obj(i.engraving)
   const text = typeof engraving.text === 'string' ? engraving.text : ''
   const name = typeof i.name === 'string' && i.name.trim() ? i.name.trim().slice(0, 60) : d.name
@@ -234,6 +276,18 @@ export function sanitizeSpec(input: unknown): RingSpec {
       gem: pick(accents.gem, GEMS, d.accents.gem),
       customColor: color(accents.customColor, d.accents.customColor),
       sideRatio: clamp(accents.sideRatio, LIMITS.sideRatio, d.accents.sideRatio),
+      coverageDeg: clamp(accents.coverageDeg, LIMITS.coverageDeg, d.accents.coverageDeg),
+      rows: Math.round(clamp(accents.rows, LIMITS.rows, d.accents.rows)),
+      meleeCut: pick(accents.meleeCut, MELEE_CUTS, d.accents.meleeCut),
+      side: {
+        shape: pick(side.shape, [...STONE_SHAPES, 'match' as const], ds.shape),
+        // Angles wrap (190° is −170°) rather than clamp.
+        rotationDeg: typeof side.rotationDeg === 'number' && Number.isFinite(side.rotationDeg) ? ((((side.rotationDeg + 180) % 360) + 360) % 360) - 180 : ds.rotationDeg,
+        mirror: bool(side.mirror, ds.mirror),
+        setting: pick(side.setting, SIDE_SETTINGS, ds.setting),
+        gapMm: clamp(side.gapMm, LIMITS.sideGapMm, ds.gapMm),
+        height: clamp(side.height, LIMITS.sideHeight, ds.height),
+      },
     },
     engraving: {
       text: text.slice(0, LIMITS.engravingLength[1]),

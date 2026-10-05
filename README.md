@@ -11,7 +11,8 @@ runs in the browser, installable as an app (PWA), works offline once loaded.
   profile, width, thickness, comfort fit and shank taper; 13 metals and 6 finishes, two-tone heads;
   10 stone shapes sized by carat weight (and gem density), 13 gems; prong (4/6, round/claw/V tips),
   bezel, half-bezel or tension settings with adjustable height; halo; pavé, channel, three-stone
-  and eternity accents; inside engraving.
+  and eternity accents – pick the side stones' shape, size, orientation (e.g. pears pointing to
+  the centre), setting and spacing, or the melee cut, rows and coverage; inside engraving.
 - **Templates** – start from classic designs, save your own, export/import them as JSON, or share
   a design as a link.
 - **Live try-on** – point the camera at your hand: the ring follows your finger in real time,
