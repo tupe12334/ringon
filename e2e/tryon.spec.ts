@@ -3,6 +3,9 @@ import { expect, test } from '@playwright/test'
 // The fake camera shows the back of a right hand, fingers up (see fake-camera.ts).
 
 test('tracks the ring onto the hand in live video, stone facing out', async ({ page }) => {
+  // Each pose sample waits for a frame, and under software WebGL a frame (hand tracking plus
+  // ray-traced gems) can take seconds on a CI runner.
+  test.slow()
   await page.goto('/')
   await page.getByRole('button', { name: 'Try on my hand' }).click()
   const status = page.getByTestId('tracking-status')
