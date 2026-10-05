@@ -1,4 +1,9 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
+
+/** Options shown as picture tiles are radios inside a radiogroup named after the field. */
+const option = (page: Page, group: string, name: string) =>
+  page.getByRole('radiogroup', { name: group, exact: true }).getByRole('radio', { name, exact: true })
+const pick = (page: Page, group: string, name: string) => option(page, group, name).click()
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/')
@@ -11,12 +16,12 @@ test('customises every section and updates the summary', async ({ page }) => {
   await expect(summary).toContainText('18k yellow gold')
 
   await page.getByRole('tab', { name: 'Metal' }).click()
-  await page.getByLabel('Band metal').selectOption('platinum')
+  await pick(page, 'Band metal', 'Platinum')
   await expect(summary).toContainText('Platinum')
 
   await page.getByRole('tab', { name: 'Stone', exact: true }).click()
   await page.getByRole('radio', { name: 'Oval' }).click()
-  await page.getByLabel('Gem', { exact: true }).selectOption('sapphire')
+  await pick(page, 'Gem', 'Blue sapphire')
   await expect(summary).toContainText('oval blue sapphire')
 
   await page.getByRole('tab', { name: 'Size' }).click()
@@ -34,7 +39,7 @@ test('customises every section and updates the summary', async ({ page }) => {
 
 test('saves a custom template that survives a reload', async ({ page }) => {
   await page.getByRole('tab', { name: 'Metal' }).click()
-  await page.getByLabel('Band metal').selectOption('rose-gold-18k')
+  await pick(page, 'Band metal', '18k rose gold')
   await page.getByRole('tab', { name: 'Templates' }).click()
   await page.getByLabel('Template name').fill('Anniversary')
   await page.getByRole('button', { name: 'Save', exact: true }).click()
@@ -56,7 +61,7 @@ test('opens a shared design link', async ({ page }) => {
 test('the address bar always links to the design on screen', async ({ page, browser }) => {
   await page.getByRole('button', { name: 'Oval halo' }).click()
   await page.getByRole('tab', { name: 'Metal' }).click()
-  await page.getByLabel('Band metal').selectOption('palladium')
+  await pick(page, 'Band metal', 'Palladium')
   const summary = await page.getByTestId('summary').textContent()
   const fresh = await browser.newPage()
   await fresh.goto(page.url())
@@ -67,7 +72,7 @@ test('the address bar always links to the design on screen', async ({ page, brow
 
 test('opening a link keeps the unsaved design as a template', async ({ page }) => {
   await page.getByRole('tab', { name: 'Metal' }).click()
-  await page.getByLabel('Band metal').selectOption('palladium')
+  await pick(page, 'Band metal', 'Palladium')
   const spec = { name: 'Shared', stone: { shape: 'pear' } }
   await page.goto(`/#d=${Buffer.from(JSON.stringify(spec)).toString('base64url')}`)
   await expect(page.getByTestId('summary')).toContainText('pear')
@@ -96,14 +101,14 @@ test('import rejects a file that is not a design', async ({ page }) => {
 test('sets three-stone side stones, their shape and orientation', async ({ page }) => {
   await page.getByRole('tab', { name: 'Side stones' }).click()
   await page.getByRole('radio', { name: 'Three stone' }).click()
-  await page.getByLabel('Side stone shape').selectOption('half-moon')
+  await pick(page, 'Side stone shape', 'Half moon')
   await page.getByRole('button', { name: 'Flat edge to centre' }).click()
   await expect(page.getByLabel('Side stone rotation')).toHaveValue('90')
-  await page.getByLabel('Side stone shape').selectOption('pear')
+  await pick(page, 'Side stone shape', 'Pear')
   await page.getByRole('button', { name: 'Point outward' }).click()
   await expect(page.getByRole('button', { name: 'Point outward' })).toHaveAttribute('aria-pressed', 'true')
   await expect(page.getByLabel('Side stone rotation')).toHaveValue('-90')
-  await page.getByLabel('Side stone gem').selectOption('sapphire')
+  await pick(page, 'Side stone gem', 'Blue sapphire')
   await page.getByRole('radio', { name: 'Bezel' }).click()
   await page.getByLabel('Mirror left stones').click()
   await expect(page.getByLabel('Mirror left stones')).not.toBeChecked()
@@ -118,8 +123,8 @@ test('sets three-stone side stones, their shape and orientation', async ({ page 
   // The design persists across a reload.
   await page.reload()
   await page.getByRole('tab', { name: 'Side stones' }).click()
-  await expect(page.getByLabel('Side stone shape')).toHaveValue('pear')
-  await expect(page.getByLabel('Side stone gem')).toHaveValue('sapphire')
+  await expect(option(page, 'Side stone shape', 'Pear')).toHaveAttribute('aria-checked', 'true')
+  await expect(option(page, 'Side stone gem', 'Blue sapphire')).toHaveAttribute('aria-checked', 'true')
   await expect(page.getByLabel('Mirror left stones')).not.toBeChecked()
   await expect(page.getByRole('radio', { name: 'Bezel' })).toHaveAttribute('aria-checked', 'true')
   await page.getByRole('tab', { name: 'Setting' }).click()
@@ -183,4 +188,53 @@ test('photoreal path tracing: paused on a GPU-less device, still available on re
   await page.getByRole('button', { name: /Photoreal on/ }).click()
   await expect(render).toHaveAttribute('data-mode', 'raster', { timeout: 60_000 })
   await expect(render).toHaveAttribute('data-samples', '0')
+})
+
+test('rotation can be locked in the preview', async ({ page }) => {
+  // The WebGL canvas alone (preserveDrawingBuffer), not the path-traced overlay above it.
+  const canvas = page.getByTestId('preview').locator('canvas').first()
+  await expect(canvas).toBeVisible()
+  const pixels = () => canvas.evaluate((c: HTMLCanvasElement) => c.toDataURL())
+  // Wait until two reads 500 ms apart match: camera fit and damping have settled.
+  const still = async () => {
+    let prev = ''
+    await expect
+      .poll(async () => {
+        const now = await pixels()
+        const same = now === prev
+        prev = now
+        return same
+      }, { intervals: [500], timeout: 30_000 })
+      .toBe(true)
+    return prev
+  }
+  const drag = async () => {
+    const box = (await canvas.boundingBox())!
+    const [x, y] = [box.x + box.width / 2, box.y + box.height / 2]
+    await page.mouse.move(x, y)
+    await page.mouse.down()
+    await page.mouse.move(x + 150, y, { steps: 10 })
+    await page.mouse.up()
+  }
+
+  // Real-time rendering only: path tracing keeps refining the image while the view is still.
+  const photoreal = page.getByRole('button', { name: /Photoreal/ })
+  // Retried: the auto-pause on slow devices can flip it between the read and the click.
+  await expect(async () => {
+    if ((await photoreal.getAttribute('aria-pressed')) === 'true') await photoreal.click()
+    await expect(photoreal).toHaveAttribute('aria-pressed', 'false', { timeout: 2000 })
+  }).toPass({ timeout: 30_000 })
+
+  const lock = page.getByRole('button', { name: 'Lock rotation' })
+  await expect(lock).toHaveAttribute('aria-pressed', 'false')
+  await lock.click()
+  await expect(lock).toHaveAttribute('aria-pressed', 'true')
+  const before = await still()
+  await drag()
+  expect(await still()).toBe(before)
+
+  await lock.click()
+  await expect(lock).toHaveAttribute('aria-pressed', 'false')
+  await drag()
+  await expect.poll(pixels).not.toBe(before)
 })
