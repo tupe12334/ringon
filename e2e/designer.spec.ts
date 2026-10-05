@@ -184,3 +184,19 @@ test('photoreal path tracing: paused on a GPU-less device, still available on re
   await expect(render).toHaveAttribute('data-mode', 'raster', { timeout: 60_000 })
   await expect(render).toHaveAttribute('data-samples', '0')
 })
+
+test('a try-on chunk gone after a redeploy asks to reload instead of a blank page', async ({ page }) => {
+  await page.route(/\/assets\/TryOn-[^/]*\.js$/, (route) => route.fulfill({ status: 404 }))
+  await page.getByRole('button', { name: 'Try on my hand' }).click()
+  await expect(page.getByRole('alert')).toContainText('Ringon was updated')
+  await page.unroute(/\/assets\/TryOn-/)
+  await page.getByRole('button', { name: 'Reload' }).click()
+  await expect(page.locator('.tryon')).toBeVisible()
+  await expect(page.getByRole('alert')).toBeHidden()
+})
+
+test('link previews point at the published card image', async ({ page }) => {
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', /\/og\.png$/)
+  const card = await page.request.get('/og.png')
+  expect(card.ok()).toBe(true)
+})
