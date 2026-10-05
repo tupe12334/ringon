@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { buildRing } from '../ring/geometry'
 import { DEFAULT_SPEC, sanitizeSpec } from '../ring/spec'
 import { BUILTIN_TEMPLATES } from './builtin'
-import { decodeSpec, encodeSpec, parseImport, shareUrl, specFromHash } from './share'
+import { decodeSpec, encodeSpec, isTryOnHash, parseImport, shareUrl, specFromHash, specHash } from './share'
 
 describe('built-in templates', () => {
   it.each(BUILTIN_TEMPLATES.map((t) => [t.name, t]))('%s is valid and builds', (_, t) => {
@@ -20,6 +20,13 @@ describe('sharing', () => {
     const url = shareUrl(spec, 'https://example.com/ringon/')
     expect(specFromHash(new URL(url).hash)).toEqual(spec)
     expect(decodeSpec(encodeSpec(spec))).toEqual(spec)
+  })
+  it('keeps the design in the camera view hash', () => {
+    const hash = specHash(DEFAULT_SPEC, true)
+    expect(isTryOnHash(hash)).toBe(true)
+    expect(isTryOnHash(specHash(DEFAULT_SPEC))).toBe(false)
+    expect(isTryOnHash('#try')).toBe(true)
+    expect(specFromHash(hash)).toEqual(DEFAULT_SPEC)
   })
   it('rejects garbage', () => {
     expect(decodeSpec('!!!')).toBeNull()

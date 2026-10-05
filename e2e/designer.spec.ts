@@ -50,7 +50,18 @@ test('opens a shared design link', async ({ page }) => {
   const spec = { name: 'Shared', band: { metal: 'platinum' }, stone: { shape: 'heart', carat: 2, gem: 'ruby' } }
   await page.goto(`/#d=${Buffer.from(JSON.stringify(spec)).toString('base64url')}`)
   await expect(page.getByTestId('summary')).toContainText('2.00 ct heart ruby · Platinum')
-  await expect(page).not.toHaveURL(/#d=/)
+  await expect(page).toHaveURL(/#d=/)
+})
+
+test('the address bar always links to the design on screen', async ({ page, browser }) => {
+  await page.getByRole('button', { name: 'Oval halo' }).click()
+  await page.getByRole('tab', { name: 'Metal' }).click()
+  await page.getByLabel('Band metal').selectOption('palladium')
+  const summary = await page.getByTestId('summary').textContent()
+  const fresh = await browser.newPage()
+  await fresh.goto(page.url())
+  await expect(fresh.getByTestId('summary')).toHaveText(summary!)
+  await fresh.close()
 })
 
 test('opening a link keeps the unsaved design as a template', async ({ page }) => {

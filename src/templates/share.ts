@@ -1,4 +1,5 @@
-// Designs travel as JSON: in a file, or base64url-encoded in the URL hash (#d=...).
+// Designs travel as JSON: in a file, or base64url-encoded in the URL hash (#d=..., #try&d=... in
+// the camera view). The address bar always carries the design on screen, so it is a share link.
 
 import { sanitizeSpec, type RingSpec } from '../ring/spec'
 
@@ -25,9 +26,13 @@ export function decodeSpec(encoded: string): RingSpec | null {
   }
 }
 
+export const isTryOnHash = (hash = location.hash) => /^#try(&|$)/.test(hash)
+
+export const specHash = (spec: RingSpec, tryOn = false) => `#${tryOn ? 'try&' : ''}d=${encodeSpec(spec)}`
+
 export function shareUrl(spec: RingSpec, base = location.href) {
   const url = new URL(base)
-  url.hash = `d=${encodeSpec(spec)}`
+  url.hash = specHash(spec)
   return url.toString()
 }
 
