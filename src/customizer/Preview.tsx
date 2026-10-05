@@ -9,6 +9,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { WebGLPathTracer } from 'three-gpu-pathtracer'
 import { RingModel, StudioEnvironment, type RenderMode } from '../ring/RingModel'
+import { isPausedForSlowness, isPhotorealOn, markTooSlow, SampleTimer, togglePhotoreal } from './photoreal'
 import type { RingSpec } from '../ring/spec'
 import { useStore } from '../templates/store'
 
@@ -17,7 +18,6 @@ const BACKGROUND = '#f3f1ee'
 const SETTLE_MS = 600
 /** Samples per pixel to stop at: converged enough, then the GPU rests. */
 export const MAX_SAMPLES = 256
-
 /** A path-trace sample slower than this (ms, averaged) makes the page feel frozen. */
 const MAX_SAMPLE_MS = 120
 
@@ -29,19 +29,27 @@ function isSoftwareRenderer(gl: THREE.WebGLRenderer) {
   return /swiftshader|llvmpipe|software|basic render/i.test(name)
 }
 
-/** Frames a throwaway tracer runs before the first real one (see PathTracer). */
+/** Phones and tablets: fewer, cheaper samples to spare battery. */
+const isTouchDevice = () => typeof matchMedia !== 'undefined' && matchMedia('(pointer: coarse)').matches
+
+/** Frames a throwaway tracer runs before the real one (see PathTracer). */
 const WARM_UP_FRAMES = 90
-const warmedScenes = new WeakSet<THREE.Scene>()
+
+function releaseRenderer(renderer: THREE.WebGLRenderer) {
+  renderer.dispose()
+  // dispose() keeps the WebGL context; browsers cap live contexts (~16) and evict the oldest.
+  renderer.forceContextLoss()
+}
 
 /**
- * While `mode` is 'pathtrace', three-gpu-pathtracer accumulates samples into its own canvas laid
- * over the real-time one, in its own animation loop; otherwise the normal real-time render runs.
- * A fresh tracer is built for each still period (the scene is rebuilt anyway).
+ * Path tracing with three-gpu-pathtracer, drawn on its own canvas laid over the real-time one.
+ * While `mode` is 'pathtrace' it accumulates samples (one per animation frame, stopping at the
+ * cap); otherwise, and until the first sample is ready, the normal real-time render shows.
  *
- * Measured quirk: the first tracer that ever processes a scene renders every transmissive
- * surface (all gemstones) almost black, persistently; every tracer after it is correct. So the
- * first time, a throwaway tracer on a tiny offscreen canvas processes the scene for a moment
- * while the real-time view stays up.
+ * Measured quirk: the first tracer that processes a scene renders every transmissive surface
+ * (all gemstones) almost black, persistently; tracers created after it are correct. So once per
+ * Canvas, a throwaway tracer on a tiny offscreen canvas processes the scene first (about a
+ * second, the real-time view stays up); then one tracer is kept for the Canvas's lifetime.
  */
 function PathTracer({
   spec,
@@ -65,85 +73,115 @@ function PathTracer({
   const camera = useThree((s) => s.camera)
   const size = useThree((s) => s.size)
   const dpr = useThree((s) => s.viewport.dpr)
+  // Persist across still periods: the warm-up's progress and the real tracer.
+  const engine = useRef<{
+    warm?: { renderer: THREE.WebGLRenderer; tracer: WebGLPathTracer; frames: number }
+    main?: { renderer: THREE.WebGLRenderer; tracer: WebGLPathTracer }
+  }>({})
+  const showing = useRef(false)
+
+  // Release everything with the Canvas.
+  useEffect(() => {
+    const e = engine.current
+    return () => {
+      for (const part of [e.warm, e.main]) {
+        if (!part) continue
+        part.tracer.dispose()
+        releaseRenderer(part.renderer)
+      }
+      e.warm = e.main = undefined
+    }
+  }, [])
 
   useEffect(() => {
     const canvas = overlay.current
     const out = readout.current
     if (mode !== 'pathtrace' || !canvas) return
-    let frame = 0
-    let disposed = false
-    if (!force && isSoftwareRenderer(gl)) {
+    const software = isSoftwareRenderer(gl)
+    if (software && !force) {
       onTooSlow()
       return
     }
-    // Each sample blocks the page while it renders; on a slow GPU that freezes the UI.
-    const times: number[] = []
-    const sample = (t: WebGLPathTracer) => {
-      const start = performance.now()
-      t.renderSample()
-      times.push(performance.now() - start)
-      if (times.length > 8) times.shift()
-      const slow = !force && times.length === 8 && times.reduce((a, b) => a + b, 0) / 8 > MAX_SAMPLE_MS
-      if (slow) onTooSlow()
-      return slow
-    }
-    const cleanups: (() => void)[] = []
-    const makeTracer = (target: HTMLCanvasElement) => {
+    const touch = isTouchDevice()
+    const maxSamples = touch ? MAX_SAMPLES / 2 : MAX_SAMPLES
+    const e = engine.current
+    const timer = new SampleTimer(MAX_SAMPLE_MS)
+    let frame = 0
+
+    const makeRenderer = (target: HTMLCanvasElement) => {
       const renderer = new THREE.WebGLRenderer({ canvas: target, preserveDrawingBuffer: true })
       renderer.toneMapping = gl.toneMapping
       renderer.outputColorSpace = gl.outputColorSpace
-      const tracer = new WebGLPathTracer(renderer)
-      tracer.setScene(scene, camera)
-      cleanups.push(() => {
-        tracer.dispose()
-        renderer.dispose()
-      })
-      return tracer
+      return renderer
+    }
+    // Each sample blocks the page while it renders; on a slow GPU that freezes the UI.
+    const sample = (tracer: WebGLPathTracer) => {
+      const start = performance.now()
+      tracer.renderSample()
+      const slow = !force && timer.record(performance.now() - start)
+      if (slow) onTooSlow()
+      return slow
     }
 
     const trace = () => {
-      // oxlint-disable-next-line react/immutability -- sizing the DOM canvas we draw into
-      canvas.width = Math.round(size.width * dpr)
-      canvas.height = Math.round(size.height * dpr)
-      const tracer = makeTracer(canvas)
+      if (!e.main) {
+        const renderer = makeRenderer(canvas)
+        e.main = { renderer, tracer: new WebGLPathTracer(renderer) }
+      }
+      const { renderer, tracer } = e.main
+      // Cheaper pixels where battery or a CPU renderer would suffer; the tracer upscales.
+      tracer.renderScale = software ? 0.35 : touch ? 0.6 : 1
+      renderer.setPixelRatio(dpr)
+      renderer.setSize(size.width, size.height, false)
+      tracer.setScene(scene, camera)
+      tracer.updateCamera()
+      timer.reset()
       const loop = () => {
-        if (tracer.samples < MAX_SAMPLES && sample(tracer)) return
-        canvas.style.visibility = tracer.samples >= 1 ? 'visible' : 'hidden'
-        if (out) out.dataset.samples = String(Math.floor(tracer.samples))
-        frame = requestAnimationFrame(loop)
+        if (sample(tracer)) return
+        const n = Math.floor(tracer.samples)
+        showing.current = n >= 1
+        canvas.style.visibility = showing.current ? 'visible' : 'hidden'
+        if (out) out.dataset.samples = String(n)
+        if (tracer.samples < maxSamples) frame = requestAnimationFrame(loop)
       }
       frame = requestAnimationFrame(loop)
     }
 
-    if (warmedScenes.has(scene)) trace()
+    if (e.main) trace()
     else {
-      const warm = makeTracer(Object.assign(document.createElement('canvas'), { width: 16, height: 16 }))
-      let n = 0
+      if (!e.warm) {
+        const renderer = makeRenderer(Object.assign(document.createElement('canvas'), { width: 16, height: 16 }))
+        e.warm = { renderer, tracer: new WebGLPathTracer(renderer), frames: 0 }
+      }
+      const warm = e.warm
+      warm.tracer.setScene(scene, camera)
       const loop = () => {
-        if (disposed) return
-        if (sample(warm)) return
-        if (++n < WARM_UP_FRAMES) frame = requestAnimationFrame(loop)
-        else {
-          warmedScenes.add(scene)
-          trace()
+        if (sample(warm.tracer)) return
+        if (++warm.frames < WARM_UP_FRAMES) {
+          frame = requestAnimationFrame(loop)
+          return
         }
+        warm.tracer.dispose()
+        releaseRenderer(warm.renderer)
+        e.warm = undefined
+        trace()
       }
       frame = requestAnimationFrame(loop)
     }
 
     return () => {
-      disposed = true
       cancelAnimationFrame(frame)
+      showing.current = false
       canvas.style.visibility = 'hidden'
       if (out) out.dataset.samples = '0'
-      cleanups.forEach((c) => c())
     }
   }, [spec, mode, overlay, readout, gl, scene, camera, size, dpr, onTooSlow, force])
 
   useFrame(() => {
     // oxlint-disable-next-line react/immutability -- progress readout on a DOM element
     if (readout.current) readout.current.dataset.mode = mode
-    if (mode !== 'pathtrace') gl.render(scene, camera)
+    // Real time until the path-traced image has its first sample.
+    if (mode !== 'pathtrace' || !showing.current) gl.render(scene, camera)
   }, 1)
   return null
 }
@@ -151,13 +189,11 @@ function PathTracer({
 export function Preview({ spec }: { spec: RingSpec }) {
   const storedPhotoreal = useStore((s) => s.photoreal)
   const setPhotoreal = useStore((s) => s.setPhotoreal)
-  // Turned off for this device because it was too slow, unless the user insisted.
-  const [tooSlow, setTooSlow] = useState(false)
-  const [forced, setForced] = useState(false)
-  const photoreal = storedPhotoreal && (!tooSlow || forced)
-  const onTooSlow = useCallback(() => {
-    if (!forced) setTooSlow(true)
-  }, [forced])
+  // Paused for this device when too slow, unless the user insisted (see photoreal.ts).
+  const [slowness, setSlowness] = useState({ tooSlow: false, forced: false })
+  const state = { stored: storedPhotoreal, ...slowness }
+  const photoreal = isPhotorealOn(state)
+  const onTooSlow = useCallback(() => setSlowness((s) => markTooSlow({ stored: true, ...s })), [])
   const [dragging, setDragging] = useState(false)
   // The spec the view has been still on for SETTLE_MS; any edit or drag drops to real time.
   const [settled, setSettled] = useState<RingSpec | null>(null)
@@ -191,7 +227,7 @@ export function Preview({ spec }: { spec: RingSpec }) {
         ) : (
           <ContactShadows position={[0, floorY, 0]} opacity={0.35} scale={60} blur={2.5} far={20} resolution={256} />
         )}
-        <PathTracer spec={spec} mode={mode} overlay={overlay} readout={readout} onTooSlow={onTooSlow} force={forced} />
+        <PathTracer spec={spec} mode={mode} overlay={overlay} readout={readout} onTooSlow={onTooSlow} force={slowness.forced} />
         <OrbitControls
           makeDefault
           enablePan={false}
@@ -212,14 +248,14 @@ export function Preview({ spec }: { spec: RingSpec }) {
         aria-pressed={photoreal}
         title="Path-traced lighting when the view is still"
         onClick={() => {
-          if (!photoreal) setForced(tooSlow)
-          setPhotoreal(!photoreal)
-          if (photoreal) setForced(false)
+          const next = togglePhotoreal(state)
+          setPhotoreal(next.stored)
+          setSlowness({ tooSlow: next.tooSlow, forced: next.forced })
         }}
       >
         ✦ Photoreal {photoreal ? 'on' : 'off'}
       </button>
-      {tooSlow && !forced && storedPhotoreal && (
+      {isPausedForSlowness(state) && (
         <p className="photoreal-note" role="status">
           Photoreal paused: this device renders it too slowly
         </p>
