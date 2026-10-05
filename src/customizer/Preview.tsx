@@ -202,6 +202,8 @@ export function Preview({ spec }: { spec: RingSpec }) {
   const photoreal = isPhotorealOn(state)
   const onTooSlow = useCallback(() => setSlowness((s) => markTooSlow({ stored: true, ...s })), [])
   const [dragging, setDragging] = useState(false)
+  // Locked: dragging no longer turns the ring (zoom still works), e.g. to scroll past it on a phone.
+  const [locked, setLocked] = useState(false)
   // The spec the view has been still on for SETTLE_MS; any edit or drag drops to real time.
   const [settled, setSettled] = useState<RingSpec | null>(null)
   const readout = useRef<HTMLOutputElement>(null)
@@ -238,6 +240,7 @@ export function Preview({ spec }: { spec: RingSpec }) {
         <OrbitControls
           makeDefault
           enablePan={false}
+          enableRotate={!locked}
           minDistance={15}
           maxDistance={150}
           onStart={() => {
@@ -261,6 +264,9 @@ export function Preview({ spec }: { spec: RingSpec }) {
         }}
       >
         ✦ Photoreal {photoreal ? 'on' : 'off'}
+      </button>
+      <button type="button" className="rotate-lock" aria-pressed={locked} title="Stop the ring turning when you drag" onClick={() => setLocked((v) => !v)}>
+        {locked ? '🔒 Rotation off' : '⟳ Rotation on'}
       </button>
       {isPausedForSlowness(state) && (
         <p className="photoreal-note" role="status">

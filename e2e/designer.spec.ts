@@ -184,3 +184,29 @@ test('photoreal path tracing: paused on a GPU-less device, still available on re
   await expect(render).toHaveAttribute('data-mode', 'raster', { timeout: 60_000 })
   await expect(render).toHaveAttribute('data-samples', '0')
 })
+
+test('rotation can be switched off in the preview', async ({ page }) => {
+  const canvas = page.getByTestId('preview').locator('canvas').first()
+  await expect(canvas).toBeVisible()
+  const drag = async () => {
+    const box = (await canvas.boundingBox())!
+    const [x, y] = [box.x + box.width / 2, box.y + box.height / 2]
+    await page.mouse.move(x, y)
+    await page.mouse.down()
+    await page.mouse.move(x + 150, y, { steps: 10 })
+    await page.mouse.up()
+    await page.waitForTimeout(1500) // let damping settle
+  }
+  const shot = () => canvas.screenshot()
+  await page.waitForTimeout(1500) // let the camera fit settle
+
+  await page.getByRole('button', { name: 'Rotation on' }).click()
+  await expect(page.getByRole('button', { name: 'Rotation off' })).toHaveAttribute('aria-pressed', 'true')
+  const before = await shot()
+  await drag()
+  expect((await shot()).equals(before)).toBe(true)
+
+  await page.getByRole('button', { name: 'Rotation off' }).click()
+  await drag()
+  expect((await shot()).equals(before)).toBe(false)
+})
