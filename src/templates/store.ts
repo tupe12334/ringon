@@ -15,10 +15,13 @@ export interface UserTemplate {
 interface State {
   spec: RingSpec
   sizeSystem: SizeSystem
+  /** Path trace the designer view when it is still (off saves battery). */
+  photoreal: boolean
   templates: UserTemplate[]
   setSpec: (spec: RingSpec) => void
   update: (patch: (draft: RingSpec) => void) => void
   setSizeSystem: (s: SizeSystem) => void
+  setPhotoreal: (on: boolean) => void
   saveTemplate: (name: string) => UserTemplate
   deleteTemplate: (id: string) => void
   renameTemplate: (id: string, name: string) => void
@@ -32,6 +35,7 @@ export const useStore = create<State>()(
     (set, get) => ({
       spec: structuredClone(BUILTIN_TEMPLATES[0] ?? DEFAULT_SPEC),
       sizeSystem: 'us',
+      photoreal: true,
       templates: [],
       setSpec: (spec) => set({ spec: sanitizeSpec(spec) }),
       update: (patch) => {
@@ -40,6 +44,7 @@ export const useStore = create<State>()(
         set({ spec: sanitizeSpec(draft) })
       },
       setSizeSystem: (sizeSystem) => set({ sizeSystem }),
+      setPhotoreal: (photoreal) => set({ photoreal }),
       saveTemplate: (name) => {
         const spec = sanitizeSpec({ ...get().spec, name })
         const t = { id: newId(), spec, savedAt: Date.now() }
@@ -75,9 +80,10 @@ export const useStore = create<State>()(
         const sizeSystem = (['us', 'eu', 'uk', 'jp'] as const).includes(p.sizeSystem as SizeSystem)
           ? (p.sizeSystem as SizeSystem)
           : current.sizeSystem
-        return { ...current, spec: p.spec ? sanitizeSpec(p.spec) : current.spec, templates, sizeSystem }
+        const photoreal = typeof p.photoreal === 'boolean' ? p.photoreal : current.photoreal
+        return { ...current, spec: p.spec ? sanitizeSpec(p.spec) : current.spec, templates, sizeSystem, photoreal }
       },
-      partialize: (s) => ({ spec: s.spec, sizeSystem: s.sizeSystem, templates: s.templates }),
+      partialize: (s) => ({ spec: s.spec, sizeSystem: s.sizeSystem, photoreal: s.photoreal, templates: s.templates }),
     },
   ),
 )

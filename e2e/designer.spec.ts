@@ -162,3 +162,21 @@ test('opens every real-ring example', async ({ page }) => {
   await page.getByRole('tab', { name: 'Band stones' }).click()
   await expect(page.getByLabel('Bezel-set (each stone in its own rim)')).not.toBeChecked()
 })
+
+test('path traces the design once the view is still, and can be turned off', async ({ page }) => {
+  test.setTimeout(240_000)
+  const render = page.getByTestId('render')
+  await expect(render).toHaveAttribute('data-mode', 'pathtrace', { timeout: 30_000 })
+  // Software WebGL in CI is slow; real GPUs reach this in well under a second.
+  await expect.poll(async () => Number(await render.getAttribute('data-samples')), { timeout: 200_000, intervals: [2000] }).toBeGreaterThanOrEqual(1)
+
+  // Editing drops back to real time.
+  await page.getByRole('tab', { name: 'Metal' }).click()
+  await page.getByLabel('Band metal').selectOption('platinum')
+  await expect(render).toHaveAttribute('data-mode', 'raster')
+
+  await page.getByRole('button', { name: /Photoreal/ }).click()
+  await page.waitForTimeout(1500)
+  await expect(render).toHaveAttribute('data-mode', 'raster')
+  await expect(render).toHaveAttribute('data-samples', '0')
+})

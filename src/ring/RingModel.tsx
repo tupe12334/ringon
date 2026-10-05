@@ -1,40 +1,31 @@
 // Renders a RingSpec with physically based metal and gem materials. Units: millimetres.
+//
+// Two render modes share one scene description:
+// - raster: real time, for dragging and the live try-on.
+// - pathtrace: the ring as plain meshes and physical materials, for a progressive path tracer
+//   that simulates real light transport when the view is still.
 
-import { useThree } from '@react-three/fiber'
+import { Environment, MeshRefractionMaterial, useEnvironment } from '@react-three/drei'
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
-import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
-import { METAL_INFO } from './catalog'
-import { gemMaterial, metalMaterial } from './materials'
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
+import { GEM_INFO, METAL_INFO, gemColor } from './catalog'
 import { buildRing, type StonePlacement } from './geometry'
+import { gemMaterial, metalMaterial } from './materials'
 import type { EngravingFont, Metal, RingSpec } from './spec'
 
-/** Neutral studio lighting that needs no network (works offline as a PWA). */
-export function StudioEnvironment({ background = false }: { background?: boolean }) {
-  const { gl, scene } = useThree()
-  useEffect(() => {
-    const pmrem = new THREE.PMREMGenerator(gl)
-    const env = pmrem.fromScene(new RoomEnvironment(), 0.04).texture
-    const prevEnv = scene.environment
-    // oxlint-disable-next-line react/immutability -- the r3f scene is meant to be mutated
-    scene.environment = env
-    if (background) scene.background = new THREE.Color('#f3f1ee')
-    return () => {
-      scene.environment = prevEnv
-      env.dispose()
-      pmrem.dispose()
-    }
-  }, [gl, scene, background])
-  return null
+export type RenderMode = 'raster' | 'pathtrace'
+
+/** Studio HDR shipped with the app (works offline). Lights the scene and fills gem reflections. */
+export const STUDIO_HDR = `${import.meta.env.BASE_URL}env/studio.hdr`
+
+/** Image-based lighting from a real HDR photo of a photo studio, relit as a jewelry light tent. */
+export function StudioEnvironment() {
+  return <Environment files={STUDIO_HDR} />
 }
 
-function Stones({ placement }: { placement: StonePlacement }) {
+function useInstanceMatrices(placement: StonePlacement) {
   const ref = useRef<THREE.InstancedMesh>(null)
-  const material = useMemo(() => {
-    placement.geometry.computeBoundingBox()
-    const size = placement.geometry.boundingBox!.getSize(new THREE.Vector3())
-    return gemMaterial(placement.gem, placement.customColor, Math.max(size.x, size.y))
-  }, [placement])
   useLayoutEffect(() => {
     const mesh = ref.current
     if (!mesh) return
@@ -42,14 +33,67 @@ function Stones({ placement }: { placement: StonePlacement }) {
     mesh.instanceMatrix.needsUpdate = true
     mesh.computeBoundingSphere()
   }, [placement])
-  useEffect(() => () => material.dispose(), [material])
+  return ref
+}
+
+/**
+ * Real-time gems: drei's MeshRefractionMaterial ray-traces each stone's own facets (through a
+ * BVH) for internal reflections, fresnel and dispersion, the way light bounces in a cut stone.
+ */
+function RasterStones({ placement }: { placement: StonePlacement }) {
+  const ref = useInstanceMatrices(placement)
+  const env = useEnvironment({ files: STUDIO_HDR })
+  const info = GEM_INFO[placement.gem]
   return (
-    <instancedMesh
-      ref={ref}
-      args={[placement.geometry, material, placement.matrices.length]}
-      name={`stones-${placement.key}`}
-    />
+    <instancedMesh ref={ref} args={[placement.geometry, undefined, placement.matrices.length]} name={`stones-${placement.key}`}>
+      <MeshRefractionMaterial
+        envMap={env}
+        bounces={3}
+        ior={info.ior}
+        fresnel={1}
+        aberrationStrength={info.dispersion * 0.3}
+        color={gemColor(placement.gem, placement.customColor)}
+        toneMapped={false}
+      />
+    </instancedMesh>
   )
+}
+
+/** Opaque stones (black diamond) are just glossy surfaces. */
+function OpaqueStones({ placement }: { placement: StonePlacement }) {
+  const ref = useInstanceMatrices(placement)
+  const material = useMemo(() => gemMaterial(placement.gem, placement.customColor, 1), [placement])
+  useEffect(() => () => material.dispose(), [material])
+  return <instancedMesh ref={ref} args={[placement.geometry, material, placement.matrices.length]} name={`stones-${placement.key}`} />
+}
+
+/**
+ * Path-traced gems: plain meshes (the path tracer doesn't take instancing) with physical
+ * transmission, so the path tracer computes refraction, total internal reflection and caustics.
+ */
+function PathTracedStones({ placement }: { placement: StonePlacement }) {
+  const geometry = useMemo(() => {
+    const merged = mergeGeometries(placement.matrices.map((m) => placement.geometry.clone().applyMatrix4(m)), false)
+    if (!merged) throw new Error('could not merge stones')
+    return merged
+  }, [placement])
+  const material = useMemo(() => {
+    placement.geometry.computeBoundingBox()
+    const size = placement.geometry.boundingBox!.getSize(new THREE.Vector3())
+    const m = gemMaterial(placement.gem, placement.customColor, Math.max(size.x, size.y))
+    // Rays inside the stone must hit its inner faces to refract back out.
+    m.side = THREE.DoubleSide
+    return m
+  }, [placement])
+  useEffect(() => () => geometry.dispose(), [geometry])
+  useEffect(() => () => material.dispose(), [material])
+  return <mesh geometry={geometry} material={material} name={`stones-${placement.key}`} />
+}
+
+function Stones({ placement, mode }: { placement: StonePlacement; mode: RenderMode }) {
+  if (mode === 'pathtrace') return <PathTracedStones placement={placement} />
+  if (GEM_INFO[placement.gem].opaque) return <OpaqueStones placement={placement} />
+  return <RasterStones placement={placement} />
 }
 
 const FONT_CSS: Record<EngravingFont, string> = {
@@ -101,7 +145,7 @@ function Engraving({ text, font, radius, width, metal }: { text: string; font: E
 }
 
 /** A ring, finger along +Y, stone facing +Z, sized in millimetres. */
-export function RingModel({ spec }: { spec: RingSpec }) {
+export function RingModel({ spec, mode = 'raster' }: { spec: RingSpec; mode?: RenderMode }) {
   const parts = useMemo(() => buildRing(spec), [spec])
   const bandMat = useMemo(() => metalMaterial(spec.band.metal, spec.band.finish), [spec.band.metal, spec.band.finish])
   const headMetal = spec.band.headMetal === 'match' ? spec.band.metal : spec.band.headMetal
@@ -124,7 +168,7 @@ export function RingModel({ spec }: { spec: RingSpec }) {
       <mesh geometry={parts.band} material={bandMat} name="band" />
       {parts.head && <mesh geometry={parts.head} material={headMat} name="head" />}
       {parts.stones.map((s) => (
-        <Stones key={`${s.key}-${s.matrices.length}`} placement={s} />
+        <Stones key={`${s.key}-${s.matrices.length}-${mode}`} placement={s} mode={mode} />
       ))}
       {parts.engraving && (
         <Engraving
