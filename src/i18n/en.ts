@@ -269,6 +269,8 @@ export const en = {
   },
   /** Built-in template names, keyed by their name in the template data. */
   builtin: {
+    /** The default design's name (DEFAULT_SPEC). */
+    'My ring': 'My ring',
     'Classic solitaire': 'Classic solitaire',
     'Oval halo': 'Oval halo',
     'Emerald three stone': 'Emerald three stone',
