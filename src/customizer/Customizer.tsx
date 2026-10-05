@@ -1,6 +1,7 @@
 import { useState, type ComponentType } from 'react'
 import { useStore } from '../templates/store'
 import { TemplatesPanel } from '../templates/TemplatesPanel'
+import { tabIcons } from './icons'
 import { Preview } from './Preview'
 import { summary } from './summary'
 import { AccentsPanel, BandPanel, EngravePanel, MetalPanel, SettingPanel, SidesPanel, SizePanel, StonePanel } from './panels'
@@ -42,7 +43,8 @@ export function Customizer({ onTryOn }: { onTryOn: () => void }) {
       <nav className="tabs" role="tablist" aria-label="Design sections">
         {TABS.map((t) => (
           <button key={t.id} type="button" role="tab" aria-selected={t.id === tab} className={t.id === tab ? 'tab on' : 'tab'} onClick={() => setTab(t.id)}>
-            {t.label}
+            {tabIcons[t.id]}
+            <span>{t.label}</span>
           </button>
         ))}
       </nav>
