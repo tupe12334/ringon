@@ -221,7 +221,7 @@ export function TryOn({ onBack }: { onBack: () => void }) {
       <Canvas
         orthographic
         camera={{ position: [0, 0, 1000], near: 1, far: 3000, zoom: 1 }}
-        gl={{ antialias: true, preserveDrawingBuffer: true }}
+        gl={{ antialias: true, preserveDrawingBuffer: true, toneMapping: THREE.NeutralToneMapping }}
         // The camera image is ~720p: more pixels than this only costs phones battery and frames.
         dpr={[1, 1.5]}
         onCreated={({ gl }) => {
