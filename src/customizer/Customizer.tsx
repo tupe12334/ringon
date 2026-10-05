@@ -41,7 +41,7 @@ export function Customizer({ onTryOn }: { onTryOn: () => void }) {
               <RingModel spec={spec} />
             </group>
           </Bounds>
-          <ContactShadows position={[0, -12, 0]} opacity={0.35} scale={60} blur={2.5} far={20} />
+          <ContactShadows position={[0, -12, 0]} opacity={0.35} scale={60} blur={2.5} far={20} resolution={256} />
           <OrbitControls makeDefault autoRotate autoRotateSpeed={0.6} enablePan={false} minDistance={15} maxDistance={150} />
         </Canvas>
         <p className="summary" data-testid="summary">

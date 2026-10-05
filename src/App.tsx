@@ -1,5 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { Customizer } from './customizer/Customizer'
+import { DEFAULT_SPEC } from './ring/spec'
+import { BUILTIN_TEMPLATES } from './templates/builtin'
 import { specFromHash } from './templates/share'
 import { useStore } from './templates/store'
 
@@ -7,6 +9,14 @@ import { useStore } from './templates/store'
 const TryOn = lazy(() => import('./tryon/TryOn').then((m) => ({ default: m.TryOn })))
 
 type View = 'design' | 'tryon'
+
+/** Opening someone's link replaces the design on screen: keep ours as a template first. */
+function keepUnsavedDesign() {
+  const { spec, templates, addTemplates } = useStore.getState()
+  const same = (a: unknown) => JSON.stringify(a) === JSON.stringify(spec)
+  if (templates.some((t) => same(t.spec)) || BUILTIN_TEMPLATES.some((t) => same(t)) || same(DEFAULT_SPEC)) return
+  addTemplates([{ ...spec, name: `${spec.name} (before opening a link)`.slice(0, 60) }])
+}
 
 export default function App() {
   const [view, setView] = useState<View>(() => (location.hash === '#try' ? 'tryon' : 'design'))
@@ -19,6 +29,7 @@ export default function App() {
     const open = () => {
       const shared = specFromHash()
       if (!shared) return
+      keepUnsavedDesign()
       setSpec(shared)
       setView('design')
       history.replaceState(null, '', location.pathname + location.search)

@@ -25,7 +25,6 @@ test('tracks the ring onto the hand in live video, stone facing out', async ({ p
     )
   }
   await test.info().attach('samples', { body: JSON.stringify(samples, null, 1), contentType: 'application/json' })
-  await page.screenshot({ path: test.info().outputPath('tracking.png') })
   const xs = samples.map((s) => s.x)
   expect(Math.max(...xs) - Math.min(...xs)).toBeGreaterThan(8)
   for (const s of samples) {
@@ -39,6 +38,8 @@ test('tracks the ring onto the hand in live video, stone facing out', async ({ p
   // Flip puts the stone on the palm side.
   await page.getByRole('button', { name: 'Flip side' }).click()
   await expect.poll(async () => Number(await pose.getAttribute('data-stone-z'))).toBeLessThan(-0.3)
+  // Last: in headless Chromium a screen capture can stall the fake camera feed.
+  await page.screenshot({ path: test.info().outputPath('tracking.png') })
 })
 
 test('records a video clip of the try-on', async ({ page }) => {

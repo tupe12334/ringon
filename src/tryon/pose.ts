@@ -52,8 +52,11 @@ export interface View {
 export interface PoseInput {
   image: Lm[]
   world: Lm[]
-  /** MediaPipe handedness label ("Left" / "Right"). */
-  handedness: string
+  /**
+   * Which side of the knuckle plane the palm is on: +1 when (index − wrist) × (pinky − wrist)
+   * points out of the palm, −1 when it points out of the back. See PalmSideVote.
+   */
+  palmSide: 1 | -1
   finger: Finger
   /** 0 = at the knuckle, 1 = at the middle joint. */
   along: number
@@ -92,32 +95,19 @@ export function toScreen(l: Lm, v: View, layout = coverLayout(v)) {
 /** World landmark (metres; x right, y down, z away from camera) → screen-frame direction. */
 const toScreenDir = (l: Lm, mirrored: boolean) => new THREE.Vector3(mirrored ? -l.x : l.x, -l.y, -l.z)
 
-/**
- * Whether the hand *as displayed* looks like a right hand. MediaPipe Tasks (web) labels the
- * hand as it appears in the frame it was given (verified on MediaPipe's own right_hands.jpg
- * test image); showing that frame mirrored swaps it.
- */
-export function appearsRightHanded(label: string, mirrored: boolean) {
-  return (label === 'Right') !== mirrored
-}
-
 export function computePose(input: PoseInput, view: View): RingPose | null {
   const { image, world } = input
   if (image.length < 21 || world.length < 21) return null
   const layout = coverLayout(view)
   const [a, b] = SEGMENT[input.finger]
 
-  const W = world.map((l) => toScreenDir(l, view.mirrored))
+  const W = worldToScreen(world, view.mirrored)
   const axis = new THREE.Vector3().subVectors(W[b], W[a])
   if (axis.lengthSq() < 1e-10) return null
   axis.normalize()
 
   // Back-of-hand normal from the palm triangle (wrist, index base, pinky base).
-  const v5 = new THREE.Vector3().subVectors(W[5], W[0])
-  const v17 = new THREE.Vector3().subVectors(W[17], W[0])
-  const right = appearsRightHanded(input.handedness, view.mirrored)
-  // For a right hand, index×pinky (from the wrist) is the palm normal; the back is opposite.
-  const dorsal = right ? new THREE.Vector3().crossVectors(v17, v5) : new THREE.Vector3().crossVectors(v5, v17)
+  const dorsal = knuckleNormal(W).multiplyScalar(-input.palmSide)
   if (input.flip) dorsal.negate()
   dorsal.addScaledVector(axis, -dorsal.dot(axis))
   if (dorsal.lengthSq() < 1e-12) return null
@@ -145,4 +135,87 @@ export function computePose(input: PoseInput, view: View): RingPose | null {
   const pxPerMm = (spacingPx * FINGER_TO_KNUCKLE_SPACING) / input.innerDiameterMm
 
   return { position, quaternion, pxPerMm, axis, dorsal }
+}
+
+/** World landmarks in the screen frame (mirrored like the image when it is). */
+export function worldToScreen(world: Lm[], mirrored: boolean) {
+  return world.map((l) => toScreenDir(l, mirrored))
+}
+
+/** Unit normal of the knuckle plane: (index base − wrist) × (pinky base − wrist). */
+function knuckleNormal(W: THREE.Vector3[]) {
+  const v5 = new THREE.Vector3().subVectors(W[5], W[0])
+  const v17 = new THREE.Vector3().subVectors(W[17], W[0])
+  return new THREE.Vector3().crossVectors(v5, v17).normalize()
+}
+
+const FINGER_CHAINS: [number, number, number, number][] = [
+  [5, 6, 7, 8],
+  [9, 10, 11, 12],
+  [13, 14, 15, 16],
+  [17, 18, 19, 20],
+]
+
+/**
+ * Evidence for PalmSideVote from one frame, in −1..1: positive when the knuckle-plane normal
+ * points out of the palm. Fingers only bend toward the palm, so the bend of the middle and end
+ * joints shows where the palm is, whatever the hand's left/right label says (MediaPipe's label
+ * proved unreliable on real footage). Near zero for a perfectly flat hand.
+ */
+export function palmSideEvidence(W: THREE.Vector3[]) {
+  const toPalm = new THREE.Vector3()
+  const along = new THREE.Vector3()
+  const seg = new THREE.Vector3()
+  for (const [mcp, pip, dip, tip] of FINGER_CHAINS) {
+    along.subVectors(W[pip], W[mcp]).normalize()
+    for (const [from, to] of [
+      [pip, dip],
+      [dip, tip],
+    ]) {
+      seg.subVectors(W[to], W[from])
+      toPalm.add(seg.addScaledVector(along, -seg.dot(along)))
+    }
+  }
+  const bend = toPalm.length()
+  if (bend < 1e-9) return 0
+  const agreement = knuckleNormal(W).dot(toPalm.divideScalar(bend))
+  // Full weight from ~2 cm of total bend (metres); a nearly flat hand counts for little.
+  return agreement * Math.min(1, bend / 0.02)
+}
+
+/**
+ * Accumulates per-frame evidence of which side the palm is on. A hand can't change sides
+ * mid-shot, so brief mistakes (motion blur, a fist) don't flip the ring; sustained evidence
+ * (the other hand came in) does.
+ */
+export class PalmSideVote {
+  private score = 0
+  private side: 1 | -1 | null = null
+  private readonly limit: number
+
+  constructor(limit = 6) {
+    this.limit = limit
+  }
+
+  /** `evidence` from palmSideEvidence; `fallback` used until there is some (e.g. from the label). */
+  update(evidence: number, fallback: 1 | -1): 1 | -1 {
+    this.score = Math.max(-this.limit, Math.min(this.limit, this.score + evidence))
+    if (this.side === null) {
+      if (Math.abs(this.score) < 0.3) return fallback
+      this.side = this.score > 0 ? 1 : -1
+    } else if (this.side === 1 && this.score < -this.limit / 2) this.side = -1
+    else if (this.side === -1 && this.score > this.limit / 2) this.side = 1
+    return this.side
+  }
+
+  reset() {
+    this.score = 0
+    this.side = null
+  }
+}
+
+/** Palm side implied by MediaPipe's label: a weak fallback for a perfectly flat hand. */
+export function palmSideFromLabel(label: string, mirrored: boolean): 1 | -1 {
+  // For a hand that looks right-handed on screen, the knuckle normal points out of the palm.
+  return (label === 'Right') !== mirrored ? 1 : -1
 }

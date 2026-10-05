@@ -18,6 +18,11 @@ export function useRecorder(canvasRef: RefObject<HTMLCanvasElement | null>) {
   const [seconds, setSeconds] = useState(0)
   const [result, setResult] = useState<Capture | null>(null)
   const rec = useRef<MediaRecorder | null>(null)
+  const mounted = useRef(true)
+  const latest = useRef<Capture | null>(null)
+  useEffect(() => {
+    latest.current = result
+  }, [result])
   const supported = typeof MediaRecorder !== 'undefined' && typeof HTMLCanvasElement.prototype.captureStream === 'function'
 
   const show = useCallback((c: Capture) => {
@@ -31,11 +36,16 @@ export function useRecorder(canvasRef: RefObject<HTMLCanvasElement | null>) {
     const canvas = canvasRef.current
     if (!canvas || !supported) return
     const mimeType = pickMimeType()
-    const r = new MediaRecorder(canvas.captureStream(30), mimeType ? { mimeType, videoBitsPerSecond: 6_000_000 } : undefined)
+    const stream = canvas.captureStream(30)
+    const r = new MediaRecorder(stream, mimeType ? { mimeType, videoBitsPerSecond: 4_000_000 } : undefined)
     const chunks: Blob[] = []
     r.ondataavailable = (e) => e.data.size && chunks.push(e.data)
     r.onstop = () => {
-      const blob = new Blob(chunks, { type: r.mimeType || 'video/webm' })
+      stream.getTracks().forEach((t) => t.stop())
+      if (!mounted.current) return
+      // Drop codec parameters: share targets (notably iOS) match on the plain type.
+      const type = (r.mimeType || 'video/webm').split(';')[0]
+      const blob = new Blob(chunks, { type })
       show({ kind: 'video', blob, url: URL.createObjectURL(blob) })
     }
     r.start(250)
@@ -61,7 +71,14 @@ export function useRecorder(canvasRef: RefObject<HTMLCanvasElement | null>) {
     }
   }, [recording, stop])
 
-  useEffect(() => () => rec.current?.stop(), [])
+  useEffect(() => {
+    mounted.current = true
+    return () => {
+      mounted.current = false
+      rec.current?.stop()
+      if (latest.current) URL.revokeObjectURL(latest.current.url)
+    }
+  }, [])
 
   const snapshot = useCallback(() => {
     canvasRef.current?.toBlob((blob) => blob && show({ kind: 'photo', blob, url: URL.createObjectURL(blob) }), 'image/jpeg', 0.92)
@@ -70,7 +87,7 @@ export function useRecorder(canvasRef: RefObject<HTMLCanvasElement | null>) {
   const share = useCallback(async () => {
     if (!result) return
     const ext = result.kind === 'photo' ? 'jpg' : result.blob.type.includes('mp4') ? 'mp4' : 'webm'
-    const file = new File([result.blob], `ringon-try-on.${ext}`, { type: result.blob.type })
+    const file = new File([result.blob], `ringon-try-on.${ext}`, { type: result.blob.type.split(';')[0] })
     if (navigator.canShare?.({ files: [file] })) {
       try {
         await navigator.share({ files: [file], title: 'My Ringon ring' })

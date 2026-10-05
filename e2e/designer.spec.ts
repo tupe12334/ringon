@@ -53,6 +53,17 @@ test('opens a shared design link', async ({ page }) => {
   await expect(page).not.toHaveURL(/#d=/)
 })
 
+test('opening a link keeps the unsaved design as a template', async ({ page }) => {
+  await page.getByRole('tab', { name: 'Metal' }).click()
+  await page.getByLabel('Band metal').selectOption('palladium')
+  const spec = { name: 'Shared', stone: { shape: 'pear' } }
+  await page.goto(`/#d=${Buffer.from(JSON.stringify(spec)).toString('base64url')}`)
+  await expect(page.getByTestId('summary')).toContainText('pear')
+  await page.getByRole('tab', { name: 'Templates' }).click()
+  await page.getByRole('button', { name: 'Classic solitaire (before opening a link)', exact: true }).click()
+  await expect(page.getByTestId('summary')).toContainText('Palladium')
+})
+
 test('share button copies a link that reopens the design', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write'])
   await page.evaluate(() => Object.defineProperty(navigator, 'share', { value: undefined }))

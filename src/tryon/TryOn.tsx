@@ -7,7 +7,7 @@ import * as THREE from 'three'
 import { RingModel, StudioEnvironment } from '../ring/RingModel'
 import type { RingSpec } from '../ring/spec'
 import { useStore } from '../templates/store'
-import { computePose, coverLayout, FINGERS, type Finger, type RingPose, type View } from './pose'
+import { computePose, coverLayout, FINGERS, PalmSideVote, palmSideEvidence, palmSideFromLabel, worldToScreen, type Finger, type RingPose, type View } from './pose'
 import { useRecorder } from './recorder'
 import { PoseSmoother } from './smoothing'
 import { loadHandLandmarker } from './tracker'
@@ -53,10 +53,14 @@ function TrackedRing({ spec, video, landmarker, mirrored, finger, flip, fit, onS
   const group = useRef<THREE.Group>(null)
   const size = useThree((s) => s.size)
   const smoother = useMemo(() => new PoseSmoother(), [])
+  const hand = useMemo(() => new PalmSideVote(), [])
   const last = useRef({ time: -1, seen: 0, status: '' as Status | '' })
   const innerR = spec.innerDiameterMm / 2
 
-  useEffect(() => smoother.reset(), [finger, flip, mirrored, smoother])
+  useEffect(() => {
+    smoother.reset()
+    hand.reset()
+  }, [finger, flip, mirrored, smoother, hand])
 
   useFrame(() => {
     const g = group.current
@@ -70,21 +74,14 @@ function TrackedRing({ spec, video, landmarker, mirrored, finger, flip, fit, onS
       return // a dropped frame (e.g. the camera is switching); try the next one
     }
     const view: View = { videoWidth: video.videoWidth, videoHeight: video.videoHeight, width: size.width, height: size.height, mirrored }
-    const pose =
-      result.landmarks[0] && result.worldLandmarks[0]
-        ? computePose(
-            {
-              image: result.landmarks[0],
-              world: result.worldLandmarks[0],
-              handedness: result.handedness[0]?.[0]?.categoryName ?? 'Right',
-              finger,
-              along: finger === 'thumb' ? 0.5 : 0.4,
-              flip,
-              innerDiameterMm: spec.innerDiameterMm,
-            },
-            view,
-          )
-        : null
+    const image = result.landmarks[0]
+    const world = result.worldLandmarks[0]
+    let pose: RingPose | null = null
+    if (image && world) {
+      const label = result.handedness[0]?.[0]?.categoryName ?? 'Right'
+      const palmSide = hand.update(palmSideEvidence(worldToScreen(world, mirrored)), palmSideFromLabel(label, mirrored))
+      pose = computePose({ image, world, palmSide, finger, along: finger === 'thumb' ? 0.5 : 0.4, flip, innerDiameterMm: spec.innerDiameterMm }, view)
+    }
 
     let status: Status
     if (pose) {
@@ -101,6 +98,8 @@ function TrackedRing({ spec, video, landmarker, mirrored, finger, flip, fit, onS
       if (now - last.current.seen > 250) {
         g.visible = false
         smoother.reset()
+        // Out of view for a while: it may be the other hand that comes back.
+        if (now - last.current.seen > 1000) hand.reset()
         onPose(null)
       }
       status = 'searching'
@@ -207,8 +206,12 @@ export function TryOn({ onBack }: { onBack: () => void }) {
         orthographic
         camera={{ position: [0, 0, 1000], near: 1, far: 3000, zoom: 1 }}
         gl={{ antialias: true, preserveDrawingBuffer: true }}
-        dpr={[1, 2]}
-        onCreated={({ gl }) => (canvasRef.current = gl.domElement)}
+        // The camera image is ~720p: more pixels than this only costs phones battery and frames.
+        dpr={[1, 1.5]}
+        onCreated={({ gl }) => {
+          canvasRef.current = gl.domElement
+          gl.transmissionResolutionScale = 0.5
+        }}
       >
         <StudioEnvironment />
         {video && <VideoBackdrop video={video} mirrored={mirrored} />}

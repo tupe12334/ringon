@@ -64,16 +64,20 @@ function Engraving({ text, font, radius, width, metal }: { text: string; font: E
     canvas.width = 2048
     canvas.height = 128
     const ctx = canvas.getContext('2d')!
+    // Used as an alphaMap, which three.js reads from the green channel: white = engraved.
+    ctx.fillStyle = '#000'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
     ctx.font = FONT_CSS[font]
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
-    ctx.fillStyle = '#000'
+    ctx.fillStyle = '#fff'
     // Text sits on the inside top of the band (u = 0.5 of the cylinder faces +Z after rotation).
     ctx.fillText(text, canvas.width / 2, canvas.height / 2)
     const tex = new THREE.CanvasTexture(canvas)
     tex.colorSpace = THREE.SRGBColorSpace
-    tex.wrapS = THREE.RepeatWrapping
-    tex.repeat.x = -1 // seen from inside the ring
+    // Seen from inside the ring, through its front opening: turn the text the right way up.
+    tex.wrapT = THREE.RepeatWrapping
+    tex.repeat.y = -1
     tex.anisotropy = 8
     return tex
   }, [text, font])

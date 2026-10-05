@@ -71,6 +71,7 @@ export function TemplatesPanel() {
             const file = e.target.files?.[0]
             e.target.value = ''
             if (!file) return
+            if (file.size > 1_000_000) return setMessage('That file is too large to be a Ringon design')
             try {
               const specs = parseImport(await file.text())
               addTemplates(specs)

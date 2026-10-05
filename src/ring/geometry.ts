@@ -517,7 +517,8 @@ export function buildRing(spec: RingSpec): RingParts {
     band,
     head: parts.length ? merge(parts) : null,
     stones,
-    engraving: spec.engraving.text.trim() ? { radius: innerR - 0.01, width: spec.band.widthMm * 0.7 } : null,
+    // Narrow enough to stay on the flat middle of a comfort-fit (domed) inside.
+    engraving: spec.engraving.text.trim() ? { radius: innerR - 0.01, width: spec.band.widthMm * 0.5 } : null,
     extent,
   }
 }
