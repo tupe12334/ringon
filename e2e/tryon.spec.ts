@@ -3,13 +3,16 @@ import { expect, test } from '@playwright/test'
 // The fake camera shows the back of a right hand, fingers up (see fake-camera.ts).
 
 test('tracks the ring onto the hand in live video, stone facing out', async ({ page }) => {
+  // CPU-only CI runners vary several-fold in speed: camera start, model load and 16 pose samples
+  // on CPU WebGL can outlast the default 90 s on a slow one (same commit passed and failed).
+  test.slow()
   await page.goto('/')
   await page.getByRole('button', { name: 'Try on my hand' }).click()
   const status = page.getByTestId('tracking-status')
-  await expect(status).toHaveAttribute('data-status', 'tracking', { timeout: 60_000 })
+  await expect(status).toHaveAttribute('data-status', 'tracking', { timeout: 120_000 })
 
   const pose = page.getByTestId('pose')
-  await expect(pose).toHaveAttribute('data-visible', 'true')
+  await expect(pose).toHaveAttribute('data-visible', 'true', { timeout: 30_000 })
 
   // Sample the pose while the hand moves: the ring must follow it.
   const samples: { x: number; y: number; stoneZ: number; pxPerMm: number }[] = []
