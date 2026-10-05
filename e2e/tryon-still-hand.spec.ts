@@ -1,5 +1,8 @@
 import { expect, test, type Page } from '@playwright/test'
 
+// Live tracking + rendering on CI's CPU-only WebGL runs ~2x slower than locally.
+test.describe.configure({ timeout: 180_000 })
+
 // A motionless back-of-hand feed, so two page loads see the same frame and the same ring pose.
 
 /** Mean brightness (0–255) of the skin just below the ring, where its shadow falls. */
