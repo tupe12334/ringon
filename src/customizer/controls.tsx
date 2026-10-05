@@ -1,12 +1,15 @@
 // Small form controls built on native inputs.
 
-import { useId, type ReactNode } from 'react'
+import { type ReactNode } from 'react'
 
-export function Field({ label, children, hint }: { label: string; children: ReactNode; hint?: string }) {
+export function Field({ label, children, hint, icon }: { label: string; children: ReactNode; hint?: string; icon?: ReactNode }) {
   return (
     <div className="field">
       <div className="field-label">
-        <span>{label}</span>
+        <span className="field-name">
+          {icon}
+          {label}
+        </span>
         {hint && <span className="field-hint">{hint}</span>}
       </div>
       {children}
@@ -20,6 +23,7 @@ export function Slider({
   min,
   max,
   step,
+  icon,
   format = (v) => v.toFixed(1),
   onChange,
 }: {
@@ -28,11 +32,12 @@ export function Slider({
   min: number
   max: number
   step: number
+  icon?: ReactNode
   format?: (v: number) => string
   onChange: (v: number) => void
 }) {
   return (
-    <Field label={label} hint={format(value)}>
+    <Field label={label} hint={format(value)} icon={icon}>
       <input
         type="range"
         aria-label={label}
@@ -46,23 +51,28 @@ export function Slider({
   )
 }
 
-/** A row of toggle chips; good for ≤ 8 options on a phone. */
+/** A row of toggle chips. With `icons` each option becomes a picture tile, so long lists
+ * (metals, gems, shapes) read as a swatch grid instead of a dropdown. */
 export function Chips<T extends string>({
   label,
   value,
   options,
   labels,
+  icons,
+  icon,
   onChange,
 }: {
   label: string
   value: T
   options: readonly T[]
   labels?: Partial<Record<T, string>>
+  icons?: Partial<Record<T, ReactNode>>
+  icon?: ReactNode
   onChange: (v: T) => void
 }) {
   return (
-    <Field label={label}>
-      <div className="chips" role="radiogroup" aria-label={label}>
+    <Field label={label} icon={icon}>
+      <div className={icons ? 'chips tiles' : 'chips'} role="radiogroup" aria-label={label}>
         {options.map((o) => (
           <button
             key={o}
@@ -72,7 +82,8 @@ export function Chips<T extends string>({
             className={o === value ? 'chip on' : 'chip'}
             onClick={() => onChange(o)}
           >
-            {labels?.[o] ?? o}
+            {icons?.[o]}
+            <span>{labels?.[o] ?? o}</span>
           </button>
         ))}
       </div>
@@ -80,37 +91,11 @@ export function Chips<T extends string>({
   )
 }
 
-export function Select<T extends string>({
-  label,
-  value,
-  options,
-  labels,
-  onChange,
-}: {
-  label: string
-  value: T
-  options: readonly T[]
-  labels?: Partial<Record<T, string>>
-  onChange: (v: T) => void
-}) {
-  const id = useId()
-  return (
-    <Field label={label}>
-      <select id={id} aria-label={label} value={value} onChange={(e) => onChange(e.target.value as T)}>
-        {options.map((o) => (
-          <option key={o} value={o}>
-            {labels?.[o] ?? o}
-          </option>
-        ))}
-      </select>
-    </Field>
-  )
-}
-
-export function Toggle({ label, value, onChange }: { label: string; value: boolean; onChange: (v: boolean) => void }) {
+export function Toggle({ label, value, icon, onChange }: { label: string; value: boolean; icon?: ReactNode; onChange: (v: boolean) => void }) {
   return (
     <label className="toggle">
       <input type="checkbox" checked={value} onChange={(e) => onChange(e.target.checked)} />
+      {icon}
       <span>{label}</span>
     </label>
   )

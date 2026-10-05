@@ -20,6 +20,11 @@ export interface TrackedHand {
 
 type Status = 'loading' | 'searching' | 'tracking' | 'error'
 type Facing = 'environment' | 'user'
+/** Which hand wears the ring; 'auto' reads it from the finger bend. */
+type Hand = 'auto' | 'Left' | 'Right'
+
+const HANDS: Hand[] = ['auto', 'Left', 'Right']
+const HAND_LABEL: Record<Hand, string> = { auto: 'Auto', Left: 'Left hand', Right: 'Right hand' }
 
 const FINGER_LABEL: Record<Finger, string> = { thumb: 'Thumb', index: 'Index', middle: 'Middle', ring: 'Ring', pinky: 'Pinky' }
 
@@ -53,6 +58,7 @@ interface TrackedRingProps {
   landmarker: HandTracker
   mirrored: boolean
   finger: Finger
+  hand: Hand
   flip: boolean
   fit: number
   onStatus: (s: Status) => void
@@ -60,18 +66,18 @@ interface TrackedRingProps {
   onPose: (p: RingPose | null, hand?: TrackedHand) => void
 }
 
-function TrackedRing({ spec, video, landmarker, mirrored, finger, flip, fit, onStatus, onPose }: TrackedRingProps) {
+function TrackedRing({ spec, video, landmarker, mirrored, finger, hand, flip, fit, onStatus, onPose }: TrackedRingProps) {
   const group = useRef<THREE.Group>(null)
   const size = useThree((s) => s.size)
   const smoother = useMemo(() => new PoseSmoother(), [])
-  const hand = useMemo(() => new PalmSideVote(), [])
+  const vote = useMemo(() => new PalmSideVote(), [])
   const last = useRef({ time: -1, seen: 0, status: '' as Status | '' })
   const innerR = spec.innerDiameterMm / 2
 
   useEffect(() => {
     smoother.reset()
-    hand.reset()
-  }, [finger, flip, mirrored, smoother, hand])
+    vote.reset()
+  }, [finger, hand, flip, mirrored, smoother, vote])
 
   useFrame(() => {
     const g = group.current
@@ -90,7 +96,9 @@ function TrackedRing({ spec, video, landmarker, mirrored, finger, flip, fit, onS
     let pose: RingPose | null = null
     if (image && world) {
       const label = result.handedness[0]?.[0]?.categoryName ?? 'Right'
-      const palmSide = hand.update(palmSideEvidence(worldToScreen(world, mirrored)), palmSideFromLabel(label, mirrored))
+      // A hand the user named settles it; otherwise vote on the finger bend.
+      const palmSide =
+        hand === 'auto' ? vote.update(palmSideEvidence(worldToScreen(world, mirrored)), palmSideFromLabel(label, mirrored)) : palmSideFromLabel(hand, mirrored)
       // Real rings sit ~0.6 of the way from the knuckle to the middle joint (e2e/fixtures/photos).
       pose = computePose({ image, world, palmSide, finger, along: finger === 'thumb' ? 0.5 : 0.6, flip, innerDiameterMm: spec.innerDiameterMm }, view)
     }
@@ -111,7 +119,7 @@ function TrackedRing({ spec, video, landmarker, mirrored, finger, flip, fit, onS
         g.visible = false
         smoother.reset()
         // Out of view for a while: it may be the other hand that comes back.
-        if (now - last.current.seen > 1000) hand.reset()
+        if (now - last.current.seen > 1000) vote.reset()
         onPose(null)
       }
       status = 'searching'
@@ -178,6 +186,7 @@ export function TryOn({ onBack }: { onBack: () => void }) {
   const spec = useStore((s) => s.spec)
   const [facing, setFacing] = useState<Facing>('environment')
   const [finger, setFinger] = useState<Finger>('ring')
+  const [hand, setHand] = useState<Hand>('auto')
   const [flip, setFlip] = useState(false)
   const [fit, setFit] = useState(1)
   const [status, setStatus] = useState<Status>('loading')
@@ -232,7 +241,7 @@ export function TryOn({ onBack }: { onBack: () => void }) {
         <StudioEnvironment />
         {video && <VideoBackdrop video={video} mirrored={mirrored} />}
         {video && landmarker && (
-          <TrackedRing spec={spec} video={video} landmarker={landmarker} mirrored={mirrored} finger={finger} flip={flip} fit={fit} onStatus={setStatus} onPose={onPose} />
+          <TrackedRing spec={spec} video={video} landmarker={landmarker} mirrored={mirrored} finger={finger} hand={hand} flip={flip} fit={fit} onStatus={setStatus} onPose={onPose} />
         )}
       </Canvas>
 
@@ -253,6 +262,13 @@ export function TryOn({ onBack }: { onBack: () => void }) {
       </div>
 
       <div className="tryon-bottom">
+        <div className="chips" role="radiogroup" aria-label="Hand">
+          {HANDS.map((h) => (
+            <button key={h} type="button" role="radio" aria-checked={h === hand} className={h === hand ? 'chip on' : 'chip'} onClick={() => setHand(h)}>
+              {HAND_LABEL[h]}
+            </button>
+          ))}
+        </div>
         <div className="chips" role="radiogroup" aria-label="Finger">
           {FINGERS.map((f) => (
             <button key={f} type="button" role="radio" aria-checked={f === finger} className={f === finger ? 'chip on' : 'chip'} onClick={() => setFinger(f)}>
