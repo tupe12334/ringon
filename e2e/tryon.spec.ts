@@ -73,3 +73,19 @@ test('keeps the stone on the back of the hand with the mirrored front camera', a
   const pose = page.getByTestId('pose')
   await expect.poll(async () => Number(await pose.getAttribute('data-stone-z')), { timeout: 10_000 }).toBeGreaterThan(0.3)
 })
+
+test('the chosen hand decides the palm side', async ({ page }) => {
+  await page.goto('/#try')
+  await expect(page.getByTestId('tracking-status')).toHaveAttribute('data-status', 'tracking', { timeout: 60_000 })
+  const pose = page.getByTestId('pose')
+  const stoneZ = async () => Number(await pose.getAttribute('data-stone-z'))
+  // The fixture is a right hand: naming it keeps the stone on the back of the hand.
+  await page.getByRole('radio', { name: 'Right hand' }).click()
+  await expect(page.getByRole('radio', { name: 'Right hand' })).toHaveAttribute('aria-checked', 'true')
+  await expect.poll(stoneZ, { timeout: 10_000 }).toBeGreaterThan(0.3)
+  // Calling it a left hand is taken at its word: the stone goes to what is then the back.
+  await page.getByRole('radio', { name: 'Left hand' }).click()
+  await expect.poll(stoneZ, { timeout: 10_000 }).toBeLessThan(-0.3)
+  await page.getByRole('radio', { name: 'Auto' }).click()
+  await expect.poll(stoneZ, { timeout: 10_000 }).toBeGreaterThan(0.3)
+})
