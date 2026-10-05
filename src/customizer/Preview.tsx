@@ -267,8 +267,8 @@ export function Preview({ spec }: { spec: RingSpec }) {
       >
         {photoreal ? t('preview.photorealOn') : t('preview.photorealOff')}
       </button>
-      <button type="button" className="rotate-lock" aria-pressed={locked} title="Stop the ring turning when you drag it" onClick={() => setLocked((v) => !v)}>
-        🔒 Lock rotation
+      <button type="button" className="rotate-lock" aria-pressed={locked} title={t('preview.lockTitle')} onClick={() => setLocked((v) => !v)}>
+        {t('preview.lockRotation')}
       </button>
       {isPausedForSlowness(state) && (
         <p className="photoreal-note" role="status">

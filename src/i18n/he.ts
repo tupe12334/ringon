@@ -314,6 +314,8 @@ export const he: Translation & { templates: { imported_two: string } } = {
     photorealOn: '✦ פוטוריאליסטי: פועל',
     photorealOff: '✦ פוטוריאליסטי: כבוי',
     paused: 'התצוגה הפוטוריאליסטית הושהתה: המכשיר הזה איטי מדי',
+    lockRotation: '🔒 נעילת סיבוב',
+    lockTitle: 'הטבעת לא תסתובב כשגוררים אותה',
   },
   tryon: {
     back: 'חזרה לעיצוב',

@@ -314,6 +314,8 @@ export const en = {
     photorealOn: '✦ Photoreal on',
     photorealOff: '✦ Photoreal off',
     paused: 'Photoreal paused: this device renders it too slowly',
+    lockRotation: '🔒 Lock rotation',
+    lockTitle: 'Stop the ring turning when you drag it',
   },
   tryon: {
     back: 'Back to designer',
