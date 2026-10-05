@@ -28,6 +28,61 @@
  "hk-mtr-visitor-hand-metal-ring-february-.jpg": {
   "facing": "back"
  },
+ "holdout-asexual-ring.jpg": {
+  "finger": "middle",
+  "ringCentre": [
+   285,
+   286
+  ],
+  "fingerWidthPx": 59.3,
+  "facing": "back",
+  "flatFinger": true,
+  "holdout": true
+ },
+ "holdout-hand-fingers-back.jpg": {
+  "ringCentre": [
+   175,
+   305
+  ],
+  "fingerWidthPx": 46.0,
+  "facing": "back",
+  "flatFinger": true,
+  "holdout": true
+ },
+ "holdout-hand-photo.jpg": {
+  "fingerWidthPx": 91.2,
+  "facing": "back",
+  "flatFinger": true,
+  "holdout": true
+ },
+ "holdout-onycholysis-right.jpg": {
+  "fingerWidthPx": 89.6,
+  "facing": "back",
+  "flatFinger": true,
+  "holdout": true
+ },
+ "holdout-palm-five-rings-1.jpg": {
+  "facing": "back",
+  "holdout": true
+ },
+ "holdout-palm-five-rings-2.jpg": {
+  "facing": "back",
+  "holdout": true
+ },
+ "holdout-silicone-band.jpg": {
+  "ringCentre": [
+   298,
+   275
+  ],
+  "fingerWidthPx": 49.8,
+  "facing": "back",
+  "flatFinger": true,
+  "holdout": true
+ },
+ "holdout-steering-wheel-ring.jpg": {
+  "facing": "back",
+  "holdout": true
+ },
  "human-hands-back.jpg": {
   "fingerWidthPx": 66,
   "facing": "back",

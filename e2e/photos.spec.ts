@@ -35,7 +35,11 @@ test('tracks the ring onto real photos of hands', async ({ page }) => {
         return { width: img.naturalWidth, height: img.naturalHeight }
       }, src)
       await page.setViewportSize(size)
-      await expect(page.getByTestId('pose')).toHaveAttribute('data-visible', 'true', { timeout: 40_000 })
+      const found = await expect(page.getByTestId('pose'))
+        .toHaveAttribute('data-visible', 'true', { timeout: 40_000 })
+        .then(() => true, () => false)
+      expect.soft(found, `${photo}: hand found`).toBe(true)
+      if (!found) return
       await page.waitForTimeout(1500) // let the smoothing settle
 
       const pose = await page.getByTestId('pose').evaluate((el) => ({ ...el.dataset, hand: (el as unknown as { hand: { image: []; world: []; view: unknown } }).hand }))

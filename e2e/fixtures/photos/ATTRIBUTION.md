@@ -17,3 +17,14 @@ draws the ring. Downscaled to 800 px. Source: Wikimedia Commons.
 - `ring-finger-w.jpg`: [Ring finger W.jpg](https://commons.wikimedia.org/wiki/File:Ring_finger_W.jpg), Pogrebnoj-Alexandroff, CC BY-SA 3.0.
 - `bride-s-hand-on-groom-shoulder-unsplash.jpg`: [Bride's hand on groom shoulder (Unsplash).jpg](https://commons.wikimedia.org/wiki/File:Bride%27s_hand_on_groom_shoulder_(Unsplash).jpg), Scott Webb scottwebb, CC0.
 - `signet-and-wedding-rings.jpg`: [Signet and Wedding rings.jpg](https://commons.wikimedia.org/wiki/File:Signet_and_Wedding_rings.jpg), Timothy Titus, CC BY-SA 4.0.
+
+Held out (`holdout` in truth.json): added after the pose constants were calibrated, to check they generalise.
+
+- `holdout-hand-fingers-back.jpg`: [Hand, fingers - back.jpg](https://commons.wikimedia.org/wiki/File:Hand,_fingers_-_back.jpg), Genusfotografen (Tomas Gunnarsson) / Wikimedia, CC BY-SA 4.0.
+- `holdout-hand-photo.jpg`: [HandPhoto.jpg](https://commons.wikimedia.org/wiki/File:HandPhoto.jpg), Smitty121981, CC BY-SA 4.0.
+- `holdout-onycholysis-right.jpg`: [Onycholysis right hand 34yo male ring and little fingers non-fungal.jpg](https://commons.wikimedia.org/wiki/File:Onycholysis_right_hand_34yo_male_ring_and_little_fingers_non-fungal.jpg), CopperKettle, CC BY-SA 3.0.
+- `holdout-palm-five-rings-1.jpg`: [Palm with five rings 01.jpg](https://commons.wikimedia.org/wiki/File:Palm_with_five_rings_01.jpg), Chenspec, CC BY-SA 4.0.
+- `holdout-palm-five-rings-2.jpg`: [Palm with five rings 02.jpg](https://commons.wikimedia.org/wiki/File:Palm_with_five_rings_02.jpg), Chenspec, CC BY-SA 4.0.
+- `holdout-steering-wheel-ring.jpg`: [Woman hand steering wheel (Unsplash).jpg](https://commons.wikimedia.org/wiki/File:Woman_hand_steering_wheel_(Unsplash).jpg), Daniela Cuevas danielacuevas, CC0.
+- `holdout-asexual-ring.jpg`: [Asexual ring worn.jpg](https://commons.wikimedia.org/wiki/File:Asexual_ring_worn.jpg), Saphir1401, CC0.
+- `holdout-silicone-band.jpg`: [SiliconeBand.jpg](https://commons.wikimedia.org/wiki/File:SiliconeBand.jpg), עמית לונן, CC0.

@@ -6,7 +6,7 @@
 import { describe, expect, it } from 'vitest'
 import landmarks from '../../e2e/fixtures/photos/landmarks.json'
 import truth from '../../e2e/fixtures/photos/truth.json'
-import { computePose, PalmSideVote, palmSideEvidence, worldToScreen, type Lm, type View } from './pose'
+import { computePose, PalmSideVote, palmSideEvidence, worldToScreen, type Finger, type Lm, type View } from './pose'
 
 interface Truth {
   /** Centre of the real ring worn on this finger, image px. */
@@ -16,6 +16,10 @@ interface Truth {
   facing?: 'back' | 'palm'
   /** The finger lies flat to the camera: a ring on it shows as a band, not a loop. */
   flatFinger?: boolean
+  /** Finger the real ring is on, when not the ring finger. */
+  finger?: Finger
+  /** Added after the pose constants were calibrated on the other photos. */
+  holdout?: boolean
 }
 
 const INNER_DIAMETER_MM = 17
@@ -23,16 +27,20 @@ const toLm = (a: number[][]): Lm[] => a.map(([x, y, z]) => ({ x, y, z }))
 
 const cases = Object.entries(landmarks as Record<string, { view: View; image: number[][]; world: number[][] }>).map(([photo, hand]) => {
   const world = toLm(hand.world)
+  const t = (truth as unknown as Record<string, Truth>)[photo] ?? {}
   const palmSide = new PalmSideVote().update(palmSideEvidence(worldToScreen(world, false)), 1)
-  const pose = computePose({ image: toLm(hand.image), world, palmSide, finger: 'ring', along: 0.6, flip: false, innerDiameterMm: INNER_DIAMETER_MM }, hand.view)!
+  const pose = computePose({ image: toLm(hand.image), world, palmSide, finger: t.finger ?? 'ring', along: 0.6, flip: false, innerDiameterMm: INNER_DIAMETER_MM }, hand.view)!
   const { width, height } = hand.view
   // Screen frame (centre origin, y up) → image px.
   const centre: [number, number] = [pose.position.x + width / 2, height / 2 - pose.position.y]
-  return { photo, pose, centre, fingerPx: pose.pxPerMm * INNER_DIAMETER_MM, truth: (truth as unknown as Record<string, Truth>)[photo] ?? {} }
+  return { photo, pose, centre, fingerPx: pose.pxPerMm * INNER_DIAMETER_MM, truth: t }
 })
 
 describe('ring pose on real photos', () => {
-  it('has a case per photo', () => expect(cases.length).toBeGreaterThanOrEqual(15))
+  it('has a case per photo, some held out from calibration', () => {
+    expect(cases.length).toBeGreaterThanOrEqual(20)
+    expect(cases.filter((c) => c.truth.holdout).length).toBeGreaterThanOrEqual(8)
+  })
 
   it.each(cases.filter((c) => c.truth.fingerWidthPx).map((c) => [c.photo, c]))('%s: ring fits the finger', (_, c) => {
     expect(c.fingerPx / c.truth.fingerWidthPx!).toBeGreaterThan(0.8)
