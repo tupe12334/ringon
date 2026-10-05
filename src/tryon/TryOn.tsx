@@ -26,6 +26,11 @@ function VideoBackdrop({ video, mirrored }: { video: HTMLVideoElement; mirrored:
     return t
   }, [video])
   useEffect(() => () => texture.dispose(), [texture])
+  // VideoTexture waits for requestVideoFrameCallback, which Chrome never fires for our hidden
+  // source <video> (it isn't composited), leaving the backdrop black. Upload every frame instead.
+  useFrame(() => {
+    if (video.readyState >= 2) texture.needsUpdate = true
+  })
   const [vw, vh] = [video.videoWidth || 1280, video.videoHeight || 720]
   const layout = coverLayout({ videoWidth: vw, videoHeight: vh, width: size.width, height: size.height, mirrored })
   return (
