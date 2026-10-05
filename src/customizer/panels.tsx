@@ -19,10 +19,12 @@ import {
   FONTS,
   GEMS,
   LIMITS,
+  MELEE_CUTS,
   METALS,
   PRONG_TIPS,
   PROFILES,
   SETTINGS,
+  SIDE_SETTINGS,
   STONE_SHAPES,
   type Gem,
 } from '../ring/spec'
@@ -204,19 +206,118 @@ export function SettingPanel() {
   )
 }
 
+const SIDE_SETTING_LABELS = { 'prong-4': '4 prongs', 'prong-6': '6 prongs', bezel: 'Bezel' }
+const MELEE_CUT_LABELS = { auto: 'Auto', round: 'Round', princess: 'Princess', baguette: 'Baguette' }
+
+/** Common side-stone orientations: [label, rotation, mirror, for pointed shapes (pear/heart)?]. */
+const SIDE_PRESETS: [string, number, boolean, boolean][] = [
+  ['Along finger', 0, true, false],
+  ['Across finger', 90, true, false],
+  ['Point up the finger', 0, true, true],
+  ['Point to centre', 90, true, true],
+  ['Point outward', -90, true, true],
+  ['Both point one way', -90, false, true],
+]
+
 export function AccentsPanel() {
   const accents = useStore((s) => s.spec.accents)
-  const stoneOn = useStore((s) => s.spec.stone.enabled)
+  const stone = useStore((s) => s.spec.stone)
+  const bandWidth = useStore((s) => s.spec.band.widthMm)
   const update = useStore((s) => s.update)
-  const styles = stoneOn ? ACCENTS : ACCENTS.filter((a) => a !== 'three-stone')
+  const styles = stone.enabled ? ACCENTS : ACCENTS.filter((a) => a !== 'three-stone')
+  const side = accents.side
+  const sideShape = side.shape === 'match' ? stone.shape : side.shape
+  const sideCarat = stone.carat * accents.sideRatio ** 3
+  const sd = stoneDimensions(sideShape, sideCarat, accents.gem)
+  const pointed = sideShape === 'pear' || sideShape === 'heart'
+  const bandStyle = accents.style !== 'none' && accents.style !== 'three-stone'
+  const maxRows = Math.max(1, Math.min(LIMITS.rows[1], Math.floor(bandWidth / (Math.min(accents.stoneMm, bandWidth * 0.85) * 1.05))))
   return (
     <>
       <Chips label="Accent stones" value={accents.style} options={styles} labels={ACCENT_INFO} onChange={(v) => update((d) => void (d.accents.style = v))} />
       {accents.style === 'three-stone' && (
-        <Slider label="Side stone size" value={accents.sideRatio} min={LIMITS.sideRatio[0]} max={LIMITS.sideRatio[1]} step={0.05} format={(v) => `${Math.round(v * 100)}% of centre`} onChange={(v) => update((d) => void (d.accents.sideRatio = v))} />
+        <>
+          <Select
+            label="Side stone shape"
+            value={side.shape}
+            options={['match', ...STONE_SHAPES] as const}
+            labels={{ match: `Same as centre (${label(SHAPE_INFO)[stone.shape]})`, ...label(SHAPE_INFO) }}
+            onChange={(v) => update((d) => void (d.accents.side.shape = v))}
+          />
+          <Slider
+            label="Side stone size"
+            value={accents.sideRatio}
+            min={LIMITS.sideRatio[0]}
+            max={LIMITS.sideRatio[1]}
+            step={0.05}
+            format={(v) => `${Math.round(v * 100)}% of centre · ${sideCarat.toFixed(2)} ct · ${sd.length.toFixed(1)}×${sd.width.toFixed(1)} mm`}
+            onChange={(v) => update((d) => void (d.accents.sideRatio = v))}
+          />
+          <Field label="Side stone orientation">
+            <div className="chips" role="group" aria-label="Side stone orientation presets">
+              {SIDE_PRESETS.filter((p) => p[3] === pointed).map(([name, rot, mirror]) => (
+                <button
+                  key={name}
+                  type="button"
+                  aria-pressed={side.rotationDeg === rot && side.mirror === mirror}
+                  className={side.rotationDeg === rot && side.mirror === mirror ? 'chip on' : 'chip'}
+                  onClick={() => update((d) => void Object.assign(d.accents.side, { rotationDeg: rot, mirror }))}
+                >
+                  {name}
+                </button>
+              ))}
+            </div>
+          </Field>
+          <Slider
+            label="Side stone rotation"
+            value={side.rotationDeg}
+            min={LIMITS.sideRotationDeg[0]}
+            max={LIMITS.sideRotationDeg[1]}
+            step={5}
+            format={(v) => `${v}°`}
+            onChange={(v) => update((d) => void (d.accents.side.rotationDeg = v))}
+          />
+          <Toggle label="Mirror left stone" value={side.mirror} onChange={(v) => update((d) => void (d.accents.side.mirror = v))} />
+          <Chips label="Side stone setting" value={side.setting} options={SIDE_SETTINGS} labels={SIDE_SETTING_LABELS} onChange={(v) => update((d) => void (d.accents.side.setting = v))} />
+          <Slider label="Gap to centre" value={side.gapMm} min={LIMITS.sideGapMm[0]} max={LIMITS.sideGapMm[1]} step={0.05} format={mm} onChange={(v) => update((d) => void (d.accents.side.gapMm = v))} />
+          <Slider
+            label="Side stone height"
+            value={side.height}
+            min={LIMITS.sideHeight[0]}
+            max={LIMITS.sideHeight[1]}
+            step={0.05}
+            format={(v) => `${Math.round(v * 100)}% of centre`}
+            onChange={(v) => update((d) => void (d.accents.side.height = v))}
+          />
+        </>
       )}
-      {accents.style !== 'none' && accents.style !== 'three-stone' && (
-        <Slider label="Stone size" value={accents.stoneMm} min={LIMITS.accentStoneMm[0]} max={LIMITS.accentStoneMm[1]} step={0.05} format={(v) => `${mm(v)} · ${meleeCarat(v).toFixed(3)} ct each`} onChange={(v) => update((d) => void (d.accents.stoneMm = v))} />
+      {bandStyle && (
+        <>
+          <Slider label="Stone size" value={accents.stoneMm} min={LIMITS.accentStoneMm[0]} max={LIMITS.accentStoneMm[1]} step={0.05} format={(v) => `${mm(v)} · ${meleeCarat(v).toFixed(3)} ct each`} onChange={(v) => update((d) => void (d.accents.stoneMm = v))} />
+          <Chips label="Cut" value={accents.meleeCut} options={MELEE_CUTS} labels={MELEE_CUT_LABELS} onChange={(v) => update((d) => void (d.accents.meleeCut = v))} />
+          {(accents.style === 'pave' || accents.style === 'channel') && (
+            <Slider
+              label="Coverage"
+              value={accents.coverageDeg}
+              min={LIMITS.coverageDeg[0]}
+              max={LIMITS.coverageDeg[1]}
+              step={5}
+              format={(v) => `${Math.round((v / 180) * 100)}% down each side`}
+              onChange={(v) => update((d) => void (d.accents.coverageDeg = v))}
+            />
+          )}
+          {accents.style !== 'channel' && (
+            <Slider
+              label="Rows"
+              value={Math.min(accents.rows, maxRows)}
+              min={LIMITS.rows[0]}
+              max={LIMITS.rows[1]}
+              step={1}
+              format={(v) => (maxRows < LIMITS.rows[1] ? `${v} · up to ${maxRows} fit this band` : `${v}`)}
+              onChange={(v) => update((d) => void (d.accents.rows = v))}
+            />
+          )}
+        </>
       )}
       {accents.style !== 'none' && (
         <GemPicker title="Accent gem" value={accents.gem} color={accents.customColor} onGem={(v) => update((d) => void (d.accents.gem = v))} onColor={(v) => update((d) => void (d.accents.customColor = v))} />

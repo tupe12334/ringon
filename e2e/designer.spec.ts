@@ -80,3 +80,22 @@ test('import rejects a file that is not a design', async ({ page }) => {
   await page.locator('input[type=file]').setInputFiles({ name: 'x.json', mimeType: 'application/json', buffer: Buffer.from('nope') })
   await expect(page.getByRole('status')).toHaveText('That file is not a Ringon design')
 })
+
+test('sets three-stone side stones and their orientation', async ({ page }) => {
+  await page.getByRole('tab', { name: 'Accents' }).click()
+  await page.getByRole('radio', { name: 'Three stone' }).click()
+  await page.getByLabel('Side stone shape').selectOption('pear')
+  await page.getByRole('button', { name: 'Point to centre' }).click()
+  await expect(page.getByRole('button', { name: 'Point to centre' })).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByLabel('Side stone rotation')).toHaveValue('90')
+  await page.getByRole('radio', { name: 'Bezel' }).click()
+  await page.getByLabel('Mirror left stone').uncheck()
+  await expect(page.getByRole('button', { name: 'Point to centre' })).toHaveAttribute('aria-pressed', 'false')
+
+  // The design (incl. side stones) persists across a reload.
+  await page.reload()
+  await page.getByRole('tab', { name: 'Accents' }).click()
+  await expect(page.getByLabel('Side stone shape')).toHaveValue('pear')
+  await expect(page.getByLabel('Mirror left stone')).not.toBeChecked()
+  await expect(page.getByRole('radio', { name: 'Bezel' })).toHaveAttribute('aria-checked', 'true')
+})
