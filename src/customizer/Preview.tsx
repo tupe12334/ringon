@@ -96,6 +96,12 @@ function PathTracer({
     }
   }, [])
 
+  // The mode readout follows React commits, not render frames: on a slow GPU frames can stall.
+  useEffect(() => {
+    // oxlint-disable-next-line react/immutability -- progress readout on a DOM element
+    if (readout.current) readout.current.dataset.mode = mode
+  }, [mode, readout])
+
   useEffect(() => {
     const canvas = overlay.current
     const out = readout.current
@@ -181,8 +187,6 @@ function PathTracer({
   }, [spec, mode, overlay, readout, gl, scene, camera, size, dpr, onTooSlow, force])
 
   useFrame(() => {
-    // oxlint-disable-next-line react/immutability -- progress readout on a DOM element
-    if (readout.current) readout.current.dataset.mode = mode
     // Real time until the path-traced image has its first sample.
     if (mode !== 'pathtrace' || !showing.current) gl.render(scene, camera)
   }, 1)
