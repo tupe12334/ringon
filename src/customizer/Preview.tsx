@@ -5,7 +5,7 @@
 
 import { Bounds, ContactShadows, OrbitControls } from '@react-three/drei'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { WebGLPathTracer } from 'three-gpu-pathtracer'
 import { RingModel, StudioEnvironment, type RenderMode } from '../ring/RingModel'
@@ -17,6 +17,17 @@ const BACKGROUND = '#f3f1ee'
 const SETTLE_MS = 600
 /** Samples per pixel to stop at: converged enough, then the GPU rests. */
 export const MAX_SAMPLES = 256
+
+/** A path-trace sample slower than this (ms, averaged) makes the page feel frozen. */
+const MAX_SAMPLE_MS = 120
+
+/** CPU-emulated WebGL (no GPU): path tracing would lock the page. */
+function isSoftwareRenderer(gl: THREE.WebGLRenderer) {
+  const ctx = gl.getContext()
+  const info = ctx.getExtension('WEBGL_debug_renderer_info')
+  const name = String(info ? ctx.getParameter(info.UNMASKED_RENDERER_WEBGL) : ctx.getParameter(ctx.RENDERER))
+  return /swiftshader|llvmpipe|software|basic render/i.test(name)
+}
 
 /** Frames a throwaway tracer runs before the first real one (see PathTracer). */
 const WARM_UP_FRAMES = 90
@@ -32,7 +43,23 @@ const warmedScenes = new WeakSet<THREE.Scene>()
  * first time, a throwaway tracer on a tiny offscreen canvas processes the scene for a moment
  * while the real-time view stays up.
  */
-function PathTracer({ spec, mode, overlay, readout }: { spec: RingSpec; mode: RenderMode; overlay: React.RefObject<HTMLCanvasElement | null>; readout: React.RefObject<HTMLElement | null> }) {
+function PathTracer({
+  spec,
+  mode,
+  overlay,
+  readout,
+  onTooSlow,
+  force,
+}: {
+  spec: RingSpec
+  mode: RenderMode
+  overlay: React.RefObject<HTMLCanvasElement | null>
+  readout: React.RefObject<HTMLElement | null>
+  /** The device can't path trace without freezing the page. */
+  onTooSlow: () => void
+  /** The user asked for path tracing anyway: don't stop for slowness. */
+  force: boolean
+}) {
   const gl = useThree((s) => s.gl)
   const scene = useThree((s) => s.scene)
   const camera = useThree((s) => s.camera)
@@ -45,6 +72,21 @@ function PathTracer({ spec, mode, overlay, readout }: { spec: RingSpec; mode: Re
     if (mode !== 'pathtrace' || !canvas) return
     let frame = 0
     let disposed = false
+    if (!force && isSoftwareRenderer(gl)) {
+      onTooSlow()
+      return
+    }
+    // Each sample blocks the page while it renders; on a slow GPU that freezes the UI.
+    const times: number[] = []
+    const sample = (t: WebGLPathTracer) => {
+      const start = performance.now()
+      t.renderSample()
+      times.push(performance.now() - start)
+      if (times.length > 8) times.shift()
+      const slow = !force && times.length === 8 && times.reduce((a, b) => a + b, 0) / 8 > MAX_SAMPLE_MS
+      if (slow) onTooSlow()
+      return slow
+    }
     const cleanups: (() => void)[] = []
     const makeTracer = (target: HTMLCanvasElement) => {
       const renderer = new THREE.WebGLRenderer({ canvas: target, preserveDrawingBuffer: true })
@@ -65,7 +107,7 @@ function PathTracer({ spec, mode, overlay, readout }: { spec: RingSpec; mode: Re
       canvas.height = Math.round(size.height * dpr)
       const tracer = makeTracer(canvas)
       const loop = () => {
-        if (tracer.samples < MAX_SAMPLES) tracer.renderSample()
+        if (tracer.samples < MAX_SAMPLES && sample(tracer)) return
         canvas.style.visibility = tracer.samples >= 1 ? 'visible' : 'hidden'
         if (out) out.dataset.samples = String(Math.floor(tracer.samples))
         frame = requestAnimationFrame(loop)
@@ -79,7 +121,7 @@ function PathTracer({ spec, mode, overlay, readout }: { spec: RingSpec; mode: Re
       let n = 0
       const loop = () => {
         if (disposed) return
-        warm.renderSample()
+        if (sample(warm)) return
         if (++n < WARM_UP_FRAMES) frame = requestAnimationFrame(loop)
         else {
           warmedScenes.add(scene)
@@ -96,7 +138,7 @@ function PathTracer({ spec, mode, overlay, readout }: { spec: RingSpec; mode: Re
       if (out) out.dataset.samples = '0'
       cleanups.forEach((c) => c())
     }
-  }, [spec, mode, overlay, readout, gl, scene, camera, size, dpr])
+  }, [spec, mode, overlay, readout, gl, scene, camera, size, dpr, onTooSlow, force])
 
   useFrame(() => {
     // oxlint-disable-next-line react/immutability -- progress readout on a DOM element
@@ -107,8 +149,15 @@ function PathTracer({ spec, mode, overlay, readout }: { spec: RingSpec; mode: Re
 }
 
 export function Preview({ spec }: { spec: RingSpec }) {
-  const photoreal = useStore((s) => s.photoreal)
+  const storedPhotoreal = useStore((s) => s.photoreal)
   const setPhotoreal = useStore((s) => s.setPhotoreal)
+  // Turned off for this device because it was too slow, unless the user insisted.
+  const [tooSlow, setTooSlow] = useState(false)
+  const [forced, setForced] = useState(false)
+  const photoreal = storedPhotoreal && (!tooSlow || forced)
+  const onTooSlow = useCallback(() => {
+    if (!forced) setTooSlow(true)
+  }, [forced])
   const [dragging, setDragging] = useState(false)
   // The spec the view has been still on for SETTLE_MS; any edit or drag drops to real time.
   const [settled, setSettled] = useState<RingSpec | null>(null)
@@ -142,7 +191,7 @@ export function Preview({ spec }: { spec: RingSpec }) {
         ) : (
           <ContactShadows position={[0, floorY, 0]} opacity={0.35} scale={60} blur={2.5} far={20} resolution={256} />
         )}
-        <PathTracer spec={spec} mode={mode} overlay={overlay} readout={readout} />
+        <PathTracer spec={spec} mode={mode} overlay={overlay} readout={readout} onTooSlow={onTooSlow} force={forced} />
         <OrbitControls
           makeDefault
           enablePan={false}
@@ -162,10 +211,19 @@ export function Preview({ spec }: { spec: RingSpec }) {
         className="photoreal"
         aria-pressed={photoreal}
         title="Path-traced lighting when the view is still"
-        onClick={() => setPhotoreal(!photoreal)}
+        onClick={() => {
+          if (!photoreal) setForced(tooSlow)
+          setPhotoreal(!photoreal)
+          if (photoreal) setForced(false)
+        }}
       >
         ✦ Photoreal {photoreal ? 'on' : 'off'}
       </button>
+      {tooSlow && !forced && storedPhotoreal && (
+        <p className="photoreal-note" role="status">
+          Photoreal paused: this device renders it too slowly
+        </p>
+      )}
     </>
   )
 }

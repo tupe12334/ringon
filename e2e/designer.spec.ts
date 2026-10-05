@@ -105,7 +105,8 @@ test('sets three-stone side stones, their shape and orientation', async ({ page 
   await expect(page.getByLabel('Side stone rotation')).toHaveValue('-90')
   await page.getByLabel('Side stone gem').selectOption('sapphire')
   await page.getByRole('radio', { name: 'Bezel' }).click()
-  await page.getByLabel('Mirror left stones').uncheck()
+  await page.getByLabel('Mirror left stones').click()
+  await expect(page.getByLabel('Mirror left stones')).not.toBeChecked()
   await expect(page.getByRole('button', { name: 'Point outward' })).toHaveAttribute('aria-pressed', 'false')
 
   // Bezel look is set on the Setting tab and applies to the side bezels too.
@@ -163,20 +164,22 @@ test('opens every real-ring example', async ({ page }) => {
   await expect(page.getByLabel('Bezel-set (each stone in its own rim)')).not.toBeChecked()
 })
 
-test('path traces the design once the view is still, and can be turned off', async ({ page }) => {
+test('photoreal path tracing: paused on a GPU-less device, still available on request', async ({ page }) => {
   test.setTimeout(240_000)
   const render = page.getByTestId('render')
+  // The test browser renders WebGL on the CPU: path tracing would freeze the page.
+  await expect(page.getByRole('status').filter({ hasText: 'Photoreal paused' })).toBeVisible({ timeout: 30_000 })
+  await expect(render).toHaveAttribute('data-mode', 'raster')
+  await page.getByRole('tab', { name: 'Metal' }).click() // the page stays responsive
+
+  // The user can insist.
+  await page.getByRole('button', { name: /Photoreal off/ }).click()
   await expect(render).toHaveAttribute('data-mode', 'pathtrace', { timeout: 30_000 })
-  // Software WebGL in CI is slow; real GPUs reach this in well under a second.
   await expect.poll(async () => Number(await render.getAttribute('data-samples')), { timeout: 200_000, intervals: [2000] }).toBeGreaterThanOrEqual(1)
 
-  // Editing drops back to real time.
-  await page.getByRole('tab', { name: 'Metal' }).click()
-  await page.getByLabel('Band metal').selectOption('platinum')
-  await expect(render).toHaveAttribute('data-mode', 'raster')
-
-  await page.getByRole('button', { name: /Photoreal/ }).click()
-  await page.waitForTimeout(1500)
-  await expect(render).toHaveAttribute('data-mode', 'raster')
+  // Turning it off returns to real time. (Forced on a CPU renderer each sample blocks for
+  // seconds, so allow time.)
+  await page.getByRole('button', { name: /Photoreal on/ }).click()
+  await expect(render).toHaveAttribute('data-mode', 'raster', { timeout: 60_000 })
   await expect(render).toHaveAttribute('data-samples', '0')
 })
