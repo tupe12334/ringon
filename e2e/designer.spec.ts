@@ -214,8 +214,11 @@ test('rotation can be locked in the preview', async ({ page }) => {
 
   // Real-time rendering only: path tracing keeps refining the image while the view is still.
   const photoreal = page.getByRole('button', { name: /Photoreal/ })
-  if ((await photoreal.getAttribute('aria-pressed')) === 'true') await photoreal.click()
-  await expect(photoreal).toHaveAttribute('aria-pressed', 'false')
+  // Retried: the auto-pause on slow devices can flip it between the read and the click.
+  await expect(async () => {
+    if ((await photoreal.getAttribute('aria-pressed')) === 'true') await photoreal.click()
+    await expect(photoreal).toHaveAttribute('aria-pressed', 'false', { timeout: 2000 })
+  }).toPass({ timeout: 30_000 })
 
   const lock = page.getByRole('button', { name: 'Lock rotation' })
   await expect(lock).toHaveAttribute('aria-pressed', 'false')
