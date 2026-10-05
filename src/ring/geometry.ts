@@ -491,7 +491,8 @@ export function buildRing(spec: RingSpec): RingParts {
 
     const h = spec.halo
     if (h.enabled) {
-      const d = h.stoneMm
+      // A hidden halo must stay inside the girdle, so it is capped on small stones.
+      const d = h.style === 'hidden' ? Math.min(h.stoneMm, dims.width * 0.17) : h.stoneMm
       const melee = buildGem('round', d, d)
       const matrices: THREE.Matrix4[] = []
       if (h.style === 'hidden') {
@@ -555,11 +556,16 @@ export function buildRing(spec: RingSpec): RingParts {
         const own = sideWall ? offsetOutline(pts, sideWall) : pts
         // Slide the stone in from far out until its outline is `gap` from the previous one.
         const far = Math.max(...prev.map((p) => side * p[0])) + o.gapMm + reachX(own, deg, -side)
-        const cx = side * closestSlide((x) => polygonGap(prev, turn(own, deg, side * x, ySide)), prevX, far, o.gapMm)
+        // The first stone also keeps clear of its mirror twin across the centre line.
+        const from = k ? prevX : reachX(own, deg, -side) + o.gapMm / 2
+        const cx = side * closestSlide((x) => polygonGap(prev, turn(own, deg, side * x, ySide)), from, Math.max(far, from), o.gapMm)
         prevX = side * cx
-        prev = turn(own, deg, cx, ySide)
+        const placed = turn(own, deg, cx, ySide)
+        // Stones that would reach round to the underside of the ring (meeting the other side's) don't fit.
+        if (bend(Math.max(...placed.map((p) => side * p[0])) / z) > Math.PI * 0.95) break
+        prev = placed
         // Bend onto the band so the stone keeps this x seen from above (at its girdle height).
-        sidePlacements.push({ side, k, theta: Math.asin(Math.max(-0.95, Math.min(0.95, cx / z))), deg, shape, sd, pts })
+        sidePlacements.push({ side, k, theta: bend(cx / z), deg, shape, sd, pts })
         headReach = Math.max(headReach, Math.max(...prev.map((p) => side * p[0])) / ro)
       }
     }
@@ -615,9 +621,11 @@ export function buildRing(spec: RingSpec): RingParts {
     const along = d * Math.min(info.width1ct, info.length1ct) / Math.max(info.width1ct, info.length1ct)
     const crown = along * 0.15
     const melee = buildGem(cut, d, along)
-    const wall = a.bezelSet ? Math.min(s.bezel.wallMm, 0.45) : 0
+    const wall = a.bezelSet ? s.bezel.wallMm : 0
     const pitch = (along * (a.style === 'channel' ? 1.0 : 1.1) + 2 * wall + a.spacingMm) / ro
-    const headClear = s.enabled ? ((s.setting === 'tension' ? dims.width * 0.5 : dims.width / 2 + (spec.halo.enabled && spec.halo.style === 'classic' ? spec.halo.stoneMm * spec.halo.rows + 0.5 : 0)) + along / 2 + wall + 0.5) / ro : 0
+    // The centre stone's reach across the finger as it is turned.
+    const centreReach = Math.max(...[1, -1].map((dir) => reachX(outline(s.shape, dims.length, dims.width, 48), s.rotationDeg, dir)))
+    const headClear = s.enabled ? ((s.setting === 'tension' ? centreReach : centreReach + (spec.halo.enabled && spec.halo.style === 'classic' ? spec.halo.stoneMm * spec.halo.rows + 0.5 : 0)) + along / 2 + wall + 0.5) / ro : 0
     const start = s.enabled ? Math.max(headClear, headReach + (along / 2 + wall + 0.3) / ro, pitch / 2) : a.style === 'eternity' ? 0 : pitch / 2
     // Coverage counts from the top; always place at least one stone past the head.
     const span = a.style === 'eternity' ? Math.PI : a.style === 'half-eternity' ? Math.PI / 2 : Math.max(start, (a.coverageDeg * Math.PI) / 180)
@@ -658,12 +666,32 @@ function rotate2([x, y]: Pt, deg: number): Pt {
 
 /** Smallest distance between two closed outlines; negative when they overlap. */
 export function polygonGap(a: Pt[], b: Pt[]) {
-  if (b.some((p) => insidePolygon(p, a)) || a.some((p) => insidePolygon(p, b))) return -1
+  if (b.some((p) => insidePolygon(p, a)) || a.some((p) => insidePolygon(p, b)) || edgesCross(a, b)) return -1
   let best = Infinity
   for (const [poly, other] of [[a, b], [b, a]])
     for (const p of poly)
       for (let i = 0; i < other.length; i++) best = Math.min(best, segmentDistance(p, other[i], other[(i + 1) % other.length]))
   return best
+}
+
+function edgesCross(a: Pt[], b: Pt[]) {
+  const side = (p: Pt, q: Pt, r: Pt) => Math.sign((q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0]))
+  for (let i = 0; i < a.length; i++) {
+    const [p, q] = [a[i], a[(i + 1) % a.length]]
+    for (let j = 0; j < b.length; j++) {
+      const [r, t] = [b[j], b[(j + 1) % b.length]]
+      if (side(p, q, r) * side(p, q, t) < 0 && side(r, t, p) * side(r, t, q) < 0) return true
+    }
+  }
+  return false
+}
+
+/** Angle around the band for an arc offset `f` = x / radius: keeps x seen from above, and keeps
+ * growing (as arc length) past the side of the ring so stones never pile up. */
+function bend(f: number) {
+  const lim = 0.95
+  const a = Math.abs(f)
+  return Math.sign(f) * (a <= lim ? Math.asin(a) : Math.asin(lim) + (a - lim))
 }
 
 function insidePolygon([x, y]: Pt, poly: Pt[]) {
@@ -703,6 +731,8 @@ export function reachX(pts: Pt[], deg: number, dir: number) {
 
 /** Outline points where prongs go: diagonals for 4, every 60° for 6, tips for pointed shapes. */
 function prongPoints(shape: StoneShape, pts: Pt[], count: 4 | 6): Pt[] {
+  // A trillion outline starts each of its three sides at a corner (see outline.ts).
+  if (shape === 'trillion' && count === 4) return [0, 1, 2].map((k) => pts[(k * pts.length) / 3])
   // Corner angles of shapes whose corners sit at the front (+y) and back.
   const hw = Math.max(...pts.map((p) => p[0]))
   const hl = Math.max(...pts.map((p) => p[1]))
@@ -710,9 +740,7 @@ function prongPoints(shape: StoneShape, pts: Pt[], count: 4 | 6): Pt[] {
   const angles =
     count === 6
       ? [0, 60, 120, 180, 240, 300].map((d) => d + 30)
-      : shape === 'trillion'
-        ? [front, 180, 360 - front]
-        : shape === 'half-moon'
+      : shape === 'half-moon'
           ? [front, 135, 225, 360 - front]
           : shape === 'pear' || shape === 'marquise' || shape === 'heart'
             ? [0, 90, 180, 270]

@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { describe, expect, it } from 'vitest'
 import { stoneDimensions } from './catalog'
-import { buildBand, buildGem, buildRing } from './geometry'
+import { buildBand, buildGem, buildRing, polygonGap } from './geometry'
 import { outline } from './outline'
 import { diameterToUs, euToDiameter, nearestSize, sizeOptions, usToDiameter } from './sizes'
 import { ACCENTS, BEZEL_EDGES, DEFAULT_SPEC, HALF_BEZEL_WALLS, PROFILES, SETTINGS, STONE_SHAPES, sanitizeSpec, type RingSpec } from './spec'
@@ -196,11 +196,17 @@ describe('accent controls', () => {
     const st = stone(parts, key)
     const pos = st.geometry.getAttribute('position')
     const pts: THREE.Vector3[] = []
-    for (let i = 0; i < pos.count; i++) if (Math.abs(pos.getZ(i)) < 0.05) pts.push(new THREE.Vector3().fromBufferAttribute(pos, i).applyMatrix4(st.matrices[0]))
+    // The girdle is a thin band (1.5% of the stone width) around z = 0.
+    for (let i = 0; i < pos.count; i++) if (Math.abs(pos.getZ(i)) < 0.25) pts.push(new THREE.Vector3().fromBufferAttribute(pos, i).applyMatrix4(st.matrices[0]))
+    expect(pts.length).toBeGreaterThan(8)
     return pts
   }
   // Seen from above (the side stones sit lower than the centre).
-  const gapBetween = (a: THREE.Vector3[], b: THREE.Vector3[]) => Math.min(...a.flatMap((p) => b.map((q) => Math.hypot(p.x - q.x, p.y - q.y))))
+  const gapBetween = (a: THREE.Vector3[], b: THREE.Vector3[], topDown = true) => {
+    let best = Infinity
+    for (const p of a) for (const q of b) best = Math.min(best, topDown ? Math.hypot(p.x - q.x, p.y - q.y) : p.distanceTo(q))
+    return best
+  }
   const centreOf = (parts: Parts, key: string) => new THREE.Vector3().setFromMatrixPosition(stone(parts, key).matrices[0])
 
   it('migrates old three-stone designs and clamps bad values', () => {
@@ -264,6 +270,27 @@ describe('accent controls', () => {
     const ro = DEFAULT_SPEC.innerDiameterMm / 2 + DEFAULT_SPEC.band.thicknessMm
     for (let i = 0; i < pos.count; i++)
       if (Math.hypot(pos.getX(i), pos.getZ(i)) < ro) expect(Math.abs(pos.getY(i))).toBeLessThan(DEFAULT_SPEC.band.widthMm / 2 + 2)
+  })
+
+  /** Every pair of side and centre stones, girdle to girdle (in 3D: outer stones sit down the side of the ring). */
+  const allApart = (parts: Parts, gap: number) => {
+    const keys = parts.stones.filter((s) => s.key === 'center' || s.key.startsWith('side-')).map((s) => s.key)
+    for (const [i, a] of keys.entries()) for (const b of keys.slice(i + 1)) expect(gapBetween(girdle(parts, a), girdle(parts, b), false), `${a} vs ${b}`).toBeGreaterThan(gap - 0.05)
+  }
+
+  it('keeps left and right stones apart when far along the finger', () => {
+    allApart(ring({ offsetMm: 8 }, { carat: 0.5 }), 0.4)
+  })
+
+  it('keeps big seven-stone rows apart past the side of the ring', () => {
+    allApart(ring({ count: 3, ratio: 1.2, graduation: 1, shape: 'oval', rotationDeg: 90 }, { shape: 'oval', carat: 3, rotationDeg: 90 }), 0.4)
+  })
+
+  it('starts band stones clear of a turned centre stone', () => {
+    const parts = buildRing({ ...DEFAULT_SPEC, stone: { ...DEFAULT_SPEC.stone, shape: 'marquise', rotationDeg: 90 }, accents: { ...DEFAULT_SPEC.accents, style: 'pave' } })
+    const first = Math.min(...stone(parts, 'accents').matrices.map((m) => Math.abs(new THREE.Vector3().setFromMatrixPosition(m).x)))
+    const reach = Math.max(...girdle(parts, 'center').map((p) => Math.abs(p.x)))
+    expect(first).toBeGreaterThan(reach)
   })
 
   it('places graduated five- and seven-stone rows along the band', () => {
@@ -342,6 +369,14 @@ describe('accent controls', () => {
     const width = (wallMm: number) =>
       new THREE.Box3().setFromBufferAttribute(ring({ count: 0 }, { setting: 'bezel', bezel: { ...DEFAULT_SPEC.stone.bezel, wallMm } }).head!.getAttribute('position') as THREE.BufferAttribute).getSize(new THREE.Vector3()).x
     expect(width(1.4) - width(0.4)).toBeGreaterThan(1.5)
+  })
+})
+
+describe('outline clearance', () => {
+  it('sees a plus-shaped overlap with no corner inside the other shape', () => {
+    const bar = (hw: number, hl: number): [number, number][] => [[-hw, -hl], [hw, -hl], [hw, hl], [-hw, hl]]
+    expect(polygonGap(bar(3, 0.5), bar(0.5, 3))).toBeLessThan(0)
+    expect(polygonGap(bar(1, 1), bar(1, 1).map(([x, y]) => [x + 2.5, y]))).toBeCloseTo(0.5)
   })
 })
 

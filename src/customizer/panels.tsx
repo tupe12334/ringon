@@ -329,7 +329,8 @@ export function SidesPanel() {
           )}
           <Field label="Orientation">
             <div className="chips" role="group" aria-label="Side stone orientation presets">
-              {presetsFor(shape).map(([name, rot, mirror]) => {
+              {/* A toi et moi has one partner stone, so "both one way" means nothing there. */}
+              {presetsFor(shape).filter(([, , mirror]) => !toi || mirror).map(([name, rot, mirror]) => {
                 const active = side.rotationDeg === rot && (toi || side.mirror === mirror)
                 return (
                   <button key={name} type="button" aria-pressed={active} className={active ? 'chip on' : 'chip'} onClick={() => set({ rotationDeg: rot, mirror })}>
@@ -372,6 +373,7 @@ export function AccentsPanel() {
           <Slider label="Stone size" value={accents.stoneMm} min={LIMITS.accentStoneMm[0]} max={LIMITS.accentStoneMm[1]} step={0.05} format={(v) => `${mm(v)} across the band`} onChange={(v) => update((d) => void (d.accents.stoneMm = v))} />
           <Select label="Cut" value={accents.meleeCut} options={['auto', ...STONE_SHAPES] as const} labels={{ auto: 'Auto (round, princess in a channel)', ...shapeLabels }} onChange={(v) => update((d) => void (d.accents.meleeCut = v))} />
           <Toggle label="Bezel-set (each stone in its own rim)" value={accents.bezelSet} onChange={(v) => update((d) => void (d.accents.bezelSet = v))} />
+          {accents.bezelSet && <BezelControls />}
           <Slider
             label="Spacing"
             value={accents.spacingMm}
