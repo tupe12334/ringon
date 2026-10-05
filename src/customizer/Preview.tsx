@@ -6,6 +6,7 @@
 import { Bounds, ContactShadows, OrbitControls } from '@react-three/drei'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import * as THREE from 'three'
 import { WebGLPathTracer } from 'three-gpu-pathtracer'
 import { RingModel, StudioEnvironment, type RenderMode } from '../ring/RingModel'
@@ -190,6 +191,7 @@ function PathTracer({
 }
 
 export function Preview({ spec }: { spec: RingSpec }) {
+  const { t } = useTranslation()
   const storedPhotoreal = useStore((s) => s.photoreal)
   const setPhotoreal = useStore((s) => s.setPhotoreal)
   // Paused for this device when too slow, unless the user insisted (see photoreal.ts).
@@ -249,18 +251,18 @@ export function Preview({ spec }: { spec: RingSpec }) {
         type="button"
         className="photoreal"
         aria-pressed={photoreal}
-        title="Path-traced lighting when the view is still"
+        title={t('preview.photorealTitle')}
         onClick={() => {
           const next = togglePhotoreal(state)
           setPhotoreal(next.stored)
           setSlowness({ tooSlow: next.tooSlow, forced: next.forced })
         }}
       >
-        ✦ Photoreal {photoreal ? 'on' : 'off'}
+        {photoreal ? t('preview.photorealOn') : t('preview.photorealOff')}
       </button>
       {isPausedForSlowness(state) && (
         <p className="photoreal-note" role="status">
-          Photoreal paused: this device renders it too slowly
+          {t('preview.paused')}
         </p>
       )}
     </>

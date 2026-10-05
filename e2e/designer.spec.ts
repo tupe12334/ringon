@@ -184,3 +184,30 @@ test('photoreal path tracing: paused on a GPU-less device, still available on re
   await expect(render).toHaveAttribute('data-mode', 'raster', { timeout: 60_000 })
   await expect(render).toHaveAttribute('data-samples', '0')
 })
+
+test('switches to Hebrew, right to left, and remembers it', async ({ page }) => {
+  const summary = page.getByTestId('summary')
+  await page.getByRole('button', { name: 'Switch to Hebrew' }).click()
+  await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
+  await expect(page.locator('html')).toHaveAttribute('lang', 'he')
+  await expect(summary).toContainText('זהב צהוב 18K')
+
+  await page.getByRole('tab', { name: 'מתכת' }).click()
+  await page.getByLabel('מתכת החישוק').selectOption('platinum')
+  await expect(summary).toContainText('פלטינה')
+  await expect(page.getByRole('button', { name: 'מדידה על היד' })).toBeVisible()
+
+  await page.reload()
+  await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
+  await page.getByRole('button', { name: 'החלפה לאנגלית' }).click()
+  await expect(page.locator('html')).toHaveAttribute('dir', 'ltr')
+  await expect(summary).toContainText('Platinum')
+})
+
+test('a ?lng=he link opens in Hebrew', async ({ page }) => {
+  await page.goto('/?lng=he')
+  await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
+  await expect(page.getByRole('tab', { name: 'תבניות' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'להתחיל מעיצוב קלאסי' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'סוליטר קלאסי' })).toBeVisible()
+})
