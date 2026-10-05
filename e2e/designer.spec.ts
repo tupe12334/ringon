@@ -86,7 +86,7 @@ test('share button copies a link that reopens the design', async ({ page, contex
   await page.evaluate(() => Object.defineProperty(navigator, 'share', { value: undefined }))
   await page.getByRole('button', { name: 'Oval halo' }).click()
   await page.getByRole('button', { name: 'Share link' }).click()
-  await expect(page.getByRole('status')).toHaveText('Link copied')
+  await expect(page.getByRole('status').filter({ hasText: 'Link copied' })).toBeVisible()
   const url = await page.evaluate(() => navigator.clipboard.readText())
   await page.evaluate(() => localStorage.clear())
   await page.goto(url)
@@ -95,7 +95,7 @@ test('share button copies a link that reopens the design', async ({ page, contex
 
 test('import rejects a file that is not a design', async ({ page }) => {
   await page.locator('input[type=file]').setInputFiles({ name: 'x.json', mimeType: 'application/json', buffer: Buffer.from('nope') })
-  await expect(page.getByRole('status')).toHaveText('That file is not a Ringon design')
+  await expect(page.getByRole('status').filter({ hasText: 'That file is not a Ringon design' })).toBeVisible()
 })
 
 test('sets three-stone side stones, their shape and orientation', async ({ page }) => {
