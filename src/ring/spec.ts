@@ -125,7 +125,7 @@ export interface RingSpec {
     sideRatio: number
     /** Pavé / channel: how far the stones run down each side of the band, degrees from the top. */
     coverageDeg: number
-    /** Pavé: rows across the band (capped by what fits the band width). */
+    /** Pavé / eternity: rows across the band, capped by what fits; 0 = auto (two on a wide pavé band). */
     rows: number
     meleeCut: MeleeCut
     /** Three-stone side stones. */
@@ -181,7 +181,7 @@ export const DEFAULT_SPEC: RingSpec = {
     customColor: '#ffffff',
     sideRatio: 0.6,
     coverageDeg: 60,
-    rows: 1,
+    rows: 0,
     meleeCut: 'auto',
     side: { shape: 'match', rotationDeg: 0, mirror: true, setting: 'prong-4', gapMm: 0.4, height: 0.7 },
   },
@@ -201,7 +201,7 @@ export const LIMITS = {
   accentStoneMm: [0.8, 3],
   sideRatio: [0.3, 1],
   coverageDeg: [15, 175],
-  rows: [1, 3],
+  rows: [0, 3],
   sideRotationDeg: [-180, 180],
   sideGapMm: [0.1, 3],
   sideHeight: [0.4, 1],
@@ -281,7 +281,8 @@ export function sanitizeSpec(input: unknown): RingSpec {
       meleeCut: pick(accents.meleeCut, MELEE_CUTS, d.accents.meleeCut),
       side: {
         shape: pick(side.shape, [...STONE_SHAPES, 'match' as const], ds.shape),
-        rotationDeg: clamp(side.rotationDeg, LIMITS.sideRotationDeg, ds.rotationDeg),
+        // Angles wrap (190° is −170°) rather than clamp.
+        rotationDeg: typeof side.rotationDeg === 'number' && Number.isFinite(side.rotationDeg) ? ((((side.rotationDeg + 180) % 360) + 360) % 360) - 180 : ds.rotationDeg,
         mirror: bool(side.mirror, ds.mirror),
         setting: pick(side.setting, SIDE_SETTINGS, ds.setting),
         gapMm: clamp(side.gapMm, LIMITS.sideGapMm, ds.gapMm),

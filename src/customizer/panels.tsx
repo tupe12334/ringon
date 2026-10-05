@@ -309,11 +309,11 @@ export function AccentsPanel() {
           {accents.style !== 'channel' && (
             <Slider
               label="Rows"
-              value={Math.min(accents.rows, maxRows)}
+              value={accents.rows}
               min={LIMITS.rows[0]}
               max={LIMITS.rows[1]}
               step={1}
-              format={(v) => (maxRows < LIMITS.rows[1] ? `${v} · up to ${maxRows} fit this band` : `${v}`)}
+              format={(v) => (v === 0 ? 'auto' : v > maxRows ? `${v} · only ${maxRows} fit this band` : `${v}`)}
               onChange={(v) => update((d) => void (d.accents.rows = v))}
             />
           )}

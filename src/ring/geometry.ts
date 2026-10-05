@@ -480,16 +480,19 @@ export function buildRing(spec: RingSpec): RingParts {
     const sd = stoneDimensions(shape, s.carat * a.sideRatio ** 3, a.gem)
     const gemGeom = buildGem(shape, sd.length, sd.width)
     const sidePts = outline(shape, sd.length, sd.width, 48)
-    // Clear the centre stone (and its halo) as it actually sits, rotated on the finger.
-    const centreHalf =
-      halfWidthX(outline(s.shape, dims.length, dims.width, 48), s.rotationDeg) + (spec.halo.enabled ? spec.halo.stoneMm + 0.25 : 0)
-    const z = ro + Math.max(1, s.settingHeightMm * o.height)
+    // Clear the centre stone (its halo, bezel walls) as it actually sits, rotated on the finger.
+    const centreOutline = outline(s.shape, dims.length, dims.width, 48)
+    const centreWall = spec.halo.enabled ? spec.halo.stoneMm + 0.25 : s.setting === 'bezel' || s.setting === 'half-bezel' ? 0.5 : 0
+    const sideWall = o.setting === 'bezel' ? 0.4 : 0
+    const centreZ = tension ? ro - spec.band.thicknessMm * 0.35 : ro + s.settingHeightMm
+    const z = ro + Math.max(0.5, (centreZ - ro) * o.height)
     const prongR = THREE.MathUtils.clamp(sd.width * 0.08, 0.3, 0.55)
     const matrices: THREE.Matrix4[] = []
     const sideParts: THREE.BufferGeometry[] = []
     for (const side of [-1, 1]) {
       const deg = side < 0 && o.mirror ? -o.rotationDeg : o.rotationDeg
-      const cx = side * (centreHalf + o.gapMm + halfWidthX(sidePts, deg))
+      // Gap between the facing edges: the centre's edge toward this side, the side stone's edge toward the centre.
+      const cx = side * (reachX(centreOutline, s.rotationDeg, side) + centreWall + o.gapMm + sideWall + reachX(sidePts, deg, -side))
       const place = new THREE.Matrix4().makeTranslation(cx, 0, 0).multiply(new THREE.Matrix4().makeRotationZ((deg * Math.PI) / 180))
       matrices.push(new THREE.Matrix4().makeTranslation(0, 0, z).multiply(place))
       if (o.setting === 'bezel') {
@@ -521,10 +524,13 @@ export function buildRing(spec: RingSpec): RingParts {
     const melee = cut === 'baguette' ? buildGem('emerald', d, along) : buildGem(cut, d, d)
     const pitch = (along * (a.style === 'channel' ? 1.0 : 1.1)) / ro
     const headClear = s.enabled ? ((s.setting === 'tension' ? dims.width * 0.5 : dims.width / 2 + (spec.halo.enabled ? spec.halo.stoneMm + 0.5 : 0)) + along / 2 + 0.5) / ro : 0
-    const span = a.style === 'eternity' ? Math.PI : a.style === 'half-eternity' ? Math.PI / 2 : (a.coverageDeg * Math.PI) / 180
     const start = s.enabled ? Math.max(headClear, pitch / 2) : a.style === 'eternity' ? 0 : pitch / 2
+    // Coverage counts from the top; always place at least one stone past the head.
+    const span = a.style === 'eternity' ? Math.PI : a.style === 'half-eternity' ? Math.PI / 2 : Math.max(start, (a.coverageDeg * Math.PI) / 180)
     const matrices: THREE.Matrix4[] = []
-    const rowCount = a.style === 'channel' ? 1 : Math.max(1, Math.min(a.rows, Math.floor(spec.band.widthMm / (d * 1.05))))
+    const fit = Math.floor(spec.band.widthMm / (d * 1.05))
+    const rows = a.rows || (a.style === 'pave' && spec.band.widthMm >= d * 2.2 ? 2 : 1)
+    const rowCount = a.style === 'channel' ? 1 : Math.max(1, Math.min(rows, fit))
     for (let theta = start; theta <= span + 1e-6; theta += pitch)
       for (const sign of theta === 0 ? [1] : [1, -1])
         for (let row = 0; row < rowCount; row++) {
@@ -550,9 +556,9 @@ function rotate2([x, y]: Pt, deg: number): Pt {
   return [x * Math.cos(t) - y * Math.sin(t), x * Math.sin(t) + y * Math.cos(t)]
 }
 
-/** Half the extent across the finger (x) of an outline turned by `deg`. */
-export function halfWidthX(pts: Pt[], deg: number) {
-  return Math.max(...pts.map((p) => Math.abs(rotate2(p, deg)[0])))
+/** How far an outline turned by `deg` reaches from its centre toward +x (dir 1) or −x (dir −1). */
+export function reachX(pts: Pt[], deg: number, dir: number) {
+  return Math.max(...pts.map((p) => dir * rotate2(p, deg)[0]))
 }
 
 /** Outline points where prongs go: diagonals for 4, every 60° for 6, tips for pointed shapes. */

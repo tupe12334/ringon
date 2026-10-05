@@ -196,7 +196,7 @@ describe('accent controls', () => {
     expect(bad.accents.rows).toBe(3)
     expect(bad.accents.side.shape).toBe('match')
     expect(bad.accents.side.gapMm).toBe(0.1)
-    expect(bad.accents.side.rotationDeg).toBe(180)
+    expect(bad.accents.side.rotationDeg).toBe(-81) // 999° wraps
   })
 
   it('uses the chosen side shape, mirrored around the centre', () => {
@@ -215,9 +215,9 @@ describe('accent controls', () => {
   })
 
   it('keeps the gap to the centre stone when either stone turns', () => {
-    for (const [centreRot, sideRot] of [[0, 0], [90, 0], [0, 90], [45, 30]]) {
+    for (const [centreRot, sideRot, shape] of [[0, 0, 'emerald'], [90, 0, 'emerald'], [0, 90, 'emerald'], [45, 30, 'emerald'], [0, 50, 'pear'], [30, -120, 'heart']] as const) {
       const gap = 0.6
-      const parts = threeStone({ shape: 'emerald', rotationDeg: sideRot, gapMm: gap }, { shape: 'oval', rotationDeg: centreRot })
+      const parts = threeStone({ shape, rotationDeg: sideRot, gapMm: gap }, { shape: 'pear', rotationDeg: centreRot })
       const right = sideStones(parts).matrices[1]
       const centre = parts.stones.find((s) => s.key === 'center')!
       const box = (g: THREE.BufferGeometry, m: THREE.Matrix4) => new THREE.Box3().setFromObject(new THREE.Mesh(g.clone().applyMatrix4(m)))
@@ -233,6 +233,10 @@ describe('accent controls', () => {
         .stones.find((s) => s.key === 'accents')!.matrices.length
     expect(count({ coverageDeg: 120 })).toBeGreaterThan(count({ coverageDeg: 60 }))
     expect(count({ rows: 3 })).toBe(count({ rows: 1 }) * 3)
+    // Old designs (no rows field) keep the automatic second row on a wide pavé band.
+    expect(count({ rows: 0 })).toBe(count({ rows: 2 }))
+    // Coverage below the head clearance still places stones.
+    expect(count({ coverageDeg: 15 })).toBeGreaterThan(0)
     // Rows are capped by what fits across the band.
     expect(count({ rows: 3, stoneMm: 1.6 })).toBe(count({ rows: 2, stoneMm: 1.6 }))
   })
@@ -240,6 +244,15 @@ describe('accent controls', () => {
   it.each(['round', 'princess', 'baguette'] as const)('builds a %s channel', (meleeCut) => {
     const parts = buildRing({ ...DEFAULT_SPEC, accents: { ...DEFAULT_SPEC.accents, style: 'channel', meleeCut } })
     expect(finite(parts.stones.find((s) => s.key === 'accents')!.geometry)).toBe(true)
+  })
+
+  it('clears a halo and bezel walls', () => {
+    const bare = threeStone({})
+    const halo = buildRing({ ...DEFAULT_SPEC, halo: { ...DEFAULT_SPEC.halo, enabled: true }, accents: { ...DEFAULT_SPEC.accents, style: 'three-stone' } })
+    const bezel = threeStone({ setting: 'bezel' })
+    const x = (p: ReturnType<typeof buildRing>) => new THREE.Vector3().setFromMatrixPosition(sideStones(p).matrices[1]).x
+    expect(x(halo) - x(bare)).toBeCloseTo(DEFAULT_SPEC.halo.stoneMm + 0.25)
+    expect(x(bezel) - x(bare)).toBeCloseTo(0.4)
   })
 
   it.each(['prong-4', 'prong-6', 'bezel'] as const)('builds %s side stones', (setting) => {
