@@ -25,7 +25,30 @@ import {
   type StoneShape,
 } from '../ring/spec'
 import { useStore } from '../templates/store'
-import { Chips, ColorInput, Field, Select, Slider, Toggle } from './controls'
+import { Chips, ColorInput, Field, Slider, Toggle } from './controls'
+import {
+  ShapeIcon,
+  SidePresetIcon,
+  TaperIcon,
+  accentIcons,
+  autoIcon,
+  bezelEdgeIcons,
+  fieldIcons as fi,
+  finishIcons,
+  fontIcons,
+  gemIcons,
+  haloRowIcons,
+  haloStyleIcons,
+  halfWallIcons,
+  matchIcon,
+  metalIcons,
+  profileIcons,
+  prongTipIcons,
+  settingIcons,
+  shapeIcons,
+  sideCountIcons,
+  sideLayoutIcons,
+} from './icons'
 
 /** Labels for every option of a group, e.g. labels('metal').platinum. */
 const labels = <K extends 'metal' | 'finish' | 'profile' | 'gem' | 'shape' | 'setting' | 'prongTip' | 'accent' | 'sizeSystem' | 'font'>(
@@ -54,8 +77,8 @@ export function SizePanel() {
     .join(' · ')
   return (
     <>
-      <Chips label={t('size.system')} value={system} options={SIZE_SYSTEMS} labels={systemLabels} onChange={setSystem} />
-      <Field label={t('size.ring')} hint={t('size.hint', { inside: mm(spec.innerDiameterMm), around: (spec.innerDiameterMm * Math.PI).toFixed(1) })}>
+      <Chips label={t('size.system')} icon={fi.system} value={system} options={SIZE_SYSTEMS} labels={systemLabels} onChange={setSystem} />
+      <Field label={t('size.ring')} icon={fi.size} hint={t('size.hint', { inside: mm(spec.innerDiameterMm), around: (spec.innerDiameterMm * Math.PI).toFixed(1) })}>
         <select
           aria-label={t('size.ring')}
           value={current.label}
@@ -84,11 +107,12 @@ export function BandPanel() {
   const mm = useMm()
   return (
     <>
-      <Chips label={t('band.profile')} value={band.profile} options={PROFILES} labels={labels(t, 'profile')} onChange={(v) => update((d) => void (d.band.profile = v))} />
-      <Slider label={t('band.width')} value={band.widthMm} min={LIMITS.widthMm[0]} max={LIMITS.widthMm[1]} step={0.1} format={mm} onChange={(v) => update((d) => void (d.band.widthMm = v))} />
-      <Slider label={t('band.thickness')} value={band.thicknessMm} min={LIMITS.thicknessMm[0]} max={LIMITS.thicknessMm[1]} step={0.1} format={mm} onChange={(v) => update((d) => void (d.band.thicknessMm = v))} />
+      <Chips label={t('band.profile')} value={band.profile} options={PROFILES} labels={labels(t, 'profile')} icons={profileIcons} onChange={(v) => update((d) => void (d.band.profile = v))} />
+      <Slider label={t('band.width')} icon={fi.width} value={band.widthMm} min={LIMITS.widthMm[0]} max={LIMITS.widthMm[1]} step={0.1} format={mm} onChange={(v) => update((d) => void (d.band.widthMm = v))} />
+      <Slider label={t('band.thickness')} icon={fi.thickness} value={band.thicknessMm} min={LIMITS.thicknessMm[0]} max={LIMITS.thicknessMm[1]} step={0.1} format={mm} onChange={(v) => update((d) => void (d.band.thicknessMm = v))} />
       <Slider
         label={t('band.taper')}
+        icon={<TaperIcon taper={band.taper} />}
         value={band.taper}
         min={LIMITS.taper[0]}
         max={LIMITS.taper[1]}
@@ -96,7 +120,7 @@ export function BandPanel() {
         format={(v) => (v >= 1 ? t('band.taperNone') : t('band.taperValue', { pct: Math.round((1 - v) * 100) }))}
         onChange={(v) => update((d) => void (d.band.taper = v))}
       />
-      <Toggle label={t('band.comfortFit')} value={band.comfortFit} onChange={(v) => update((d) => void (d.band.comfortFit = v))} />
+      <Toggle label={t('band.comfortFit')} icon={fi.comfort} value={band.comfortFit} onChange={(v) => update((d) => void (d.band.comfortFit = v))} />
     </>
   )
 }
@@ -108,10 +132,12 @@ export function MetalPanel() {
   const metalLabels = labels(t, 'metal')
   return (
     <>
-      <Select label={t('metalPanel.band')} value={band.metal} options={METALS} labels={metalLabels} onChange={(v) => update((d) => void (d.band.metal = v))} />
-      <Chips label={t('metalPanel.finish')} value={band.finish} options={FINISHES} labels={labels(t, 'finish')} onChange={(v) => update((d) => void (d.band.finish = v))} />
-      <Select
+      <Chips label={t('metalPanel.band')} value={band.metal} options={METALS} labels={metalLabels} icons={metalIcons} onChange={(v) => update((d) => void (d.band.metal = v))} />
+      <Chips label={t('metalPanel.finish')} value={band.finish} options={FINISHES} labels={labels(t, 'finish')} icons={finishIcons} onChange={(v) => update((d) => void (d.band.finish = v))} />
+      <Chips
         label={t('metalPanel.head')}
+        icon={fi.headMetal}
+        icons={{ match: matchIcon, ...metalIcons }}
         value={band.headMetal}
         options={['match', ...METALS] as const}
         labels={{ match: t('metalPanel.sameAsBand'), ...metalLabels }}
@@ -127,7 +153,7 @@ function GemPicker({ value, color, onGem, onColor, title }: { value: Gem; color:
   const label = title ?? t('gemPicker.title')
   return (
     <>
-      <Select label={label} value={value} options={GEMS} labels={labels(t, 'gem')} onChange={onGem} />
+      <Chips label={label} value={value} options={GEMS} labels={labels(t, 'gem')} icons={gemIcons(color)} onChange={onGem} />
       {value === 'custom' && <ColorInput label={t('gemPicker.colour', { title: label })} value={color} onChange={onColor} />}
     </>
   )
@@ -140,12 +166,13 @@ export function StonePanel() {
   const { t } = useTranslation()
   return (
     <>
-      <Toggle label={t('stone.centre')} value={stone.enabled} onChange={(v) => update((d) => void (d.stone.enabled = v))} />
+      <Toggle label={t('stone.centre')} icon={fi.stone} value={stone.enabled} onChange={(v) => update((d) => void (d.stone.enabled = v))} />
       {stone.enabled && (
         <>
-          <Chips label={t('stone.shape')} value={stone.shape} options={STONE_SHAPES} labels={labels(t, 'shape')} onChange={(v) => update((d) => void (d.stone.shape = v))} />
+          <Chips label={t('stone.shape')} value={stone.shape} options={STONE_SHAPES} labels={labels(t, 'shape')} icons={shapeIcons} onChange={(v) => update((d) => void (d.stone.shape = v))} />
           <Slider
             label={t('stone.carat')}
+            icon={<ShapeIcon shape={stone.shape} size={8 + 14 * Math.cbrt(stone.carat / LIMITS.carat[1])} rotate={stone.rotationDeg} />}
             value={stone.carat}
             min={LIMITS.carat[0]}
             max={LIMITS.carat[1]}
@@ -161,6 +188,7 @@ export function StonePanel() {
           />
           <Slider
             label={t('stone.orientation')}
+            icon={<ShapeIcon shape={stone.shape} rotate={stone.rotationDeg} />}
             value={stone.rotationDeg}
             min={LIMITS.rotationDeg[0]}
             max={LIMITS.rotationDeg[1]}
@@ -183,9 +211,10 @@ export function BezelControls() {
   const mm = useMm()
   return (
     <>
-      {half && <Chips label={t('bezel.halfWalls')} value={bz.halfWalls} options={HALF_BEZEL_WALLS} labels={{ sides: t('bezel.halfWallsSides'), ends: t('bezel.halfWallsEnds') }} onChange={(v) => set({ halfWalls: v })} />}
+      {half && <Chips label={t('bezel.halfWalls')} value={bz.halfWalls} options={HALF_BEZEL_WALLS} icons={halfWallIcons} labels={{ sides: t('bezel.halfWallsSides'), ends: t('bezel.halfWallsEnds') }} onChange={(v) => set({ halfWalls: v })} />}
       <Slider
         label={t('bezel.wall')}
+        icon={fi.wall}
         value={bz.wallMm}
         min={LIMITS.bezelWallMm[0]}
         max={LIMITS.bezelWallMm[1]}
@@ -195,6 +224,7 @@ export function BezelControls() {
       />
       <Slider
         label={t('bezel.lip')}
+        icon={fi.lip}
         value={bz.lip}
         min={LIMITS.bezelLip[0]}
         max={LIMITS.bezelLip[1]}
@@ -202,7 +232,7 @@ export function BezelControls() {
         format={(v) => (v === 0 ? t('bezel.lipFlush') : t('bezel.lipValue', { pct: Math.round(v * 100) }))}
         onChange={(v) => set({ lip: v })}
       />
-      <Chips label={t('bezel.edge')} value={bz.edge} options={BEZEL_EDGES} labels={{ plain: t('bezel.plain'), rounded: t('bezel.rounded'), milgrain: t('bezel.milgrain') }} onChange={(v) => set({ edge: v })} />
+      <Chips label={t('bezel.edge')} value={bz.edge} options={BEZEL_EDGES} icons={bezelEdgeIcons} labels={{ plain: t('bezel.plain'), rounded: t('bezel.rounded'), milgrain: t('bezel.milgrain') }} onChange={(v) => set({ edge: v })} />
     </>
   )
 }
@@ -220,12 +250,13 @@ export function SettingPanel() {
   const bezel = stone.setting === 'bezel' || stone.setting === 'half-bezel'
   return (
     <>
-      <Chips label={t('settingPanel.setting')} value={stone.setting} options={SETTINGS} labels={labels(t, 'setting')} onChange={(v) => update((d) => void (d.stone.setting = v))} />
-      {prongs && <Chips label={t('settingPanel.prongTips')} value={stone.prongTip} options={PRONG_TIPS} labels={labels(t, 'prongTip')} onChange={(v) => update((d) => void (d.stone.prongTip = v))} />}
+      <Chips label={t('settingPanel.setting')} value={stone.setting} options={SETTINGS} labels={labels(t, 'setting')} icons={settingIcons} onChange={(v) => update((d) => void (d.stone.setting = v))} />
+      {prongs && <Chips label={t('settingPanel.prongTips')} value={stone.prongTip} options={PRONG_TIPS} labels={labels(t, 'prongTip')} icons={prongTipIcons} onChange={(v) => update((d) => void (d.stone.prongTip = v))} />}
       {(bezel || sideBezel || bandBezel) && <BezelControls />}
       {stone.setting !== 'tension' && (
         <Slider
           label={t('settingPanel.height')}
+          icon={fi.height}
           value={stone.settingHeightMm}
           min={LIMITS.settingHeightMm[0]}
           max={LIMITS.settingHeightMm[1]}
@@ -234,14 +265,14 @@ export function SettingPanel() {
           onChange={(v) => update((d) => void (d.stone.settingHeightMm = v))}
         />
       )}
-      <Toggle label={t('settingPanel.halo')} value={halo.enabled} onChange={(v) => update((d) => void (d.halo.enabled = v))} />
+      <Toggle label={t('settingPanel.halo')} icon={fi.halo} value={halo.enabled} onChange={(v) => update((d) => void (d.halo.enabled = v))} />
       {halo.enabled && (
         <>
-          <Chips label={t('settingPanel.haloStyle')} value={halo.style} options={HALO_STYLES} labels={{ classic: t('settingPanel.haloClassic'), hidden: t('settingPanel.haloHidden') }} onChange={(v) => update((d) => void (d.halo.style = v))} />
+          <Chips label={t('settingPanel.haloStyle')} value={halo.style} options={HALO_STYLES} icons={haloStyleIcons} labels={{ classic: t('settingPanel.haloClassic'), hidden: t('settingPanel.haloHidden') }} onChange={(v) => update((d) => void (d.halo.style = v))} />
           {halo.style === 'classic' && (
-            <Chips label={t('settingPanel.haloRows')} value={String(halo.rows)} options={['1', '2'] as const} labels={{ '1': t('settingPanel.single'), '2': t('settingPanel.double') }} onChange={(v) => update((d) => void (d.halo.rows = Number(v)))} />
+            <Chips label={t('settingPanel.haloRows')} value={String(halo.rows)} options={['1', '2'] as const} icons={haloRowIcons} labels={{ '1': t('settingPanel.single'), '2': t('settingPanel.double') }} onChange={(v) => update((d) => void (d.halo.rows = Number(v)))} />
           )}
-          <Slider label={t('settingPanel.haloStoneSize')} value={halo.stoneMm} min={LIMITS.haloStoneMm[0]} max={LIMITS.haloStoneMm[1]} step={0.05} format={(v) => t('settingPanel.haloStoneValue', { size: mm(v), carat: meleeCarat(v).toFixed(3) })} onChange={(v) => update((d) => void (d.halo.stoneMm = v))} />
+          <Slider label={t('settingPanel.haloStoneSize')} icon={fi.melee} value={halo.stoneMm} min={LIMITS.haloStoneMm[0]} max={LIMITS.haloStoneMm[1]} step={0.05} format={(v) => t('settingPanel.haloStoneValue', { size: mm(v), carat: meleeCarat(v).toFixed(3) })} onChange={(v) => update((d) => void (d.halo.stoneMm = v))} />
           <GemPicker title={t('settingPanel.haloGem')} value={halo.gem} color={halo.customColor} onGem={(v) => update((d) => void (d.halo.gem = v))} onColor={(v) => update((d) => void (d.halo.customColor = v))} />
         </>
       )}
@@ -290,20 +321,22 @@ export function SidesPanel() {
   })
   return (
     <>
-      <Chips label={t('sides.layout')} value={side.layout} options={SIDE_LAYOUTS} labels={{ both: t('sides.both'), 'toi-et-moi': t('sides.toiEtMoi') }} onChange={(v) => set({ layout: v, count: v === 'both' && !side.count ? 1 : side.count })} />
+      <Chips label={t('sides.layout')} value={side.layout} options={SIDE_LAYOUTS} icons={sideLayoutIcons} labels={{ both: t('sides.both'), 'toi-et-moi': t('sides.toiEtMoi') }} onChange={(v) => set({ layout: v, count: v === 'both' && !side.count ? 1 : side.count })} />
       {!toi && (
         <Chips
           label={t('sides.count')}
           value={String(side.count)}
           options={['0', '1', '2', '3'] as const}
           labels={{ '0': t('sides.none'), '1': t('sides.three'), '2': t('sides.five'), '3': t('sides.seven') }}
+          icons={Object.fromEntries(sideCountIcons.map((c, i) => [String(i), c]))}
           onChange={(v) => set({ count: Number(v) })}
         />
       )}
       {on && (
         <>
-          <Select
+          <Chips
             label={t('sides.shape')}
+            icons={{ match: <ShapeIcon shape={stone.shape} fill="currentColor" />, ...shapeIcons }}
             value={side.shape}
             options={['match', ...STONE_SHAPES] as const}
             labels={{ match: t('sides.sameAsCentre', { shape: shapeLabels[stone.shape] }), ...shapeLabels }}
@@ -312,6 +345,7 @@ export function SidesPanel() {
           <GemPicker title={t('sides.gem')} value={side.gem} color={side.customColor} onGem={(v) => set({ gem: v })} onColor={(v) => set({ customColor: v })} />
           <Slider
             label={toi ? t('sides.partnerSize') : t('sides.size')}
+            icon={fi.ratio}
             value={side.ratio}
             min={LIMITS.sideRatio[0]}
             max={LIMITS.sideRatio[1]}
@@ -322,6 +356,7 @@ export function SidesPanel() {
           {!toi && side.count > 1 && (
             <Slider
               label={t('sides.graduation')}
+              icon={fi.graduation}
               value={side.graduation}
               min={LIMITS.graduation[0]}
               max={LIMITS.graduation[1]}
@@ -330,25 +365,27 @@ export function SidesPanel() {
               onChange={(v) => set({ graduation: v })}
             />
           )}
-          <Field label={t('sides.orientation')}>
-            <div className="chips" role="group" aria-label={t('sides.presetsAria')}>
+          <Field label={t('sides.orientation')} icon={fi.orientation}>
+            <div className="chips tiles" role="group" aria-label={t('sides.presetsAria')}>
               {/* A toi et moi has one partner stone, so "both one way" means nothing there. */}
               {presetsFor(shape, t).filter(([, , mirror]) => !toi || mirror).map(([name, rot, mirror]) => {
                 const active = side.rotationDeg === rot && (toi || side.mirror === mirror)
                 return (
                   <button key={name} type="button" aria-pressed={active} className={active ? 'chip on' : 'chip'} onClick={() => set({ rotationDeg: rot, mirror })}>
-                    {name}
+                    <SidePresetIcon shape={shape} rotate={rot} mirror={mirror} pair={toi} />
+                    <span>{name}</span>
                   </button>
                 )
               })}
             </div>
           </Field>
-          <Slider label={t('sides.rotation')} value={side.rotationDeg} min={LIMITS.sideRotationDeg[0]} max={LIMITS.sideRotationDeg[1]} step={5} format={(v) => `${v}°`} onChange={(v) => set({ rotationDeg: v })} />
-          {!toi && <Toggle label={t('sides.mirror')} value={side.mirror} onChange={(v) => set({ mirror: v })} />}
-          <Chips label={t('sides.setting')} value={side.setting} options={SIDE_SETTINGS} labels={labels(t, 'setting')} onChange={(v) => set({ setting: v })} />
-          <Slider label={t('sides.gap')} value={side.gapMm} min={LIMITS.sideGapMm[0]} max={LIMITS.sideGapMm[1]} step={0.05} format={mm} onChange={(v) => set({ gapMm: v })} />
+          <Slider label={t('sides.rotation')} icon={<ShapeIcon shape={shape} rotate={side.rotationDeg} />} value={side.rotationDeg} min={LIMITS.sideRotationDeg[0]} max={LIMITS.sideRotationDeg[1]} step={5} format={(v) => `${v}°`} onChange={(v) => set({ rotationDeg: v })} />
+          {!toi && <Toggle label={t('sides.mirror')} icon={fi.mirror} value={side.mirror} onChange={(v) => set({ mirror: v })} />}
+          <Chips label={t('sides.setting')} value={side.setting} options={SIDE_SETTINGS} labels={labels(t, 'setting')} icons={settingIcons} onChange={(v) => set({ setting: v })} />
+          <Slider label={t('sides.gap')} icon={fi.gap} value={side.gapMm} min={LIMITS.sideGapMm[0]} max={LIMITS.sideGapMm[1]} step={0.05} format={mm} onChange={(v) => set({ gapMm: v })} />
           <Slider
             label={toi ? t('sides.offsetDiagonal') : t('sides.offsetAlong')}
+            icon={fi.offset}
             value={side.offsetMm}
             min={LIMITS.sideOffsetMm[0]}
             max={LIMITS.sideOffsetMm[1]}
@@ -356,7 +393,7 @@ export function SidesPanel() {
             format={(v) => (v === 0 ? t('sides.inLine') : mm(v))}
             onChange={(v) => set({ offsetMm: v })}
           />
-          <Slider label={t('sides.height')} value={side.height} min={LIMITS.sideHeight[0]} max={LIMITS.sideHeight[1]} step={0.05} format={(v) => t('sides.heightValue', { pct: Math.round(v * 100) })} onChange={(v) => set({ height: v })} />
+          <Slider label={t('sides.height')} icon={fi.height} value={side.height} min={LIMITS.sideHeight[0]} max={LIMITS.sideHeight[1]} step={0.05} format={(v) => t('sides.heightValue', { pct: Math.round(v * 100) })} onChange={(v) => set({ height: v })} />
         </>
       )}
     </>
@@ -372,15 +409,16 @@ export function AccentsPanel() {
   const mm = useMm()
   return (
     <>
-      <Chips label={t('accents.style')} value={accents.style} options={ACCENTS} labels={labels(t, 'accent')} onChange={(v) => update((d) => void (d.accents.style = v))} />
+      <Chips label={t('accents.style')} value={accents.style} options={ACCENTS} labels={labels(t, 'accent')} icons={accentIcons} onChange={(v) => update((d) => void (d.accents.style = v))} />
       {accents.style !== 'none' && (
         <>
-          <Slider label={t('accents.stoneSize')} value={accents.stoneMm} min={LIMITS.accentStoneMm[0]} max={LIMITS.accentStoneMm[1]} step={0.05} format={(v) => t('accents.stoneSizeValue', { size: mm(v) })} onChange={(v) => update((d) => void (d.accents.stoneMm = v))} />
-          <Select label={t('accents.cut')} value={accents.meleeCut} options={['auto', ...STONE_SHAPES] as const} labels={{ auto: t('accents.cutAuto'), ...labels(t, 'shape') }} onChange={(v) => update((d) => void (d.accents.meleeCut = v))} />
-          <Toggle label={t('accents.bezelSet')} value={accents.bezelSet} onChange={(v) => update((d) => void (d.accents.bezelSet = v))} />
+          <Slider label={t('accents.stoneSize')} icon={fi.melee} value={accents.stoneMm} min={LIMITS.accentStoneMm[0]} max={LIMITS.accentStoneMm[1]} step={0.05} format={(v) => t('accents.stoneSizeValue', { size: mm(v) })} onChange={(v) => update((d) => void (d.accents.stoneMm = v))} />
+          <Chips label={t('accents.cut')} value={accents.meleeCut} options={['auto', ...STONE_SHAPES] as const} icons={{ auto: autoIcon, ...shapeIcons }} labels={{ auto: t('accents.cutAuto'), ...labels(t, 'shape') }} onChange={(v) => update((d) => void (d.accents.meleeCut = v))} />
+          <Toggle label={t('accents.bezelSet')} icon={fi.wall} value={accents.bezelSet} onChange={(v) => update((d) => void (d.accents.bezelSet = v))} />
           {accents.bezelSet && <BezelControls />}
           <Slider
             label={t('accents.spacing')}
+            icon={fi.spacing}
             value={accents.spacingMm}
             min={LIMITS.spacingMm[0]}
             max={LIMITS.spacingMm[1]}
@@ -391,6 +429,7 @@ export function AccentsPanel() {
           {(accents.style === 'pave' || accents.style === 'channel') && (
             <Slider
               label={t('accents.coverage')}
+              icon={fi.coverage}
               value={accents.coverageDeg}
               min={LIMITS.coverageDeg[0]}
               max={LIMITS.coverageDeg[1]}
@@ -402,6 +441,7 @@ export function AccentsPanel() {
           {accents.style !== 'channel' && (
             <Slider
               label={t('accents.rows')}
+              icon={fi.rows}
               value={accents.rows}
               min={LIMITS.rows[0]}
               max={LIMITS.rows[1]}
@@ -423,7 +463,7 @@ export function EngravePanel() {
   const { t } = useTranslation()
   return (
     <>
-      <Field label={t('engrave.inside')} hint={`${engraving.text.length}/${LIMITS.engravingLength[1]}`}>
+      <Field label={t('engrave.inside')} icon={fi.engrave} hint={`${engraving.text.length}/${LIMITS.engravingLength[1]}`}>
         <input
           type="text"
           aria-label={t('engrave.inside')}
@@ -433,7 +473,7 @@ export function EngravePanel() {
           onChange={(e) => update((d) => void (d.engraving.text = e.target.value))}
         />
       </Field>
-      <Chips label={t('engrave.font')} value={engraving.font} options={FONTS} labels={labels(t, 'font')} onChange={(v) => update((d) => void (d.engraving.font = v))} />
+      <Chips label={t('engrave.font')} value={engraving.font} options={FONTS} labels={labels(t, 'font')} icons={fontIcons} onChange={(v) => update((d) => void (d.engraving.font = v))} />
     </>
   )
 }

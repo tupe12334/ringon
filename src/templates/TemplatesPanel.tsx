@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { DesignIcon } from '../customizer/icons'
 import { BUILTIN_TEMPLATES } from './builtin'
 import { parseImport, shareUrl } from './share'
 import { useStore } from './store'
@@ -99,6 +100,7 @@ export function TemplatesPanel() {
           {templates.map((x) => (
             <li key={x.id}>
               <button type="button" className="template" onClick={() => setSpec(x.spec)}>
+                <DesignIcon spec={x.spec} />
                 {x.spec.name}
               </button>
               <button type="button" className="icon" aria-label={t('templates.delete', { name: x.spec.name })} onClick={() => remove(x.id)}>
@@ -121,6 +123,7 @@ export function TemplatesPanel() {
                 setName(builtinName(b.name))
               }}
             >
+              <DesignIcon spec={b} />
               {builtinName(b.name)}
             </button>
           </li>

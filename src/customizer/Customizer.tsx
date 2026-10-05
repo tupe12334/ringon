@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import i18n from '../i18n'
 import { useStore } from '../templates/store'
 import { TemplatesPanel } from '../templates/TemplatesPanel'
+import { tabIcons } from './icons'
 import { Preview } from './Preview'
 import { summary } from './summary'
 import { AccentsPanel, BandPanel, EngravePanel, MetalPanel, SettingPanel, SidesPanel, SizePanel, StonePanel } from './panels'
@@ -57,7 +58,8 @@ export function Customizer({ onTryOn }: { onTryOn: () => void }) {
       <nav className="tabs" role="tablist" aria-label={t('tabs.aria')}>
         {TABS.map((x) => (
           <button key={x.id} type="button" role="tab" aria-selected={x.id === tab} className={x.id === tab ? 'tab on' : 'tab'} onClick={() => setTab(x.id)}>
-            {t(`tabs.${x.id}`)}
+            {tabIcons[x.id]}
+            <span>{t(`tabs.${x.id}`)}</span>
           </button>
         ))}
       </nav>
