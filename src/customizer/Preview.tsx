@@ -193,6 +193,15 @@ function PathTracer({
   return null
 }
 
+/** OrbitControls blocks touch scrolling on the canvas; while rotation is locked, let a vertical swipe scroll the page. */
+function TouchScroll({ on }: { on: boolean }) {
+  const gl = useThree((s) => s.gl)
+  useEffect(() => {
+    gl.domElement.style.touchAction = on ? 'pan-y' : 'none'
+  }, [gl, on])
+  return null
+}
+
 export function Preview({ spec }: { spec: RingSpec }) {
   const storedPhotoreal = useStore((s) => s.photoreal)
   const setPhotoreal = useStore((s) => s.setPhotoreal)
@@ -202,7 +211,7 @@ export function Preview({ spec }: { spec: RingSpec }) {
   const photoreal = isPhotorealOn(state)
   const onTooSlow = useCallback(() => setSlowness((s) => markTooSlow({ stored: true, ...s })), [])
   const [dragging, setDragging] = useState(false)
-  // Locked: dragging no longer turns the ring (zoom still works), e.g. to scroll past it on a phone.
+  // Locked: dragging no longer turns the ring (zoom still works), and a phone can scroll past it.
   const [locked, setLocked] = useState(false)
   // The spec the view has been still on for SETTLE_MS; any edit or drag drops to real time.
   const [settled, setSettled] = useState<RingSpec | null>(null)
@@ -237,6 +246,7 @@ export function Preview({ spec }: { spec: RingSpec }) {
           <ContactShadows position={[0, floorY, 0]} opacity={0.35} scale={60} blur={2.5} far={20} resolution={256} />
         )}
         <PathTracer spec={spec} mode={mode} overlay={overlay} readout={readout} onTooSlow={onTooSlow} force={slowness.forced} />
+        <TouchScroll on={locked} />
         <OrbitControls
           makeDefault
           enablePan={false}
@@ -265,8 +275,8 @@ export function Preview({ spec }: { spec: RingSpec }) {
       >
         ✦ Photoreal {photoreal ? 'on' : 'off'}
       </button>
-      <button type="button" className="rotate-lock" aria-pressed={locked} title="Stop the ring turning when you drag" onClick={() => setLocked((v) => !v)}>
-        {locked ? '🔒 Rotation off' : '⟳ Rotation on'}
+      <button type="button" className="rotate-lock" aria-pressed={locked} title="Stop the ring turning when you drag it" onClick={() => setLocked((v) => !v)}>
+        🔒 Lock rotation
       </button>
       {isPausedForSlowness(state) && (
         <p className="photoreal-note" role="status">

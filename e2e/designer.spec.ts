@@ -185,9 +185,24 @@ test('photoreal path tracing: paused on a GPU-less device, still available on re
   await expect(render).toHaveAttribute('data-samples', '0')
 })
 
-test('rotation can be switched off in the preview', async ({ page }) => {
+test('rotation can be locked in the preview', async ({ page }) => {
+  // The WebGL canvas alone (preserveDrawingBuffer), not the path-traced overlay above it.
   const canvas = page.getByTestId('preview').locator('canvas').first()
   await expect(canvas).toBeVisible()
+  const pixels = () => canvas.evaluate((c: HTMLCanvasElement) => c.toDataURL())
+  // Wait until two reads 500 ms apart match: camera fit and damping have settled.
+  const still = async () => {
+    let prev = ''
+    await expect
+      .poll(async () => {
+        const now = await pixels()
+        const same = now === prev
+        prev = now
+        return same
+      }, { intervals: [500], timeout: 30_000 })
+      .toBe(true)
+    return prev
+  }
   const drag = async () => {
     const box = (await canvas.boundingBox())!
     const [x, y] = [box.x + box.width / 2, box.y + box.height / 2]
@@ -195,18 +210,26 @@ test('rotation can be switched off in the preview', async ({ page }) => {
     await page.mouse.down()
     await page.mouse.move(x + 150, y, { steps: 10 })
     await page.mouse.up()
-    await page.waitForTimeout(1500) // let damping settle
   }
-  const shot = () => canvas.screenshot()
-  await page.waitForTimeout(1500) // let the camera fit settle
 
-  await page.getByRole('button', { name: 'Rotation on' }).click()
-  await expect(page.getByRole('button', { name: 'Rotation off' })).toHaveAttribute('aria-pressed', 'true')
-  const before = await shot()
-  await drag()
-  expect((await shot()).equals(before)).toBe(true)
+  // Real-time rendering only: path tracing keeps refining the image while the view is still.
+  const photoreal = page.getByRole('button', { name: /Photoreal/ })
+  if ((await photoreal.getAttribute('aria-pressed')) === 'true') await photoreal.click()
+  await expect(photoreal).toHaveAttribute('aria-pressed', 'false')
 
-  await page.getByRole('button', { name: 'Rotation off' }).click()
+  const lock = page.getByRole('button', { name: 'Lock rotation' })
+  await expect(lock).toHaveAttribute('aria-pressed', 'false')
+  await lock.click()
+  await expect(lock).toHaveAttribute('aria-pressed', 'true')
+  // Locked, a vertical swipe scrolls the page instead of being swallowed by the canvas.
+  await expect(canvas).toHaveCSS('touch-action', 'pan-y')
+  const before = await still()
   await drag()
-  expect((await shot()).equals(before)).toBe(false)
+  expect(await still()).toBe(before)
+
+  await lock.click()
+  await expect(lock).toHaveAttribute('aria-pressed', 'false')
+  await expect(canvas).toHaveCSS('touch-action', 'none')
+  await drag()
+  await expect.poll(pixels).not.toBe(before)
 })
