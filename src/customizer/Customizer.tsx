@@ -1,9 +1,7 @@
-import { Bounds, ContactShadows, OrbitControls } from '@react-three/drei'
-import { Canvas } from '@react-three/fiber'
 import { useState, type ComponentType } from 'react'
-import { RingModel, StudioEnvironment } from '../ring/RingModel'
 import { useStore } from '../templates/store'
 import { TemplatesPanel } from '../templates/TemplatesPanel'
+import { Preview } from './Preview'
 import { summary } from './summary'
 import { AccentsPanel, BandPanel, EngravePanel, MetalPanel, SettingPanel, SidesPanel, SizePanel, StonePanel } from './panels'
 
@@ -35,16 +33,7 @@ export function Customizer({ onTryOn }: { onTryOn: () => void }) {
       </header>
 
       <div className="preview" data-testid="preview">
-        <Canvas dpr={[1, 2]} camera={{ fov: 35, position: [0, 32, 52], near: 1, far: 1000 }} gl={{ antialias: true, preserveDrawingBuffer: true }}>
-          <StudioEnvironment background />
-          <Bounds fit clip observe margin={1.25}>
-            <group rotation={[-Math.PI / 2, 0, 0]}>
-              <RingModel spec={spec} />
-            </group>
-          </Bounds>
-          <ContactShadows position={[0, -12, 0]} opacity={0.35} scale={60} blur={2.5} far={20} resolution={256} />
-          <OrbitControls makeDefault autoRotate autoRotateSpeed={0.6} enablePan={false} minDistance={15} maxDistance={150} />
-        </Canvas>
+        <Preview spec={spec} />
         <p className="summary" data-testid="summary">
           {summary(spec, system)}
         </p>
