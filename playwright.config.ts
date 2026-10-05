@@ -23,6 +23,8 @@ export default defineConfig({
   timeout: 90_000,
   // Software WebGL + hand tracking is CPU-heavy: parallel browsers starve each other.
   workers: 1,
+  // Software WebGL on a shared runner occasionally starves or crashes the browser.
+  retries: process.env.CI ? 1 : 0,
   globalSetup: './e2e/fake-camera.ts',
   use: {
     baseURL: `http://localhost:${port}`,
