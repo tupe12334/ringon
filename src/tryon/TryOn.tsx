@@ -2,7 +2,7 @@
 
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import type { HandLandmarker } from '@mediapipe/tasks-vision'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { RingModel, StudioEnvironment } from '../ring/RingModel'
 import type { RingSpec } from '../ring/spec'
@@ -86,6 +86,12 @@ function TrackedRing({ spec, video, landmarker, mirrored, finger, flip, fit, onS
   const last = useRef({ time: -1, seen: 0, status: '' as Status | '' })
   const innerR = spec.innerDiameterMm / 2
 
+  // Mark the ring's meshes as shadow casters whenever the design changes (children's layout
+  // effects have mounted the stones by now).
+  useLayoutEffect(() => {
+    if (ringModel.current) markShadowCasters(ringModel.current)
+  }, [spec])
+
   useEffect(() => {
     smoother.reset()
     hand.reset()
@@ -119,8 +125,8 @@ function TrackedRing({ spec, video, landmarker, mirrored, finger, flip, fit, onS
       g.quaternion.copy(p.quaternion)
       g.scale.setScalar(p.pxPerMm * fit)
       g.visible = true
+      if (light.current) light.current.castShadow = true
       aimShadowLight(light.current, g, p.pxPerMm * fit * (innerR + spec.band.thicknessMm + 12))
-      if (ringModel.current) markShadowCasters(ringModel.current)
       last.current.seen = now
       status = 'tracking'
       onPose(p)
@@ -128,6 +134,7 @@ function TrackedRing({ spec, video, landmarker, mirrored, finger, flip, fit, onS
       // Keep the ring a moment through dropped frames, then hide it.
       if (now - last.current.seen > 250) {
         g.visible = false
+        if (light.current) light.current.castShadow = false // no shadow pass for a hidden ring
         smoother.reset()
         // Out of view for a while: it may be the other hand that comes back.
         if (now - last.current.seen > 1000) hand.reset()
@@ -144,8 +151,9 @@ function TrackedRing({ spec, video, landmarker, mirrored, finger, flip, fit, onS
   return (
     <>
       {SHADOWS && (
-        // Key light from above the camera; it only adds the ring's shadow on the skin.
-        <directionalLight ref={light} intensity={0.5} castShadow shadow-mapSize={[256, 256]} shadow-bias={-0.002} shadow-normalBias={0.5} />
+        // Overhead key light for the ring's shadow on the skin. Kept dim: the studio environment
+        // already lights the ring, so the try-on matches the designer.
+        <directionalLight ref={light} intensity={0.15} castShadow shadow-mapSize={[256, 256]} shadow-bias={-0.002} shadow-normalBias={0.5} />
       )}
       <group ref={group} visible={false} name="tracked-ring">
         {/* Invisible finger: hides the part of the band behind it. */}
@@ -250,8 +258,8 @@ export function TryOn({ onBack }: { onBack: () => void }) {
     <div className="tryon">
       <Canvas
         orthographic
-        // PCF soft shadows: accurate where the band touches the skin; a small map keeps them soft.
-        shadows="soft"
+        // PCF shadows: accurate where the band touches the skin; a small map keeps them soft.
+        shadows
         camera={{ position: [0, 0, 1000], near: 1, far: 3000, zoom: 1 }}
         gl={{ antialias: true, preserveDrawingBuffer: true, toneMapping: THREE.NeutralToneMapping }}
         // The camera image is ~720p: more pixels than this only costs phones battery and frames.
