@@ -1,15 +1,9 @@
 // Starting points that follow common jeweler designs. Each is a full, valid spec.
 
 import { usToDiameter } from '../ring/sizes'
-import { DEFAULT_SPEC, type RingSpec } from '../ring/spec'
-
-const base = DEFAULT_SPEC
-const make = (name: string, patch: (s: RingSpec) => void): RingSpec => {
-  const s: RingSpec = structuredClone(base)
-  s.name = name
-  patch(s)
-  return s
-}
+import { type RingSpec } from '../ring/spec'
+import { EXAMPLE_TEMPLATES } from './examples'
+import { make } from './make'
 
 export const BUILTIN_TEMPLATES: RingSpec[] = [
   make('Classic solitaire', (s) => {
@@ -25,17 +19,17 @@ export const BUILTIN_TEMPLATES: RingSpec[] = [
   make('Emerald three stone', (s) => {
     s.band = { ...s.band, profile: 'd-shape', widthMm: 2.4, metal: 'white-gold-18k', headMetal: 'match' }
     s.stone = { ...s.stone, shape: 'emerald', carat: 1.5, setting: 'prong-4', prongTip: 'claw' }
-    s.accents = { ...s.accents, style: 'three-stone', sideRatio: 0.65 }
+    s.accents = { ...s.accents, side: { ...s.accents.side, count: 1, ratio: 0.65 } }
   }),
   make('Pear trilogy', (s) => {
     s.band = { ...s.band, profile: 'court', widthMm: 2.2, metal: 'platinum', headMetal: 'match' }
     s.stone = { ...s.stone, shape: 'oval', carat: 1.2, setting: 'prong-4', prongTip: 'claw' }
-    s.accents = { ...s.accents, style: 'three-stone', sideRatio: 0.6, side: { ...s.accents.side, shape: 'pear', rotationDeg: 90, mirror: true } }
+    s.accents = { ...s.accents, side: { ...s.accents.side, count: 1, ratio: 0.6, shape: 'pear', rotationDeg: 90, mirror: true } }
   }),
   make('Green pear trio', (s) => {
     s.band = { ...s.band, profile: 'court', widthMm: 1.8, metal: 'yellow-gold-18k', headMetal: 'match', taper: 0.85 }
     s.stone = { ...s.stone, shape: 'pear', carat: 2, gem: 'green-sapphire', setting: 'prong-6', prongTip: 'claw', settingHeightMm: 2.6 }
-    s.accents = { ...s.accents, style: 'three-stone', gem: 'diamond', sideRatio: 0.55, side: { ...s.accents.side, shape: 'pear', rotationDeg: 90, mirror: true, setting: 'prong-4', gapMm: 0.2, height: 0.8 } }
+    s.accents = { ...s.accents, side: { ...s.accents.side, count: 1, shape: 'trillion', gem: 'diamond', ratio: 0.6, rotationDeg: 90, mirror: true, setting: 'prong-4', gapMm: 0.2, height: 0.8, offsetMm: -1.5 } }
   }),
   make('Vintage bezel', (s) => {
     s.band = { ...s.band, profile: 'half-round', widthMm: 2.5, metal: 'rose-gold-18k', headMetal: 'match', finish: 'satin' }
@@ -69,4 +63,5 @@ export const BUILTIN_TEMPLATES: RingSpec[] = [
     s.stone = { ...s.stone, enabled: false }
     s.accents = { ...s.accents, style: 'channel', stoneMm: 2.4, gem: 'ruby' }
   }),
+  ...EXAMPLE_TEMPLATES,
 ]

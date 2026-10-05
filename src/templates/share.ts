@@ -3,7 +3,7 @@
 // #r= is deflated JSON, base64url; #d= (older links) is plain JSON, base64url.
 
 import { deflateSync, inflateSync, strFromU8, strToU8 } from 'fflate'
-import { sanitizeSpec, type RingSpec } from '../ring/spec'
+import { DEFAULT_SPEC, sanitizeSpec, type RingSpec } from '../ring/spec'
 
 const toBase64Url = (bytes: Uint8Array) =>
   btoa(String.fromCharCode(...bytes))
@@ -16,7 +16,20 @@ const fromBase64Url = (s: string) => {
   return Uint8Array.from(atob(b64 + '='.repeat((4 - (b64.length % 4)) % 4)), (c) => c.charCodeAt(0))
 }
 
-export const encodeSpec = (spec: RingSpec) => toBase64Url(deflateSync(strToU8(JSON.stringify(spec)), { level: 9 }))
+/** Only what differs from `base`; decoding fills the rest back in (sanitizeSpec). */
+function changes(value: unknown, base: unknown): unknown {
+  if (!value || typeof value !== 'object' || Array.isArray(value) || !base || typeof base !== 'object') return value
+  const out: Record<string, unknown> = {}
+  for (const [k, v] of Object.entries(value)) {
+    const b = (base as Record<string, unknown>)[k]
+    if (JSON.stringify(v) !== JSON.stringify(b)) out[k] = changes(v, b)
+  }
+  return out
+}
+
+// ponytail: links store changes from DEFAULT_SPEC, so changing a default later changes what old
+// links show for fields left at the default. Version the format if a default ever has to change.
+export const encodeSpec = (spec: RingSpec) => toBase64Url(deflateSync(strToU8(JSON.stringify(changes(spec, DEFAULT_SPEC))), { level: 9 }))
 
 /** Null when the value is not a decodable design. `plain` reads an older #d= link. */
 export function decodeSpec(encoded: string, plain = false): RingSpec | null {
