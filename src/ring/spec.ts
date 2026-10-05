@@ -37,6 +37,11 @@ export const STONE_SHAPES = [
   'pear',
   'marquise',
   'heart',
+  'baguette',
+  'tapered-baguette',
+  'trapezoid',
+  'half-moon',
+  'trillion',
 ] as const
 export type StoneShape = (typeof STONE_SHAPES)[number]
 
@@ -63,15 +68,31 @@ export type Gem = (typeof GEMS)[number]
 export const SETTINGS = ['prong-4', 'prong-6', 'bezel', 'half-bezel', 'tension'] as const
 export type Setting = (typeof SETTINGS)[number]
 
+/** Directional shapes have a "front" at +y: the point of a pear/heart, the wide end of a
+ * tapered baguette, the long edge of a trapezoid, the flat edge of a half-moon or trillion. */
+export const DIRECTIONAL_SHAPES: readonly StoneShape[] = ['pear', 'heart', 'tapered-baguette', 'trapezoid', 'half-moon', 'trillion']
+
+export const BEZEL_EDGES = ['plain', 'rounded', 'milgrain'] as const
+export type BezelEdge = (typeof BEZEL_EDGES)[number]
+
+/** Half-bezel: which parts of the outline keep a wall. */
+export const HALF_BEZEL_WALLS = ['sides', 'ends'] as const
+export type HalfBezelWalls = (typeof HALF_BEZEL_WALLS)[number]
+
 export const PRONG_TIPS = ['round', 'claw', 'v-tip'] as const
 export type ProngTip = (typeof PRONG_TIPS)[number]
 
-export const ACCENTS = ['none', 'pave', 'channel', 'three-stone', 'eternity', 'half-eternity'] as const
+/** Stones set into the band. Side stones next to the centre are separate (accents.side). */
+export const ACCENTS = ['none', 'pave', 'channel', 'eternity', 'half-eternity'] as const
 export type Accent = (typeof ACCENTS)[number]
 
-/** Melee cut for band accents; "auto" = princess in a channel, round otherwise. */
-export const MELEE_CUTS = ['auto', 'round', 'princess', 'baguette'] as const
-export type MeleeCut = (typeof MELEE_CUTS)[number]
+/** Side stones: matching on both sides of the centre, or one partner stone (toi et moi). */
+export const SIDE_LAYOUTS = ['both', 'toi-et-moi'] as const
+export type SideLayout = (typeof SIDE_LAYOUTS)[number]
+
+export const HALO_STYLES = ['classic', 'hidden'] as const
+export type HaloStyle = (typeof HALO_STYLES)[number]
+
 
 export const SIDE_SETTINGS = ['prong-4', 'prong-6', 'bezel'] as const
 export type SideSetting = (typeof SIDE_SETTINGS)[number]
@@ -92,6 +113,15 @@ export interface StoneSpec {
   settingHeightMm: number
   /** Rotate the stone on the finger, degrees (e.g. east–west oval = 90). */
   rotationDeg: number
+  /** Bezel look; also used by bezel-set side stones. */
+  bezel: {
+    /** Wall thickness, mm. */
+    wallMm: number
+    /** How far the wall rises over the girdle, as a share of the crown height (0 = flush). */
+    lip: number
+    edge: BezelEdge
+    halfWalls: HalfBezelWalls
+  }
 }
 
 export interface RingSpec {
@@ -118,22 +148,39 @@ export interface RingSpec {
     stoneMm: number
     gem: Gem
     customColor: string
+    /** Classic frames the girdle; hidden sits under it, seen from the side. */
+    style: HaloStyle
+    /** 1 = single halo, 2 = double halo. */
+    rows: number
   }
   accents: {
     style: Accent
+    /** Band stone size across the band, mm. */
     stoneMm: number
     gem: Gem
     customColor: string
-    /** For three-stone: side stone size relative to the centre stone. */
-    sideRatio: number
     /** Pavé / channel: how far the stones run down each side of the band, degrees from the top. */
     coverageDeg: number
     /** Pavé / eternity: rows across the band, capped by what fits; 0 = auto (two on a wide pavé band). */
     rows: number
-    meleeCut: MeleeCut
-    /** Three-stone side stones. */
+    /** Band stone cut; "auto" = princess in a channel, round otherwise. Long axis runs across the band. */
+    meleeCut: StoneShape | 'auto'
+    /** Extra metal between band stones, mm (wide spacing = "stations" / "diamonds by the yard"). */
+    spacingMm: number
+    /** Each band stone in its own bezel cup instead of pavé beads. */
+    bezelSet: boolean
+    /** Side stones beside the centre stone (three-stone, five-stone, toi et moi). */
     side: {
+      /** Stones on each side of the centre: 0 none, 1 three-stone, 2 five-stone, 3 seven-stone. */
+      count: number
+      layout: SideLayout
       shape: StoneShape | 'match'
+      /** First side stone size relative to the centre stone (by face-up size). */
+      ratio: number
+      /** Each further stone out relative to the previous one. */
+      graduation: number
+      gem: Gem
+      customColor: string
       /** Rotation of the right stone, degrees; 0 = long axis along the finger, 90 = across. */
       rotationDeg: number
       /** Left stone is the mirror image of the right (pears/hearts point the same way relative to the centre). */
@@ -141,8 +188,11 @@ export interface RingSpec {
       setting: SideSetting
       /** Metal gap between the centre and each side stone, mm. */
       gapMm: number
-      /** Side stone girdle height relative to the centre stone's, 0.5 – 1. */
+      /** Side stone girdle height relative to the centre stone's, 0.4 – 1. */
       height: number
+      /** Shift the side stones along the finger, mm (e.g. tuck them against a pear's round end;
+       * for toi et moi this sets the pair diagonally). */
+      offsetMm: number
     }
   }
   engraving: {
@@ -175,18 +225,34 @@ export const DEFAULT_SPEC: RingSpec = {
     prongTip: 'round',
     settingHeightMm: 3,
     rotationDeg: 0,
+    bezel: { wallMm: 0.5, lip: 0.3, edge: 'plain', halfWalls: 'sides' },
   },
-  halo: { enabled: false, stoneMm: 1.2, gem: 'diamond', customColor: '#ffffff' },
+  halo: { enabled: false, stoneMm: 1.2, gem: 'diamond', customColor: '#ffffff', style: 'classic', rows: 1 },
   accents: {
     style: 'none',
     stoneMm: 1.3,
     gem: 'diamond',
     customColor: '#ffffff',
-    sideRatio: 0.6,
     coverageDeg: 60,
     rows: 0,
     meleeCut: 'auto',
-    side: { shape: 'match', rotationDeg: 0, mirror: true, setting: 'prong-4', gapMm: 0.4, height: 0.7 },
+    spacingMm: 0,
+    bezelSet: false,
+    side: {
+      count: 0,
+      layout: 'both',
+      shape: 'match',
+      ratio: 0.6,
+      graduation: 0.8,
+      gem: 'diamond',
+      customColor: '#ffffff',
+      rotationDeg: 0,
+      mirror: true,
+      setting: 'prong-4',
+      gapMm: 0.4,
+      height: 0.7,
+      offsetMm: 0,
+    },
   },
   engraving: { text: '', font: 'script' },
 }
@@ -197,17 +263,24 @@ export const LIMITS = {
   widthMm: [1.2, 12],
   thicknessMm: [1, 3.5],
   taper: [0.5, 1],
-  carat: [0.1, 5],
+  carat: [0.05, 5],
   settingHeightMm: [1, 6],
   rotationDeg: [0, 180],
+  bezelWallMm: [0.25, 1.5],
+  bezelLip: [0, 1],
   haloStoneMm: [0.8, 2],
   accentStoneMm: [0.8, 3],
-  sideRatio: [0.3, 1],
+  sideRatio: [0.3, 1.2],
+  sideCount: [0, 3],
+  graduation: [0.5, 1],
+  sideOffsetMm: [-8, 8],
+  spacingMm: [0, 12],
+  haloRows: [1, 2],
   coverageDeg: [15, 175],
   rows: [0, 3],
   sideRotationDeg: [-180, 180],
   sideGapMm: [0.1, 3],
-  sideHeight: [0.4, 1],
+  sideHeight: [0.4, 1.2],
   engravingLength: [0, 40],
 } as const
 
@@ -234,10 +307,13 @@ export function sanitizeSpec(input: unknown): RingSpec {
   const i = obj(input)
   const band = obj(i.band)
   const stone = obj(i.stone)
+  const bz = obj(stone.bezel)
+  const dbz = d.stone.bezel
   const halo = obj(i.halo)
   const accents = obj(i.accents)
   const side = obj(accents.side)
   const ds = d.accents.side
+  const threeStone = accents.style === 'three-stone'
   const engraving = obj(i.engraving)
   const text = typeof engraving.text === 'string' ? engraving.text : ''
   const name = typeof i.name === 'string' && i.name.trim() ? i.name.trim().slice(0, 60) : d.name
@@ -266,30 +342,48 @@ export function sanitizeSpec(input: unknown): RingSpec {
       prongTip: pick(stone.prongTip, PRONG_TIPS, d.stone.prongTip),
       settingHeightMm: clamp(stone.settingHeightMm, LIMITS.settingHeightMm, d.stone.settingHeightMm),
       rotationDeg: clamp(stone.rotationDeg, LIMITS.rotationDeg, d.stone.rotationDeg),
+      bezel: {
+        wallMm: clamp(bz.wallMm, LIMITS.bezelWallMm, dbz.wallMm),
+        lip: clamp(bz.lip, LIMITS.bezelLip, dbz.lip),
+        edge: pick(bz.edge, BEZEL_EDGES, dbz.edge),
+        halfWalls: pick(bz.halfWalls, HALF_BEZEL_WALLS, dbz.halfWalls),
+      },
     },
     halo: {
       enabled: bool(halo.enabled, d.halo.enabled),
       stoneMm: clamp(halo.stoneMm, LIMITS.haloStoneMm, d.halo.stoneMm),
       gem: pick(halo.gem, GEMS, d.halo.gem),
       customColor: color(halo.customColor, d.halo.customColor),
+      style: pick(halo.style, HALO_STYLES, d.halo.style),
+      rows: Math.round(clamp(halo.rows, LIMITS.haloRows, d.halo.rows)),
     },
     accents: {
       style: pick(accents.style, ACCENTS, d.accents.style),
       stoneMm: clamp(accents.stoneMm, LIMITS.accentStoneMm, d.accents.stoneMm),
       gem: pick(accents.gem, GEMS, d.accents.gem),
       customColor: color(accents.customColor, d.accents.customColor),
-      sideRatio: clamp(accents.sideRatio, LIMITS.sideRatio, d.accents.sideRatio),
       coverageDeg: clamp(accents.coverageDeg, LIMITS.coverageDeg, d.accents.coverageDeg),
       rows: Math.round(clamp(accents.rows, LIMITS.rows, d.accents.rows)),
-      meleeCut: pick(accents.meleeCut, MELEE_CUTS, d.accents.meleeCut),
+      // Older designs had round/princess/baguette plus "auto".
+      meleeCut: pick(accents.meleeCut, [...STONE_SHAPES, 'auto' as const], d.accents.meleeCut),
+      spacingMm: clamp(accents.spacingMm, LIMITS.spacingMm, d.accents.spacingMm),
+      bezelSet: bool(accents.bezelSet, d.accents.bezelSet),
       side: {
+        // Designs from before side stones were separate used style "three-stone".
+        count: Math.round(clamp(side.count, LIMITS.sideCount, threeStone ? 1 : ds.count)),
+        layout: pick(side.layout, SIDE_LAYOUTS, ds.layout),
         shape: pick(side.shape, [...STONE_SHAPES, 'match' as const], ds.shape),
+        ratio: clamp(side.ratio ?? accents.sideRatio, LIMITS.sideRatio, ds.ratio),
+        graduation: clamp(side.graduation, LIMITS.graduation, ds.graduation),
+        gem: pick(side.gem ?? (threeStone ? accents.gem : undefined), GEMS, ds.gem),
+        customColor: color(side.customColor ?? (threeStone ? accents.customColor : undefined), ds.customColor),
         // Angles wrap (190° is −170°) rather than clamp.
         rotationDeg: typeof side.rotationDeg === 'number' && Number.isFinite(side.rotationDeg) ? ((((side.rotationDeg + 180) % 360) + 360) % 360) - 180 : ds.rotationDeg,
         mirror: bool(side.mirror, ds.mirror),
         setting: pick(side.setting, SIDE_SETTINGS, ds.setting),
         gapMm: clamp(side.gapMm, LIMITS.sideGapMm, ds.gapMm),
         height: clamp(side.height, LIMITS.sideHeight, ds.height),
+        offsetMm: clamp(side.offsetMm, LIMITS.sideOffsetMm, ds.offsetMm),
       },
     },
     engraving: {

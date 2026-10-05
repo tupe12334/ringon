@@ -5,7 +5,7 @@ import { RingModel, StudioEnvironment } from '../ring/RingModel'
 import { useStore } from '../templates/store'
 import { TemplatesPanel } from '../templates/TemplatesPanel'
 import { summary } from './summary'
-import { AccentsPanel, BandPanel, EngravePanel, MetalPanel, SettingPanel, SizePanel, StonePanel } from './panels'
+import { AccentsPanel, BandPanel, EngravePanel, MetalPanel, SettingPanel, SidesPanel, SizePanel, StonePanel } from './panels'
 
 const TABS: { id: string; label: string; Panel: ComponentType }[] = [
   { id: 'templates', label: 'Templates', Panel: TemplatesPanel },
@@ -14,7 +14,8 @@ const TABS: { id: string; label: string; Panel: ComponentType }[] = [
   { id: 'metal', label: 'Metal', Panel: MetalPanel },
   { id: 'stone', label: 'Stone', Panel: StonePanel },
   { id: 'setting', label: 'Setting', Panel: SettingPanel },
-  { id: 'accents', label: 'Accents', Panel: AccentsPanel },
+  { id: 'sides', label: 'Side stones', Panel: SidesPanel },
+  { id: 'accents', label: 'Band stones', Panel: AccentsPanel },
   { id: 'engrave', label: 'Engrave', Panel: EngravePanel },
 ]
 

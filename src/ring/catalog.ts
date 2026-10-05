@@ -74,6 +74,12 @@ export const SHAPE_INFO: Record<StoneShape, { label: string; length1ct: number; 
   pear: { label: 'Pear', length1ct: 8.5, width1ct: 5.5 },
   marquise: { label: 'Marquise', length1ct: 10.0, width1ct: 5.0 },
   heart: { label: 'Heart', length1ct: 6.5, width1ct: 6.5 },
+  baguette: { label: 'Baguette', length1ct: 8.0, width1ct: 4.0 },
+  'tapered-baguette': { label: 'Tapered baguette', length1ct: 8.0, width1ct: 4.5 },
+  // Trapezoid, half-moon and trillion are wider than long: width is the front edge.
+  trapezoid: { label: 'Trapezoid', length1ct: 5.0, width1ct: 8.0 },
+  'half-moon': { label: 'Half moon', length1ct: 4.5, width1ct: 9.0 },
+  trillion: { label: 'Trillion', length1ct: 6.5, width1ct: 7.5 },
 }
 
 export const SETTING_INFO: Record<Setting, string> = {
@@ -94,7 +100,6 @@ export const ACCENT_INFO: Record<Accent, string> = {
   none: 'None',
   pave: 'Pavé',
   channel: 'Channel',
-  'three-stone': 'Three stone',
   eternity: 'Full eternity',
   'half-eternity': 'Half eternity',
 }

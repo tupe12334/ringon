@@ -14,7 +14,7 @@ test('customises every section and updates the summary', async ({ page }) => {
   await page.getByLabel('Band metal').selectOption('platinum')
   await expect(summary).toContainText('Platinum')
 
-  await page.getByRole('tab', { name: 'Stone' }).click()
+  await page.getByRole('tab', { name: 'Stone', exact: true }).click()
   await page.getByRole('radio', { name: 'Oval' }).click()
   await page.getByLabel('Gem', { exact: true }).selectOption('sapphire')
   await expect(summary).toContainText('oval blue sapphire')
@@ -24,9 +24,9 @@ test('customises every section and updates the summary', async ({ page }) => {
   await page.getByLabel('Ring size').selectOption('54')
   await expect(summary).toContainText('EU / ISO 54')
 
-  for (const tab of ['Band', 'Setting', 'Accents', 'Engrave']) {
-    await page.getByRole('tab', { name: tab }).click()
-    await expect(page.getByRole('tabpanel', { name: tab })).toBeVisible()
+  for (const tab of ['Band', 'Setting', 'Side stones', 'Band stones', 'Engrave']) {
+    await page.getByRole('tab', { name: tab, exact: true }).click()
+    await expect(page.getByRole('tabpanel', { name: tab, exact: true })).toBeVisible()
   }
   await page.getByLabel('Inside engraving').fill('Forever')
   await expect(page.getByLabel('Inside engraving')).toHaveValue('Forever')
@@ -93,21 +93,72 @@ test('import rejects a file that is not a design', async ({ page }) => {
   await expect(page.getByRole('status')).toHaveText('That file is not a Ringon design')
 })
 
-test('sets three-stone side stones and their orientation', async ({ page }) => {
-  await page.getByRole('tab', { name: 'Accents' }).click()
+test('sets three-stone side stones, their shape and orientation', async ({ page }) => {
+  await page.getByRole('tab', { name: 'Side stones' }).click()
   await page.getByRole('radio', { name: 'Three stone' }).click()
-  await page.getByLabel('Side stone shape').selectOption('pear')
-  await page.getByRole('button', { name: 'Point to centre' }).click()
-  await expect(page.getByRole('button', { name: 'Point to centre' })).toHaveAttribute('aria-pressed', 'true')
+  await page.getByLabel('Side stone shape').selectOption('half-moon')
+  await page.getByRole('button', { name: 'Flat edge to centre' }).click()
   await expect(page.getByLabel('Side stone rotation')).toHaveValue('90')
+  await page.getByLabel('Side stone shape').selectOption('pear')
+  await page.getByRole('button', { name: 'Point outward' }).click()
+  await expect(page.getByRole('button', { name: 'Point outward' })).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByLabel('Side stone rotation')).toHaveValue('-90')
+  await page.getByLabel('Side stone gem').selectOption('sapphire')
   await page.getByRole('radio', { name: 'Bezel' }).click()
-  await page.getByLabel('Mirror left stone').uncheck()
-  await expect(page.getByRole('button', { name: 'Point to centre' })).toHaveAttribute('aria-pressed', 'false')
+  await page.getByLabel('Mirror left stones').uncheck()
+  await expect(page.getByRole('button', { name: 'Point outward' })).toHaveAttribute('aria-pressed', 'false')
 
-  // The design (incl. side stones) persists across a reload.
+  // Bezel look is set on the Setting tab and applies to the side bezels too.
+  await page.getByRole('tab', { name: 'Setting' }).click()
+  await page.getByRole('radio', { name: 'Milgrain' }).click()
+  await page.getByLabel('Bezel wall').fill('1.2')
+  await expect(page.getByText('1.2 mm · chunky')).toBeVisible()
+
+  // The design persists across a reload.
   await page.reload()
-  await page.getByRole('tab', { name: 'Accents' }).click()
+  await page.getByRole('tab', { name: 'Side stones' }).click()
   await expect(page.getByLabel('Side stone shape')).toHaveValue('pear')
-  await expect(page.getByLabel('Mirror left stone')).not.toBeChecked()
+  await expect(page.getByLabel('Side stone gem')).toHaveValue('sapphire')
+  await expect(page.getByLabel('Mirror left stones')).not.toBeChecked()
   await expect(page.getByRole('radio', { name: 'Bezel' })).toHaveAttribute('aria-checked', 'true')
+  await page.getByRole('tab', { name: 'Setting' }).click()
+  await expect(page.getByRole('radio', { name: 'Milgrain' })).toHaveAttribute('aria-checked', 'true')
+})
+
+test('builds a five stone ring with a pavé band, and a toi et moi', async ({ page }) => {
+  await page.getByRole('tab', { name: 'Side stones' }).click()
+  await page.getByRole('radio', { name: 'Five stone' }).click()
+  await expect(page.getByLabel('Graduation')).toBeVisible()
+  await page.getByRole('tab', { name: 'Band stones' }).click()
+  await page.getByRole('radio', { name: 'Pavé' }).click()
+  // Side stones and band stones combine (e.g. a trilogy on a pavé band).
+  await page.getByRole('tab', { name: 'Side stones' }).click()
+  await expect(page.getByRole('radio', { name: 'Five stone' })).toHaveAttribute('aria-checked', 'true')
+
+  await page.getByRole('radio', { name: 'Toi et moi (pair)' }).click()
+  await expect(page.getByLabel('Diagonal offset')).toBeVisible()
+  await expect(page.getByLabel('Partner stone size')).toBeVisible()
+})
+
+test('half bezel walls and hidden or double halo', async ({ page }) => {
+  await page.getByRole('tab', { name: 'Setting' }).click()
+  await page.getByRole('radio', { name: 'Half bezel' }).click()
+  await page.getByRole('radio', { name: 'On the ends (open sides)' }).click()
+  await expect(page.getByRole('radio', { name: 'On the ends (open sides)' })).toHaveAttribute('aria-checked', 'true')
+  await page.getByLabel('Halo').check()
+  await page.getByRole('radio', { name: 'Double' }).click()
+  await page.getByRole('radio', { name: 'Hidden (under the stone)' }).click()
+  await expect(page.getByRole('radio', { name: 'Double' })).toHaveCount(0)
+})
+
+test('opens every real-ring example', async ({ page }) => {
+  for (const name of ['Oval with half moons', 'Cushion trilogy on pavé', 'Toi et moi with emerald pear', 'East-west half bezel oval', 'Bezel eternity', 'Hidden halo oval']) {
+    await page.getByRole('tab', { name: 'Templates' }).click()
+    await page.getByRole('button', { name, exact: true }).click()
+    await expect(page.getByTestId('summary')).toBeVisible()
+  }
+  await page.getByRole('tab', { name: 'Side stones' }).click()
+  await expect(page.getByRole('radio', { name: 'None' })).toHaveAttribute('aria-checked', 'true')
+  await page.getByRole('tab', { name: 'Band stones' }).click()
+  await expect(page.getByLabel('Bezel-set (each stone in its own rim)')).not.toBeChecked()
 })

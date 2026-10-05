@@ -19,7 +19,11 @@ import {
   FONTS,
   GEMS,
   LIMITS,
-  MELEE_CUTS,
+  BEZEL_EDGES,
+  DIRECTIONAL_SHAPES,
+  HALF_BEZEL_WALLS,
+  HALO_STYLES,
+  SIDE_LAYOUTS,
   METALS,
   PRONG_TIPS,
   PROFILES,
@@ -27,6 +31,7 @@ import {
   SIDE_SETTINGS,
   STONE_SHAPES,
   type Gem,
+  type StoneShape,
 } from '../ring/spec'
 import { useStore } from '../templates/store'
 import { Chips, ColorInput, Field, Select, Slider, Toggle } from './controls'
@@ -174,16 +179,51 @@ export function StonePanel() {
   )
 }
 
+export function BezelControls() {
+  const bz = useStore((s) => s.spec.stone.bezel)
+  const half = useStore((s) => s.spec.stone.setting === 'half-bezel')
+  const update = useStore((s) => s.update)
+  const set = (patch: Partial<typeof bz>) => update((d) => void Object.assign(d.stone.bezel, patch))
+  return (
+    <>
+      {half && <Chips label="Half-bezel walls" value={bz.halfWalls} options={HALF_BEZEL_WALLS} labels={{ sides: 'On the sides (open ends)', ends: 'On the ends (open sides)' }} onChange={(v) => set({ halfWalls: v })} />}
+      <Slider
+        label="Bezel wall"
+        value={bz.wallMm}
+        min={LIMITS.bezelWallMm[0]}
+        max={LIMITS.bezelWallMm[1]}
+        step={0.05}
+        format={(v) => `${mm(v)} · ${v < 0.5 ? 'fine' : v < 0.9 ? 'classic' : 'chunky'}`}
+        onChange={(v) => set({ wallMm: v })}
+      />
+      <Slider
+        label="Bezel lip"
+        value={bz.lip}
+        min={LIMITS.bezelLip[0]}
+        max={LIMITS.bezelLip[1]}
+        step={0.05}
+        format={(v) => (v === 0 ? 'flush with the girdle' : `${Math.round(v * 100)}% up the crown`)}
+        onChange={(v) => set({ lip: v })}
+      />
+      <Chips label="Bezel edge" value={bz.edge} options={BEZEL_EDGES} labels={{ plain: 'Plain', rounded: 'Rounded', milgrain: 'Milgrain' }} onChange={(v) => set({ edge: v })} />
+    </>
+  )
+}
+
 export function SettingPanel() {
   const stone = useStore((s) => s.spec.stone)
   const halo = useStore((s) => s.spec.halo)
+  const sideBezel = useStore((s) => (s.spec.accents.side.count > 0 || s.spec.accents.side.layout === 'toi-et-moi') && s.spec.accents.side.setting === 'bezel')
+  const bandBezel = useStore((s) => s.spec.accents.style !== 'none' && s.spec.accents.bezelSet)
   const update = useStore((s) => s.update)
   if (!stone.enabled) return <p className="note">Turn on a centre stone to choose its setting.</p>
   const prongs = stone.setting === 'prong-4' || stone.setting === 'prong-6'
+  const bezel = stone.setting === 'bezel' || stone.setting === 'half-bezel'
   return (
     <>
       <Chips label="Setting" value={stone.setting} options={SETTINGS} labels={SETTING_INFO} onChange={(v) => update((d) => void (d.stone.setting = v))} />
       {prongs && <Chips label="Prong tips" value={stone.prongTip} options={PRONG_TIPS} labels={PRONG_TIP_INFO} onChange={(v) => update((d) => void (d.stone.prongTip = v))} />}
+      {(bezel || sideBezel || bandBezel) && <BezelControls />}
       {stone.setting !== 'tension' && (
         <Slider
           label="Setting height"
@@ -198,6 +238,10 @@ export function SettingPanel() {
       <Toggle label="Halo" value={halo.enabled} onChange={(v) => update((d) => void (d.halo.enabled = v))} />
       {halo.enabled && (
         <>
+          <Chips label="Halo style" value={halo.style} options={HALO_STYLES} labels={{ classic: 'Classic (around the stone)', hidden: 'Hidden (under the stone)' }} onChange={(v) => update((d) => void (d.halo.style = v))} />
+          {halo.style === 'classic' && (
+            <Chips label="Halo rows" value={String(halo.rows)} options={['1', '2'] as const} labels={{ '1': 'Single', '2': 'Double' }} onChange={(v) => update((d) => void (d.halo.rows = Number(v)))} />
+          )}
           <Slider label="Halo stone size" value={halo.stoneMm} min={LIMITS.haloStoneMm[0]} max={LIMITS.haloStoneMm[1]} step={0.05} format={(v) => `${mm(v)} · ${meleeCarat(v).toFixed(3)} ct each`} onChange={(v) => update((d) => void (d.halo.stoneMm = v))} />
           <GemPicker title="Halo gem" value={halo.gem} color={halo.customColor} onGem={(v) => update((d) => void (d.halo.gem = v))} onColor={(v) => update((d) => void (d.halo.customColor = v))} />
         </>
@@ -207,94 +251,136 @@ export function SettingPanel() {
 }
 
 const SIDE_SETTING_LABELS = { 'prong-4': '4 prongs', 'prong-6': '6 prongs', bezel: 'Bezel' }
-const MELEE_CUT_LABELS = { auto: 'Auto', round: 'Round', princess: 'Princess', baguette: 'Baguette' }
+const SIDE_COUNT_LABELS = ['None', 'Three stone', 'Five stone', 'Seven stone']
+const shapeLabels = label(SHAPE_INFO)
 
-/** Common side-stone orientations: [label, rotation, mirror, for pointed shapes (pear/heart)?]. */
-const SIDE_PRESETS: [string, number, boolean, boolean][] = [
-  ['Along finger', 0, true, false],
-  ['Across finger', 90, true, false],
-  ['Point up the finger', 0, true, true],
-  ['Point to centre', 90, true, true],
-  ['Point outward', -90, true, true],
-  ['Both point one way', -90, false, true],
-]
+/** One-tap side-stone orientations: [label, rotation, mirror]. "Front" = a pear's point, a
+ * tapered baguette's wide end, a half-moon's or trillion's flat edge (see DIRECTIONAL_SHAPES). */
+const presetsFor = (shape: StoneShape): [string, number, boolean][] => {
+  if (!DIRECTIONAL_SHAPES.includes(shape))
+    return [
+      ['Along finger', 0, true],
+      ['Across finger', 90, true],
+    ]
+  const front = shape === 'pear' || shape === 'heart' ? ['Point', 'point'] : shape === 'tapered-baguette' ? ['Wide end', 'wide ends'] : ['Flat edge', 'flat edges']
+  return [
+    [`${front[0]} to centre`, 90, true],
+    [`${front[0]} outward`, -90, true],
+    [`${front[0]} up the finger`, 0, true],
+    [`Both ${front[1]} one way`, -90, false],
+  ]
+}
 
-export function AccentsPanel() {
-  const accents = useStore((s) => s.spec.accents)
+export function SidesPanel() {
+  const side = useStore((s) => s.spec.accents.side)
   const stone = useStore((s) => s.spec.stone)
-  const bandWidth = useStore((s) => s.spec.band.widthMm)
   const update = useStore((s) => s.update)
-  const styles = stone.enabled ? ACCENTS : ACCENTS.filter((a) => a !== 'three-stone')
-  const side = accents.side
-  const sideShape = side.shape === 'match' ? stone.shape : side.shape
-  const sideCarat = stone.carat * accents.sideRatio ** 3
-  const sd = stoneDimensions(sideShape, sideCarat, accents.gem)
-  const pointed = sideShape === 'pear' || sideShape === 'heart'
-  const bandStyle = accents.style !== 'none' && accents.style !== 'three-stone'
-  const maxRows = Math.max(1, Math.min(LIMITS.rows[1], Math.floor(bandWidth / (Math.min(accents.stoneMm, bandWidth * 0.85) * 1.05))))
+  if (!stone.enabled) return <p className="note">Turn on a centre stone to add side stones.</p>
+  const set = (patch: Partial<typeof side>) => update((d) => void Object.assign(d.accents.side, patch))
+  const shape = side.shape === 'match' ? stone.shape : side.shape
+  const toi = side.layout === 'toi-et-moi'
+  const on = toi || side.count > 0
+  const sizes = Array.from({ length: toi ? 1 : side.count }, (_, k) => {
+    const carat = stone.carat * (side.ratio * side.graduation ** k) ** 3
+    const d = stoneDimensions(shape, carat, side.gem)
+    return `${carat.toFixed(2)} ct ${d.length.toFixed(1)}×${d.width.toFixed(1)}`
+  })
   return (
     <>
-      <Chips label="Accent stones" value={accents.style} options={styles} labels={ACCENT_INFO} onChange={(v) => update((d) => void (d.accents.style = v))} />
-      {accents.style === 'three-stone' && (
+      <Chips label="Layout" value={side.layout} options={SIDE_LAYOUTS} labels={{ both: 'Both sides', 'toi-et-moi': 'Toi et moi (pair)' }} onChange={(v) => set({ layout: v, count: v === 'both' && !side.count ? 1 : side.count })} />
+      {!toi && (
+        <Chips
+          label="Side stones"
+          value={String(side.count)}
+          options={['0', '1', '2', '3'] as const}
+          labels={Object.fromEntries(SIDE_COUNT_LABELS.map((l, i) => [String(i), l]))}
+          onChange={(v) => set({ count: Number(v) })}
+        />
+      )}
+      {on && (
         <>
           <Select
             label="Side stone shape"
             value={side.shape}
             options={['match', ...STONE_SHAPES] as const}
-            labels={{ match: `Same as centre (${label(SHAPE_INFO)[stone.shape]})`, ...label(SHAPE_INFO) }}
-            onChange={(v) => update((d) => void (d.accents.side.shape = v))}
+            labels={{ match: `Same as centre (${shapeLabels[stone.shape]})`, ...shapeLabels }}
+            onChange={(v) => set({ shape: v })}
           />
+          <GemPicker title="Side stone gem" value={side.gem} color={side.customColor} onGem={(v) => set({ gem: v })} onColor={(v) => set({ customColor: v })} />
           <Slider
-            label="Side stone size"
-            value={accents.sideRatio}
+            label={toi ? 'Partner stone size' : 'Side stone size'}
+            value={side.ratio}
             min={LIMITS.sideRatio[0]}
             max={LIMITS.sideRatio[1]}
             step={0.05}
-            format={(v) => `${Math.round(v * 100)}% of centre · ${sideCarat.toFixed(2)} ct · ${sd.length.toFixed(1)}×${sd.width.toFixed(1)} mm`}
-            onChange={(v) => update((d) => void (d.accents.sideRatio = v))}
+            format={(v) => `${Math.round(v * 100)}% of centre · ${sizes[0]} mm`}
+            onChange={(v) => set({ ratio: v })}
           />
-          <Field label="Side stone orientation">
+          {!toi && side.count > 1 && (
+            <Slider
+              label="Graduation"
+              value={side.graduation}
+              min={LIMITS.graduation[0]}
+              max={LIMITS.graduation[1]}
+              step={0.05}
+              format={(v) => (v >= 1 ? 'all the same size' : `each next ${Math.round(v * 100)}% · ${sizes.slice(1).join(', ')} mm`)}
+              onChange={(v) => set({ graduation: v })}
+            />
+          )}
+          <Field label="Orientation">
             <div className="chips" role="group" aria-label="Side stone orientation presets">
-              {SIDE_PRESETS.filter((p) => p[3] === pointed).map(([name, rot, mirror]) => (
-                <button
-                  key={name}
-                  type="button"
-                  aria-pressed={side.rotationDeg === rot && side.mirror === mirror}
-                  className={side.rotationDeg === rot && side.mirror === mirror ? 'chip on' : 'chip'}
-                  onClick={() => update((d) => void Object.assign(d.accents.side, { rotationDeg: rot, mirror }))}
-                >
-                  {name}
-                </button>
-              ))}
+              {presetsFor(shape).map(([name, rot, mirror]) => {
+                const active = side.rotationDeg === rot && (toi || side.mirror === mirror)
+                return (
+                  <button key={name} type="button" aria-pressed={active} className={active ? 'chip on' : 'chip'} onClick={() => set({ rotationDeg: rot, mirror })}>
+                    {name}
+                  </button>
+                )
+              })}
             </div>
           </Field>
+          <Slider label="Side stone rotation" value={side.rotationDeg} min={LIMITS.sideRotationDeg[0]} max={LIMITS.sideRotationDeg[1]} step={5} format={(v) => `${v}°`} onChange={(v) => set({ rotationDeg: v })} />
+          {!toi && <Toggle label="Mirror left stones" value={side.mirror} onChange={(v) => set({ mirror: v })} />}
+          <Chips label="Side stone setting" value={side.setting} options={SIDE_SETTINGS} labels={SIDE_SETTING_LABELS} onChange={(v) => set({ setting: v })} />
+          <Slider label="Gap" value={side.gapMm} min={LIMITS.sideGapMm[0]} max={LIMITS.sideGapMm[1]} step={0.05} format={mm} onChange={(v) => set({ gapMm: v })} />
           <Slider
-            label="Side stone rotation"
-            value={side.rotationDeg}
-            min={LIMITS.sideRotationDeg[0]}
-            max={LIMITS.sideRotationDeg[1]}
-            step={5}
-            format={(v) => `${v}°`}
-            onChange={(v) => update((d) => void (d.accents.side.rotationDeg = v))}
+            label={toi ? 'Diagonal offset' : 'Offset along finger'}
+            value={side.offsetMm}
+            min={LIMITS.sideOffsetMm[0]}
+            max={LIMITS.sideOffsetMm[1]}
+            step={0.1}
+            format={(v) => (v === 0 ? 'in line' : mm(v))}
+            onChange={(v) => set({ offsetMm: v })}
           />
-          <Toggle label="Mirror left stone" value={side.mirror} onChange={(v) => update((d) => void (d.accents.side.mirror = v))} />
-          <Chips label="Side stone setting" value={side.setting} options={SIDE_SETTINGS} labels={SIDE_SETTING_LABELS} onChange={(v) => update((d) => void (d.accents.side.setting = v))} />
-          <Slider label="Gap to centre" value={side.gapMm} min={LIMITS.sideGapMm[0]} max={LIMITS.sideGapMm[1]} step={0.05} format={mm} onChange={(v) => update((d) => void (d.accents.side.gapMm = v))} />
-          <Slider
-            label="Side stone height"
-            value={side.height}
-            min={LIMITS.sideHeight[0]}
-            max={LIMITS.sideHeight[1]}
-            step={0.05}
-            format={(v) => `${Math.round(v * 100)}% of centre`}
-            onChange={(v) => update((d) => void (d.accents.side.height = v))}
-          />
+          <Slider label="Side stone height" value={side.height} min={LIMITS.sideHeight[0]} max={LIMITS.sideHeight[1]} step={0.05} format={(v) => `${Math.round(v * 100)}% of centre`} onChange={(v) => set({ height: v })} />
         </>
       )}
-      {bandStyle && (
+    </>
+  )
+}
+
+export function AccentsPanel() {
+  const accents = useStore((s) => s.spec.accents)
+  const bandWidth = useStore((s) => s.spec.band.widthMm)
+  const update = useStore((s) => s.update)
+  const maxRows = Math.max(1, Math.min(LIMITS.rows[1], Math.floor(bandWidth / (Math.min(accents.stoneMm, bandWidth * 0.85) * 1.05))))
+  return (
+    <>
+      <Chips label="Band stones" value={accents.style} options={ACCENTS} labels={ACCENT_INFO} onChange={(v) => update((d) => void (d.accents.style = v))} />
+      {accents.style !== 'none' && (
         <>
-          <Slider label="Stone size" value={accents.stoneMm} min={LIMITS.accentStoneMm[0]} max={LIMITS.accentStoneMm[1]} step={0.05} format={(v) => `${mm(v)} · ${meleeCarat(v).toFixed(3)} ct each`} onChange={(v) => update((d) => void (d.accents.stoneMm = v))} />
-          <Chips label="Cut" value={accents.meleeCut} options={MELEE_CUTS} labels={MELEE_CUT_LABELS} onChange={(v) => update((d) => void (d.accents.meleeCut = v))} />
+          <Slider label="Stone size" value={accents.stoneMm} min={LIMITS.accentStoneMm[0]} max={LIMITS.accentStoneMm[1]} step={0.05} format={(v) => `${mm(v)} across the band`} onChange={(v) => update((d) => void (d.accents.stoneMm = v))} />
+          <Select label="Cut" value={accents.meleeCut} options={['auto', ...STONE_SHAPES] as const} labels={{ auto: 'Auto (round, princess in a channel)', ...shapeLabels }} onChange={(v) => update((d) => void (d.accents.meleeCut = v))} />
+          <Toggle label="Bezel-set (each stone in its own rim)" value={accents.bezelSet} onChange={(v) => update((d) => void (d.accents.bezelSet = v))} />
+          <Slider
+            label="Spacing"
+            value={accents.spacingMm}
+            min={LIMITS.spacingMm[0]}
+            max={LIMITS.spacingMm[1]}
+            step={0.1}
+            format={(v) => (v === 0 ? 'touching' : `${mm(v)} apart${v >= 3 ? ' · stations' : ''}`)}
+            onChange={(v) => update((d) => void (d.accents.spacingMm = v))}
+          />
           {(accents.style === 'pave' || accents.style === 'channel') && (
             <Slider
               label="Coverage"
@@ -317,10 +403,8 @@ export function AccentsPanel() {
               onChange={(v) => update((d) => void (d.accents.rows = v))}
             />
           )}
+          <GemPicker title="Band stone gem" value={accents.gem} color={accents.customColor} onGem={(v) => update((d) => void (d.accents.gem = v))} onColor={(v) => update((d) => void (d.accents.customColor = v))} />
         </>
-      )}
-      {accents.style !== 'none' && (
-        <GemPicker title="Accent gem" value={accents.gem} color={accents.customColor} onGem={(v) => update((d) => void (d.accents.gem = v))} onColor={(v) => update((d) => void (d.accents.customColor = v))} />
       )}
     </>
   )

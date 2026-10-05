@@ -38,6 +38,42 @@ export function outline(shape: StoneShape, length: number, width: number, n = 32
     }
     case 'marquise':
       return ring((t) => [hw * Math.sign(Math.sin(t)) * Math.sin(t) ** 2, hl * Math.cos(t)])
+    case 'baguette':
+      return chamferedRect(hw, hl, Math.min(hw, hl) * 0.04, n)
+    // Front (+y) is the wide edge.
+    case 'tapered-baguette':
+      return resample([[-hw, hl], [-hw * 0.6, -hl], [hw * 0.6, -hl], [hw, hl]], n)
+    case 'trapezoid':
+      return resample([[-hw, hl], [-hw * 0.55, -hl], [hw * 0.55, -hl], [hw, hl]], n)
+    case 'half-moon':
+      // Flat front edge, arc behind.
+      return [
+        ...Array.from({ length: n - 2 }, (_, k): Pt => {
+          const t = Math.PI * (1 - (k + 1) / (n - 1))
+          return [hw * Math.cos(t), hl - 2 * hl * Math.sin(t)]
+        }),
+        [hw, hl],
+        [-hw, hl],
+      ]
+    case 'trillion': {
+      // Curved trillion (trilliant): convex sides bowed out by 12% of their length, front side at +y.
+      const corners: Pt[] = [[-hw, hl], [0, -hl], [hw, hl]]
+      const per = Math.max(2, Math.round(n / 3))
+      // Bowed sides overshoot the corners' box: scale back to width × length.
+      return fit(corners.flatMap(([x0, y0], i): Pt[] => {
+        const [x1, y1] = corners[(i + 1) % 3]
+        const len = Math.hypot(x1 - x0, y1 - y0)
+        const bulge = 0.12 * len
+        // Outward normal: away from the centroid (0, hl/3).
+        let [nx, ny] = [(y1 - y0) / len, -(x1 - x0) / len]
+        if (nx * ((x0 + x1) / 2) + ny * ((y0 + y1) / 2 - hl / 3) < 0) [nx, ny] = [-nx, -ny]
+        return Array.from({ length: per }, (_, k): Pt => {
+          const f = k / per
+          const b = bulge * Math.sin(Math.PI * f)
+          return [x0 + (x1 - x0) * f + nx * b, y0 + (y1 - y0) * f + ny * b]
+        })
+      }), hw, hl)
+    }
     case 'heart': {
       // Classic heart curve, scaled to fit width × length, point at +y.
       const raw = ring((t) => [

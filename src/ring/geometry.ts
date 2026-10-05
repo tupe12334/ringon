@@ -4,9 +4,9 @@
 
 import * as THREE from 'three'
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
-import { stoneDimensions } from './catalog'
+import { SHAPE_INFO, stoneDimensions } from './catalog'
 import { alongPerimeter, offsetOutline, outline, perimeter, type Pt } from './outline'
-import type { Gem, Profile, RingSpec, StoneShape } from './spec'
+import type { BezelEdge, Gem, Profile, RingSpec, StoneShape } from './spec'
 
 // ---------------------------------------------------------------------------------- band
 
@@ -186,9 +186,10 @@ function hash(a: number, b: number) {
 
 /** A faceted gemstone, table facing +Z, girdle at z = 0. Flat-shaded. */
 export function buildGem(shape: StoneShape, length: number, width: number): THREE.BufferGeometry {
-  const n = shape === 'round' ? 16 : shape === 'princess' || shape === 'asscher' ? 16 : 24
+  let n = shape === 'round' ? 16 : shape === 'princess' || shape === 'asscher' ? 16 : 24
   const girdle = outline(shape, length, width, n)
-  const stepCut = shape === 'emerald' || shape === 'asscher'
+  n = girdle.length
+  const stepCut = ['emerald', 'asscher', 'baguette', 'tapered-baguette', 'trapezoid'].includes(shape)
   const crown = width * 0.15
   const pavilion = width * (stepCut ? 0.4 : 0.43)
   const g = width * 0.015
@@ -322,23 +323,41 @@ function loft(rings: THREE.Vector3[][], closed: boolean) {
   return g
 }
 
-/** Bezel wall around an outline, from `z0` to `z1`, `t` thick. Optionally only some arcs. */
-function bezel(pts: Pt[], z0: number, z1: number, t: number, keep?: (p: Pt) => boolean) {
+/** Bezel wall around an outline, from `z0` to `z1`, `t` thick, with an edge finish. Optionally only some arcs. */
+function bezel(pts: Pt[], z0: number, z1: number, t: number, edge: BezelEdge = 'plain', keep?: (p: Pt) => boolean) {
   const inner = pts
   const outer = offsetOutline(pts, t)
+  const mid = offsetOutline(pts, t / 2)
   const v = (p: Pt, z: number) => new THREE.Vector3(p[0], p[1], z)
-  const build = (idx: number[], closed: boolean) =>
-    loft(
-      [
-        idx.map((i) => v(inner[i], z0)),
-        idx.map((i) => v(inner[i], z1)),
-        idx.map((i) => v(outer[i], z1)),
-        idx.map((i) => v(outer[i], z0)),
-        idx.map((i) => v(inner[i], z0)),
-      ],
-      closed,
-    )
-  if (!keep) return [build(pts.map((_, i) => i), true)]
+  const build = (idx: number[], closed: boolean) => {
+    const out = [
+      loft(
+        [
+          idx.map((i) => v(inner[i], z0)),
+          idx.map((i) => v(inner[i], z1)),
+          idx.map((i) => v(outer[i], z1)),
+          idx.map((i) => v(outer[i], z0)),
+          idx.map((i) => v(inner[i], z0)),
+        ],
+        closed,
+      ),
+    ]
+    if (edge === 'rounded') {
+      // Half-round rim along the top of the wall.
+      const curve = new THREE.CatmullRomCurve3(idx.map((i) => v(mid[i], z1)), closed)
+      out.push(new THREE.TubeGeometry(curve, Math.max(24, idx.length * 3), t / 2, 8, closed))
+    } else if (edge === 'milgrain') {
+      // A row of tiny beads along the outer top edge.
+      const r = Math.max(0.09, t * 0.22)
+      const path = idx.map((i) => outer[i])
+      const length = closed ? perimeter(path) : perimeter(path) - Math.hypot(path[0][0] - path.at(-1)![0], path[0][1] - path.at(-1)![1])
+      const beads = Math.max(6, Math.floor(length / (r * 2.4)))
+      const at = closed ? alongPerimeter(path, beads) : alongOpen(path, beads)
+      for (const [x, y] of at) out.push(new THREE.SphereGeometry(r, 6, 4).translate(x, y, z1 - r * 0.6))
+    }
+    return out
+  }
+  if (!keep) return build(pts.map((_, i) => i), true)
   // Split the kept points into contiguous arcs.
   const arcs: number[][] = []
   let cur: number[] = []
@@ -352,7 +371,22 @@ function bezel(pts: Pt[], z0: number, z1: number, t: number, keep?: (p: Pt) => b
     }
   }
   if (cur.length) arcs.push(cur)
-  return arcs.filter((a) => a.length > 1).map((a) => build(a, false))
+  return arcs.filter((a) => a.length > 1).flatMap((a) => build(a, false))
+}
+
+/** `count` points spread evenly along an open polyline. */
+function alongOpen(pts: Pt[], count: number): Pt[] {
+  const seg = pts.slice(1).map((q, i) => Math.hypot(q[0] - pts[i][0], q[1] - pts[i][1]))
+  const total = seg.reduce((x, y) => x + y, 0)
+  const out: Pt[] = []
+  for (let k = 0; k < count; k++) {
+    let target = ((k + 0.5) / count) * total
+    let i = 0
+    while (i < seg.length - 1 && target > seg[i]) target -= seg[i++]
+    const f = seg[i] ? target / seg[i] : 0
+    out.push([pts[i][0] + (pts[i + 1][0] - pts[i][0]) * f, pts[i][1] + (pts[i + 1][1] - pts[i][1]) * f])
+  }
+  return out
 }
 
 function merge(parts: THREE.BufferGeometry[]) {
@@ -399,6 +433,16 @@ export function buildRing(spec: RingSpec): RingParts {
   })
 
   let extent = ro
+  const a = spec.accents
+  const o = a.side
+  const toiEtMoi = o.layout === 'toi-et-moi'
+  // The offset moves side stones relative to the centre along the finger. Side stones stay on the
+  // band and the taller centre head moves instead; a toi et moi pair splits it to stay centred.
+  const sidesOn = s.enabled && (toiEtMoi || o.count > 0)
+  const yCentre = !sidesOn ? 0 : toiEtMoi ? -o.offsetMm / 2 : -o.offsetMm
+  const ySide = toiEtMoi ? o.offsetMm / 2 : 0
+  // Prongs and posts always meet the band on its centre line, wherever the stone sits along the finger.
+  const [bx, by] = rotate2([0, -yCentre], -s.rotationDeg)
   const rot = new THREE.Matrix4().makeRotationZ((s.rotationDeg * Math.PI) / 180)
 
   if (s.enabled) {
@@ -419,7 +463,7 @@ export function buildRing(spec: RingSpec): RingParts {
     if (s.setting === 'prong-4' || s.setting === 'prong-6') {
       for (const p of prongPoints(s.shape, pts, s.setting === 'prong-4' ? 4 : 6)) {
         const tip = new THREE.Vector3(p[0] * 1.03, p[1] * 1.03, zg + dims.crown * 0.35)
-        const base = new THREE.Vector3(p[0] * 0.3, p[1] * 0.3, ro - 0.3)
+        const base = new THREE.Vector3(p[0] * 0.3 + bx, p[1] * 0.3 + by, ro - 0.3)
         headParts.push(cylinderBetween(base, tip, prongR * 0.85, prongR))
         if (s.prongTip === 'round') headParts.push(new THREE.SphereGeometry(prongR * 1.1, 12, 8).translate(tip.x, tip.y, tip.z))
         else {
@@ -432,37 +476,46 @@ export function buildRing(spec: RingSpec): RingParts {
       const rail = pts.filter((_, i) => i % 2 === 0).map(([x, y]) => new THREE.Vector3(x * 0.72, y * 0.72, zg - dims.pavilion * 0.55))
       headParts.push(closedTube(rail, prongR * 0.55))
     } else if (s.setting === 'bezel' || s.setting === 'half-bezel') {
-      const keep = s.setting === 'half-bezel' ? (p: Pt) => Math.abs(p[0]) > (dims.width / 2) * 0.55 : undefined
-      headParts.push(...bezel(pts, zg - dims.pavilion * 0.75, zg + dims.crown * 0.3, 0.5, keep))
+      const bz = s.bezel
+      const keep =
+        s.setting !== 'half-bezel' ? undefined
+        : bz.halfWalls === 'sides' ? (p: Pt) => Math.abs(p[0]) > (dims.width / 2) * 0.55
+        : (p: Pt) => Math.abs(p[1]) > (dims.length / 2) * 0.55
+      headParts.push(...bezel(pts, zg - dims.pavilion * 0.75, zg + dims.crown * bz.lip, bz.wallMm, bz.edge, keep))
       // Cone joining the bezel cup to the band.
       const cup = pts.filter((_, i) => i % 3 === 0).map(([x, y]) => new THREE.Vector3(x * 0.55, y * 0.55, zg - dims.pavilion * 0.8))
       headParts.push(closedTube(cup, 0.45))
       for (const p of prongPoints(s.shape, pts, 4))
-        headParts.push(cylinderBetween(new THREE.Vector3(p[0] * 0.25, p[1] * 0.25, ro - 0.3), new THREE.Vector3(p[0] * 0.6, p[1] * 0.6, zg - dims.pavilion * 0.7), 0.45))
+        headParts.push(cylinderBetween(new THREE.Vector3(p[0] * 0.25 + bx, p[1] * 0.25 + by, ro - 0.3), new THREE.Vector3(p[0] * 0.6, p[1] * 0.6, zg - dims.pavilion * 0.7), 0.45))
     }
 
-    if (spec.halo.enabled) {
-      const d = spec.halo.stoneMm
-      const path = offsetOutline(pts, 0.25 + d / 2)
-      const count = Math.max(8, Math.floor(perimeter(path) / (d * 1.08)))
-      const z = zg - dims.crown * 0.2
+    const h = spec.halo
+    if (h.enabled) {
+      const d = h.stoneMm
       const melee = buildGem('round', d, d)
-      stones.push({
-        key: 'halo',
-        gem: spec.halo.gem,
-        customColor: spec.halo.customColor,
-        geometry: melee,
-        matrices: alongPerimeter(path, count).map(([x, y]) => rot.clone().multiply(new THREE.Matrix4().makeTranslation(x, y, z))),
-      })
-      const frame = offsetOutline(pts, 0.25 + d / 2)
-        .filter((_, i) => i % 2 === 0)
-        .map(([x, y]) => new THREE.Vector3(x, y, z - d * 0.45))
-      headParts.push(closedTube(frame, d * 0.42))
-      for (const p of prongPoints(s.shape, pts, 4)) {
-        const f = (dims.width / 2 + 0.25 + d) / Math.hypot(p[0], p[1])
-        headParts.push(cylinderBetween(new THREE.Vector3(p[0] * 0.25, p[1] * 0.25, ro - 0.3), new THREE.Vector3(p[0] * f, p[1] * f, z - d * 0.5), 0.4))
+      const matrices: THREE.Matrix4[] = []
+      if (h.style === 'hidden') {
+        // Under the girdle, hugging the pavilion: seen from the side, not from above.
+        const z = zg - dims.pavilion * 0.35
+        const path = offsetOutline(pts.map(([x, y]) => [x * 0.65, y * 0.65] as Pt), d / 2 + 0.05)
+        const count = Math.max(8, Math.floor(perimeter(path) / (d * 1.08)))
+        matrices.push(...alongPerimeter(path, count).map(([x, y]) => new THREE.Matrix4().makeTranslation(x, y, z)))
+        headParts.push(closedTube(path.filter((_, i) => i % 2 === 0).map(([x, y]) => new THREE.Vector3(x, y, z - d * 0.45)), d * 0.4))
+      } else {
+        const z = zg - dims.crown * 0.2
+        for (let row = 0; row < h.rows; row++) {
+          const path = offsetOutline(pts, 0.25 + d / 2 + row * (d * 1.05 + 0.15))
+          const count = Math.max(8, Math.floor(perimeter(path) / (d * 1.08)))
+          matrices.push(...alongPerimeter(path, count).map(([x, y]) => new THREE.Matrix4().makeTranslation(x, y, z)))
+          headParts.push(closedTube(path.filter((_, i) => i % 2 === 0).map(([x, y]) => new THREE.Vector3(x, y, z - d * 0.45)), d * 0.42))
+        }
+        for (const p of prongPoints(s.shape, pts, 4)) {
+          const f = (dims.width / 2 + 0.25 + d) / Math.hypot(p[0], p[1])
+          headParts.push(cylinderBetween(new THREE.Vector3(p[0] * 0.25 + bx, p[1] * 0.25 + by, ro - 0.3), new THREE.Vector3(p[0] * f, p[1] * f, z - d * 0.5), 0.4))
+        }
+        extent = Math.max(extent, z + d * 0.2)
       }
-      extent = Math.max(extent, z + d * 0.2)
+      stones.push({ key: 'halo', gem: h.gem, customColor: h.customColor, geometry: melee, matrices: matrices.map((m) => rot.clone().multiply(m)) })
     }
 
     if (headParts.length) {
@@ -472,73 +525,120 @@ export function buildRing(spec: RingSpec): RingParts {
     }
   }
 
-  // Accent stones along the band or beside the centre stone.
-  const a = spec.accents
-  if (a.style === 'three-stone' && s.enabled) {
-    const o = a.side
+  // Side stones next to the centre: three/five/seven-stone, or one partner stone (toi et moi).
+  const count = s.enabled ? (toiEtMoi ? 1 : o.count) : 0
+  /** How far down the band (radians from the top) the head and side stones reach. */
+  let headReach = 0
+  if (count) {
     const shape = o.shape === 'match' ? s.shape : o.shape
-    const sd = stoneDimensions(shape, s.carat * a.sideRatio ** 3, a.gem)
-    const gemGeom = buildGem(shape, sd.length, sd.width)
-    const sidePts = outline(shape, sd.length, sd.width, 48)
-    // Clear the centre stone (its halo, bezel walls) as it actually sits, rotated on the finger.
     const centreOutline = outline(s.shape, dims.length, dims.width, 48)
-    const centreWall = spec.halo.enabled ? spec.halo.stoneMm + 0.25 : s.setting === 'bezel' || s.setting === 'half-bezel' ? 0.5 : 0
-    const sideWall = o.setting === 'bezel' ? 0.4 : 0
+    const haloOuter = spec.halo.enabled && spec.halo.style === 'classic' ? 0.25 + spec.halo.rows * spec.halo.stoneMm + (spec.halo.rows - 1) * 0.15 : 0
+    const centreWall = haloOuter || (s.setting === 'bezel' || s.setting === 'half-bezel' ? s.bezel.wallMm : 0)
+    const sideWall = o.setting === 'bezel' ? s.bezel.wallMm : 0
     const centreZ = tension ? ro - spec.band.thicknessMm * 0.35 : ro + s.settingHeightMm
     const z = ro + Math.max(0.5, (centreZ - ro) * o.height)
-    const prongR = THREE.MathUtils.clamp(sd.width * 0.08, 0.3, 0.55)
-    const matrices: THREE.Matrix4[] = []
+    let pairShift = 0
+    const sidePlacements: { side: number; k: number; theta: number; deg: number; shape: StoneShape; sd: ReturnType<typeof stoneDimensions>; pts: Pt[] }[] = []
+    const turn = (pts: Pt[], deg: number, dx: number, dy: number): Pt[] => pts.map((p) => {
+      const [x, y] = rotate2(p, deg)
+      return [x + dx, y + dy]
+    })
+    for (const side of toiEtMoi ? [1] : [-1, 1]) {
+      // Flat layout first (x across the finger at girdle height), bent onto the band below.
+      let prev = turn(centreWall ? offsetOutline(centreOutline, centreWall) : centreOutline, s.rotationDeg, 0, yCentre)
+      let prevX = 0
+      for (let k = 0; k < count; k++) {
+        const ratio = o.ratio * o.graduation ** k
+        const sd = stoneDimensions(shape, s.carat * ratio ** 3, o.gem)
+        const pts = outline(shape, sd.length, sd.width, 48)
+        const deg = side < 0 && o.mirror ? -o.rotationDeg : o.rotationDeg
+        const own = sideWall ? offsetOutline(pts, sideWall) : pts
+        // Slide the stone in from far out until its outline is `gap` from the previous one.
+        const far = Math.max(...prev.map((p) => side * p[0])) + o.gapMm + reachX(own, deg, -side)
+        const cx = side * closestSlide((x) => polygonGap(prev, turn(own, deg, side * x, ySide)), prevX, far, o.gapMm)
+        prevX = side * cx
+        prev = turn(own, deg, cx, ySide)
+        // Bend onto the band so the stone keeps this x seen from above (at its girdle height).
+        sidePlacements.push({ side, k, theta: Math.asin(Math.max(-0.95, Math.min(0.95, cx / z))), deg, shape, sd, pts })
+        headReach = Math.max(headReach, Math.max(...prev.map((p) => side * p[0])) / ro)
+      }
+    }
+    if (toiEtMoi) pairShift = -sidePlacements[0].theta / 2
+    if (pairShift || yCentre) {
+      const shift = new THREE.Matrix4().makeRotationY(pairShift).multiply(new THREE.Matrix4().makeTranslation(0, yCentre, 0))
+      for (const st of stones) st.matrices = st.matrices.map((m) => shift.clone().multiply(m))
+      for (const g of parts) g.applyMatrix4(shift)
+    }
     const sideParts: THREE.BufferGeometry[] = []
-    for (const side of [-1, 1]) {
-      const deg = side < 0 && o.mirror ? -o.rotationDeg : o.rotationDeg
-      // Gap between the facing edges: the centre's edge toward this side, the side stone's edge toward the centre.
-      const cx = side * (reachX(centreOutline, s.rotationDeg, side) + centreWall + o.gapMm + sideWall + reachX(sidePts, deg, -side))
-      const place = new THREE.Matrix4().makeTranslation(cx, 0, 0).multiply(new THREE.Matrix4().makeRotationZ((deg * Math.PI) / 180))
-      matrices.push(new THREE.Matrix4().makeTranslation(0, 0, z).multiply(place))
+    for (const { side, k, theta, deg, shape: sh, sd, pts } of sidePlacements) {
+      const at = new THREE.Matrix4().makeRotationY(theta + pairShift).multiply(new THREE.Matrix4().makeTranslation(0, ySide, 0))
+      const spin = new THREE.Matrix4().makeRotationZ((deg * Math.PI) / 180)
+      stones.push({
+        key: `side-${side}-${k}`,
+        gem: o.gem,
+        customColor: o.customColor,
+        geometry: buildGem(sh, sd.length, sd.width),
+        matrices: [at.clone().multiply(new THREE.Matrix4().makeTranslation(0, 0, z)).multiply(spin)],
+      })
+      const local: THREE.BufferGeometry[] = []
       if (o.setting === 'bezel') {
-        const cup = bezel(sidePts, z - sd.pavilion * 0.75, z + sd.crown * 0.3, 0.4)
-        cup.forEach((g) => g.applyMatrix4(place))
-        sideParts.push(...cup)
-        for (const p of prongPoints(shape, sidePts, 4)) {
+        const cup = bezel(pts, z - sd.pavilion * 0.75, z + sd.crown * s.bezel.lip, s.bezel.wallMm, s.bezel.edge)
+        cup.forEach((g) => g.applyMatrix4(spin))
+        local.push(...cup)
+        for (const p of prongPoints(sh, pts, 4)) {
           const [x, y] = rotate2(p, deg)
-          sideParts.push(cylinderBetween(new THREE.Vector3(cx * 0.8 + x * 0.25, y * 0.25, ro - 0.3), new THREE.Vector3(cx + x * 0.6, y * 0.6, z - sd.pavilion * 0.7), 0.35))
+          local.push(cylinderBetween(new THREE.Vector3(x * 0.25, y * 0.25 - ySide, ro - 0.3), new THREE.Vector3(x * 0.6, y * 0.6, z - sd.pavilion * 0.7), 0.35))
         }
-      } else
-        for (const p of prongPoints(shape, sidePts, o.setting === 'prong-6' ? 6 : 4)) {
+      } else {
+        const prongR = THREE.MathUtils.clamp(sd.width * 0.08, 0.3, 0.55)
+        for (const p of prongPoints(sh, pts, o.setting === 'prong-6' ? 6 : 4)) {
           const [x, y] = rotate2(p, deg)
-          const tip = new THREE.Vector3(cx + x * 1.03, y * 1.03, z + sd.crown * 0.35)
-          const base = new THREE.Vector3(cx * 0.7 + x * 0.3, y * 0.3, ro - 0.3)
-          sideParts.push(cylinderBetween(base, tip, prongR * 0.85, prongR))
-          sideParts.push(new THREE.SphereGeometry(prongR * 1.1, 10, 6).translate(tip.x, tip.y, tip.z))
+          const tip = new THREE.Vector3(x * 1.03, y * 1.03, z + sd.crown * 0.35)
+          local.push(cylinderBetween(new THREE.Vector3(x * 0.3, y * 0.3 - ySide, ro - 0.3), tip, prongR * 0.85, prongR))
+          local.push(new THREE.SphereGeometry(prongR * 1.1, 10, 6).translate(tip.x, tip.y, tip.z))
         }
+      }
+      local.forEach((g) => g.applyMatrix4(at))
+      sideParts.push(...local)
       extent = Math.max(extent, z + sd.crown)
     }
-    stones.push({ key: 'side', gem: a.gem, customColor: a.customColor, geometry: gemGeom, matrices })
     parts.push(merge(sideParts))
-  } else if (a.style !== 'none' && a.style !== 'three-stone') {
+    if (toiEtMoi) headReach += Math.abs(pairShift)
+  }
+
+  // Stones set into the band.
+  if (a.style !== 'none') {
     const cut = a.meleeCut === 'auto' ? (a.style === 'channel' ? 'princess' : 'round') : a.meleeCut
-    // d runs across the band; a baguette is half as long along it.
+    // d runs across the band; `along` follows the shape's proportions (long axis across the band).
     const d = Math.min(a.stoneMm, spec.band.widthMm * 0.85)
-    const along = cut === 'baguette' ? d * 0.5 : d
+    const info = SHAPE_INFO[cut]
+    const along = d * Math.min(info.width1ct, info.length1ct) / Math.max(info.width1ct, info.length1ct)
     const crown = along * 0.15
-    const melee = cut === 'baguette' ? buildGem('emerald', d, along) : buildGem(cut, d, d)
-    const pitch = (along * (a.style === 'channel' ? 1.0 : 1.1)) / ro
-    const headClear = s.enabled ? ((s.setting === 'tension' ? dims.width * 0.5 : dims.width / 2 + (spec.halo.enabled ? spec.halo.stoneMm + 0.5 : 0)) + along / 2 + 0.5) / ro : 0
-    const start = s.enabled ? Math.max(headClear, pitch / 2) : a.style === 'eternity' ? 0 : pitch / 2
+    const melee = buildGem(cut, d, along)
+    const wall = a.bezelSet ? Math.min(s.bezel.wallMm, 0.45) : 0
+    const pitch = (along * (a.style === 'channel' ? 1.0 : 1.1) + 2 * wall + a.spacingMm) / ro
+    const headClear = s.enabled ? ((s.setting === 'tension' ? dims.width * 0.5 : dims.width / 2 + (spec.halo.enabled && spec.halo.style === 'classic' ? spec.halo.stoneMm * spec.halo.rows + 0.5 : 0)) + along / 2 + wall + 0.5) / ro : 0
+    const start = s.enabled ? Math.max(headClear, headReach + (along / 2 + wall + 0.3) / ro, pitch / 2) : a.style === 'eternity' ? 0 : pitch / 2
     // Coverage counts from the top; always place at least one stone past the head.
     const span = a.style === 'eternity' ? Math.PI : a.style === 'half-eternity' ? Math.PI / 2 : Math.max(start, (a.coverageDeg * Math.PI) / 180)
     const matrices: THREE.Matrix4[] = []
-    const fit = Math.floor(spec.band.widthMm / (d * 1.05))
+    const fit = Math.floor(spec.band.widthMm / (d * 1.05 + 2 * wall))
     const rows = a.rows || (a.style === 'pave' && spec.band.widthMm >= d * 2.2 ? 2 : 1)
     const rowCount = a.style === 'channel' ? 1 : Math.max(1, Math.min(rows, fit))
+    // Bezel-set stones sit proud of the band; pavé and channel stones sit in it.
+    const r = a.bezelSet ? ro + crown * 0.5 : ro - crown * 0.3
     for (let theta = start; theta <= span + 1e-6; theta += pitch)
       for (const sign of theta === 0 ? [1] : [1, -1])
         for (let row = 0; row < rowCount; row++) {
-          const y = (row - (rowCount - 1) / 2) * d * 1.05
-          matrices.push(onBand(sign * theta, y, ro - crown * 0.3))
+          const y = (row - (rowCount - 1) / 2) * (d * 1.05 + 2 * wall)
+          matrices.push(onBand(sign * theta, y, r))
         }
-    if (a.style === 'eternity' && !s.enabled) matrices.push(onBand(Math.PI, 0, ro - crown * 0.3))
+    if (a.style === 'eternity' && !s.enabled) matrices.push(onBand(Math.PI, 0, r))
     stones.push({ key: 'accents', gem: a.gem, customColor: a.customColor, geometry: melee, matrices })
+    if (a.bezelSet) {
+      const cup = merge(bezel(outline(cut, d, along, 32), -along * 0.35, crown * s.bezel.lip, wall, s.bezel.edge))
+      parts.push(merge(matrices.map((m) => cup.clone().applyMatrix4(m))))
+    }
   }
 
   return {
@@ -556,6 +656,46 @@ function rotate2([x, y]: Pt, deg: number): Pt {
   return [x * Math.cos(t) - y * Math.sin(t), x * Math.sin(t) + y * Math.cos(t)]
 }
 
+/** Smallest distance between two closed outlines; negative when they overlap. */
+export function polygonGap(a: Pt[], b: Pt[]) {
+  if (b.some((p) => insidePolygon(p, a)) || a.some((p) => insidePolygon(p, b))) return -1
+  let best = Infinity
+  for (const [poly, other] of [[a, b], [b, a]])
+    for (const p of poly)
+      for (let i = 0; i < other.length; i++) best = Math.min(best, segmentDistance(p, other[i], other[(i + 1) % other.length]))
+  return best
+}
+
+function insidePolygon([x, y]: Pt, poly: Pt[]) {
+  let inside = false
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const [xi, yi] = poly[i]
+    const [xj, yj] = poly[j]
+    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside
+  }
+  return inside
+}
+
+function segmentDistance([px, py]: Pt, [ax, ay]: Pt, [bx, by]: Pt) {
+  const dx = bx - ax
+  const dy = by - ay
+  const t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy || 1)))
+  return Math.hypot(px - ax - t * dx, py - ay - t * dy)
+}
+
+/** Smallest x in [from, far] with gapAt(x) ≥ gap, by bisection (gapAt grows as the stone slides out). */
+function closestSlide(gapAt: (x: number) => number, from: number, far: number, gap: number) {
+  let lo = from
+  let hi = far
+  if (gapAt(lo) >= gap) return lo
+  for (let i = 0; i < 30; i++) {
+    const mid = (lo + hi) / 2
+    if (gapAt(mid) >= gap) hi = mid
+    else lo = mid
+  }
+  return hi
+}
+
 /** How far an outline turned by `deg` reaches from its centre toward +x (dir 1) or −x (dir −1). */
 export function reachX(pts: Pt[], deg: number, dir: number) {
   return Math.max(...pts.map((p) => dir * rotate2(p, deg)[0]))
@@ -563,12 +703,20 @@ export function reachX(pts: Pt[], deg: number, dir: number) {
 
 /** Outline points where prongs go: diagonals for 4, every 60° for 6, tips for pointed shapes. */
 function prongPoints(shape: StoneShape, pts: Pt[], count: 4 | 6): Pt[] {
+  // Corner angles of shapes whose corners sit at the front (+y) and back.
+  const hw = Math.max(...pts.map((p) => p[0]))
+  const hl = Math.max(...pts.map((p) => p[1]))
+  const front = (Math.atan2(hw, hl) * 180) / Math.PI
   const angles =
     count === 6
       ? [0, 60, 120, 180, 240, 300].map((d) => d + 30)
-      : shape === 'pear' || shape === 'marquise' || shape === 'heart'
-        ? [0, 90, 180, 270]
-        : [45, 135, 225, 315]
+      : shape === 'trillion'
+        ? [front, 180, 360 - front]
+        : shape === 'half-moon'
+          ? [front, 135, 225, 360 - front]
+          : shape === 'pear' || shape === 'marquise' || shape === 'heart'
+            ? [0, 90, 180, 270]
+            : [45, 135, 225, 315]
   return angles.map((deg) => {
     const t = (deg * Math.PI) / 180
     const dir: Pt = [Math.sin(t), Math.cos(t)]
