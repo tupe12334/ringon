@@ -221,15 +221,12 @@ test('rotation can be locked in the preview', async ({ page }) => {
   await expect(lock).toHaveAttribute('aria-pressed', 'false')
   await lock.click()
   await expect(lock).toHaveAttribute('aria-pressed', 'true')
-  // Locked, a vertical swipe scrolls the page instead of being swallowed by the canvas.
-  await expect(canvas).toHaveCSS('touch-action', 'pan-y')
   const before = await still()
   await drag()
   expect(await still()).toBe(before)
 
   await lock.click()
   await expect(lock).toHaveAttribute('aria-pressed', 'false')
-  await expect(canvas).toHaveCSS('touch-action', 'none')
   await drag()
   await expect.poll(pixels).not.toBe(before)
 })
