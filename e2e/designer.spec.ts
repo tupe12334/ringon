@@ -189,3 +189,52 @@ test('photoreal path tracing: paused on a GPU-less device, still available on re
   await expect(render).toHaveAttribute('data-mode', 'raster', { timeout: 60_000 })
   await expect(render).toHaveAttribute('data-samples', '0')
 })
+
+test('rotation can be locked in the preview', async ({ page }) => {
+  // The WebGL canvas alone (preserveDrawingBuffer), not the path-traced overlay above it.
+  const canvas = page.getByTestId('preview').locator('canvas').first()
+  await expect(canvas).toBeVisible()
+  const pixels = () => canvas.evaluate((c: HTMLCanvasElement) => c.toDataURL())
+  // Wait until two reads 500 ms apart match: camera fit and damping have settled.
+  const still = async () => {
+    let prev = ''
+    await expect
+      .poll(async () => {
+        const now = await pixels()
+        const same = now === prev
+        prev = now
+        return same
+      }, { intervals: [500], timeout: 30_000 })
+      .toBe(true)
+    return prev
+  }
+  const drag = async () => {
+    const box = (await canvas.boundingBox())!
+    const [x, y] = [box.x + box.width / 2, box.y + box.height / 2]
+    await page.mouse.move(x, y)
+    await page.mouse.down()
+    await page.mouse.move(x + 150, y, { steps: 10 })
+    await page.mouse.up()
+  }
+
+  // Real-time rendering only: path tracing keeps refining the image while the view is still.
+  const photoreal = page.getByRole('button', { name: /Photoreal/ })
+  // Retried: the auto-pause on slow devices can flip it between the read and the click.
+  await expect(async () => {
+    if ((await photoreal.getAttribute('aria-pressed')) === 'true') await photoreal.click()
+    await expect(photoreal).toHaveAttribute('aria-pressed', 'false', { timeout: 2000 })
+  }).toPass({ timeout: 30_000 })
+
+  const lock = page.getByRole('button', { name: 'Lock rotation' })
+  await expect(lock).toHaveAttribute('aria-pressed', 'false')
+  await lock.click()
+  await expect(lock).toHaveAttribute('aria-pressed', 'true')
+  const before = await still()
+  await drag()
+  expect(await still()).toBe(before)
+
+  await lock.click()
+  await expect(lock).toHaveAttribute('aria-pressed', 'false')
+  await drag()
+  await expect.poll(pixels).not.toBe(before)
+})
