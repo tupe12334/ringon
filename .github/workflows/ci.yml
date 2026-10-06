@@ -36,7 +36,9 @@ jobs:
         if: failure()
         with:
           name: playwright-results
-          path: test-results
+          path: |
+            test-results
+            playwright-report
 
   deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
