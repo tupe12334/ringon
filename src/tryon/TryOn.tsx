@@ -4,8 +4,9 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import * as THREE from 'three'
-import i18n from '../i18n'
 import { RingModel, StudioEnvironment } from '../ring/RingModel'
+import { CAMERA_LIGHTING } from './cameraExposure'
+import { CameraLighting } from './cameraLighting'
 import type { RingSpec } from '../ring/spec'
 import { useStore } from '../templates/store'
 import { computePose, coverLayout, FINGERS, PalmSideVote, palmSideEvidence, palmSideFromLabel, worldToScreen, type Finger, type Lm, type RingPose, type View } from './pose'
@@ -13,6 +14,7 @@ import { useRecorder } from './recorder'
 import { PoseSmoother } from './smoothing'
 import { DEPTH_ONLY, handJoints, occluderBones, placeHand, UNIT_CYLINDER, UNIT_SPHERE } from './handOccluder'
 import { loadHandTracker, type HandTracker } from './tracker'
+import { useCamera, type Facing } from './camera'
 
 /** One frame's landmarks, as MediaPipe returned them. */
 export interface TrackedHand {
@@ -22,7 +24,6 @@ export interface TrackedHand {
 }
 
 type Status = 'loading' | 'searching' | 'tracking' | 'error'
-type Facing = 'environment' | 'user'
 /** Which hand wears the ring; 'auto' reads it from the finger bend. */
 type Hand = 'auto' | 'Left' | 'Right'
 
@@ -207,61 +208,6 @@ function TrackedRing({ spec, video, landmarker, mirrored, finger, hand, flip, fi
   )
 }
 
-/** How long a granted camera may take to deliver video before we call it stuck. */
-const CAMERA_START_TIMEOUT_MS = 15_000
-
-function useCamera(facing: Facing) {
-  const [video, setVideo] = useState<HTMLVideoElement | null>(null)
-  const [error, setError] = useState('')
-  useEffect(() => {
-    let stream: MediaStream | null = null
-    let cancelled = false
-    const el = document.createElement('video')
-    el.playsInline = true
-    el.muted = true
-    el.setAttribute('playsinline', '')
-    // Kept in the document (invisibly) so browsers never pause it as a background element.
-    el.className = 'camera-source'
-    document.body.append(el)
-    const stop = () => stream?.getTracks().forEach((t) => t.stop())
-    // getUserMedia can hang without ever failing (camera held by another app, some browsers).
-    // It also waits while the permission prompt is open, so only give up once access is granted.
-    // (iOS Safari may keep reporting 'prompt' after the user allowed it: then no message.)
-    const stuck = setTimeout(async () => {
-      const state = await navigator.permissions?.query({ name: 'camera' as PermissionName }).then((p) => p.state, () => null)
-      if (!cancelled && !stream && state === 'granted') setError(i18n.t('tryon.cameraStuck'))
-    }, CAMERA_START_TIMEOUT_MS)
-    ;(async () => {
-      try {
-        if (!navigator.mediaDevices?.getUserMedia) throw new Error(i18n.t('tryon.noCamera'))
-        stream = await navigator.mediaDevices.getUserMedia({
-          audio: false,
-          video: { facingMode: { ideal: facing }, width: { ideal: 1280 }, height: { ideal: 720 } },
-        })
-        if (cancelled) return stop()
-        el.srcObject = stream
-        await el.play()
-        if (!cancelled) {
-          setError('') // a late stream beats an earlier "did not start"
-          setVideo(el)
-        }
-      } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : String(e))
-      }
-    })()
-    return () => {
-      clearTimeout(stuck)
-      setError('') // the next attempt (e.g. after switching camera) starts clean
-      cancelled = true
-      stop()
-      el.srcObject = null
-      el.remove()
-      setVideo(null)
-    }
-  }, [facing])
-  return { video, error }
-}
-
 export function TryOn({ onBack }: { onBack: () => void }) {
   const spec = useStore((s) => s.spec)
   const { t } = useTranslation()
@@ -321,7 +267,8 @@ export function TryOn({ onBack }: { onBack: () => void }) {
           gl.transmissionResolutionScale = 0.5
         }}
       >
-        <StudioEnvironment />
+        {/* Lit like the room the camera sees; the studio until the video is ready. */}
+        {video && CAMERA_LIGHTING ? <CameraLighting video={video} mirrored={mirrored} readout={poseRef} /> : <StudioEnvironment />}
         {video && <VideoBackdrop video={video} mirrored={mirrored} />}
         {video && landmarker && (
           <TrackedRing spec={spec} video={video} landmarker={landmarker} mirrored={mirrored} finger={finger} hand={hand} flip={flip} fit={fit} onStatus={setStatus} onPose={onPose} />
