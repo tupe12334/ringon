@@ -1,12 +1,13 @@
 import { useRef, useState } from 'react'
+import { ringTo3mf } from '../ring/export3mf'
 import { DesignIcon } from '../customizer/icons'
 import { BUILTIN_TEMPLATES } from './builtin'
 import { parseImport, shareUrl } from './share'
 import { useStore } from './store'
 
-function download(name: string, text: string) {
+function download(name: string, data: string | Uint8Array<ArrayBuffer>, type = 'application/json') {
   const a = document.createElement('a')
-  a.href = URL.createObjectURL(new Blob([text], { type: 'application/json' }))
+  a.href = URL.createObjectURL(new Blob([data], { type }))
   a.download = name
   a.click()
   setTimeout(() => URL.revokeObjectURL(a.href), 1000)
@@ -59,6 +60,7 @@ export function TemplatesPanel() {
       <div className="row wrap">
         <button type="button" onClick={share}>Share link</button>
         <button type="button" onClick={() => download(`${spec.name || 'ring'}.ringon.json`, JSON.stringify(spec, null, 2))}>Export design</button>
+        <button type="button" onClick={() => download(`${spec.name || 'ring'}.3mf`, ringTo3mf(spec), 'model/3mf')}>Export 3MF</button>
         {templates.length > 0 && (
           <button type="button" onClick={() => download('ringon-templates.json', JSON.stringify(templates.map((t) => t.spec), null, 2))}>Export my templates</button>
         )}
