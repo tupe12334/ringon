@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/tupe12334/linecheck/main/schema/linecheck.schema.json
+
+rules:
+  # Grandfathered: already over the 400-line error threshold. Capped at their
+  # current size so they can't grow further; lower these as they get split.
+  - pattern: "src/ring/geometry.ts"
+    warn: 400
+    error: 760
+    error_message: "Grandfathered file grew — split by responsibility instead of adding more"
+  - pattern: "src/customizer/panels.tsx"
+    warn: 400
+    error: 480
+    error_message: "Grandfathered file grew — split by responsibility instead of adding more"
+  - pattern: "**/*.ts"
+    warn: 200
+    warn_message: "Getting long — consider splitting into smaller modules"
+    error: 400
+    error_message: "Too large to review easily; split this file now"
+  - pattern: "**/*.tsx"
+    warn: 200
+    warn_message: "Getting long — consider splitting into smaller components"
+    error: 400
+    error_message: "Too large to review easily; split this file now"
+
+exclude:
+  - "node_modules/**"
+  - "dist/**"
+  - "pnpm-lock.yaml"
+  - "test-results/**"
+  - "playwright-report/**"
