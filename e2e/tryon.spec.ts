@@ -16,6 +16,8 @@ test('tracks the ring onto the hand in live video, stone facing out', async ({ p
 
   const pose = page.getByTestId('pose')
   await expect(pose).toHaveAttribute('data-visible', 'true')
+  // Lit like the room: this feed is a bright photo on white, so exposure rises above normal.
+  await expect.poll(async () => Number(await pose.getAttribute('data-light-exposure'))).toBeGreaterThan(1.2)
 
   // Sample the pose while the hand moves: the ring must follow it.
   const samples: { x: number; y: number; stoneZ: number; pxPerMm: number }[] = []

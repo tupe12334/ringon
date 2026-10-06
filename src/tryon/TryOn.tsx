@@ -6,6 +6,8 @@ import { useTranslation } from 'react-i18next'
 import * as THREE from 'three'
 import i18n from '../i18n'
 import { RingModel, StudioEnvironment } from '../ring/RingModel'
+import { CAMERA_LIGHTING } from './cameraExposure'
+import { CameraLighting } from './cameraLighting'
 import type { RingSpec } from '../ring/spec'
 import { useStore } from '../templates/store'
 import { computePose, coverLayout, FINGERS, PalmSideVote, palmSideEvidence, palmSideFromLabel, worldToScreen, type Finger, type Lm, type RingPose, type View } from './pose'
@@ -321,7 +323,8 @@ export function TryOn({ onBack }: { onBack: () => void }) {
           gl.transmissionResolutionScale = 0.5
         }}
       >
-        <StudioEnvironment />
+        {/* Lit like the room the camera sees; the studio until the video is ready. */}
+        {video && CAMERA_LIGHTING ? <CameraLighting video={video} mirrored={mirrored} readout={poseRef} /> : <StudioEnvironment />}
         {video && <VideoBackdrop video={video} mirrored={mirrored} />}
         {video && landmarker && (
           <TrackedRing spec={spec} video={video} landmarker={landmarker} mirrored={mirrored} finger={finger} hand={hand} flip={flip} fit={fit} onStatus={setStatus} onPose={onPose} />
