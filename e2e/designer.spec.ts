@@ -81,7 +81,8 @@ test('opening a link keeps the unsaved design as a template', async ({ page }) =
   await expect(page.getByTestId('summary')).toContainText('Palladium')
 })
 
-test('share button copies a link that reopens the design', async ({ page, context }) => {
+test('share button copies a link that reopens the design', async ({ page, context, browserName }) => {
+  test.skip(browserName === 'webkit', "Playwright can't grant clipboard permissions in WebKit")
   await context.grantPermissions(['clipboard-read', 'clipboard-write'])
   await page.evaluate(() => Object.defineProperty(navigator, 'share', { value: undefined }))
   await page.getByRole('button', { name: 'Oval halo' }).click()

@@ -32,6 +32,7 @@ jobs:
       - run: pnpm e2e
         env:
           CI: true
+          SKIP_WEBKIT: 1
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
@@ -40,9 +41,33 @@ jobs:
             test-results
             playwright-report
 
+  # iPhone Safari's engine. On macOS: Linux WebKit has no mock camera for the try-on smoke test.
+  webkit:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install webkit
+      - run: pnpm e2e --project iphone-webkit
+        env:
+          CI: true
+          NO_CAMERA_FEEDS: 1
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-results-webkit
+          path: |
+            test-results
+            playwright-report
+
   deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: test
+    needs: [test, webkit]
     runs-on: ubuntu-latest
     permissions:
       pages: write
