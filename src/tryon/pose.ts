@@ -32,11 +32,20 @@ const KNUCKLE_PAIRS: [number, number][] = [
   [13, 17],
 ]
 
-/**
- * Finger width relative to knuckle spacing, measured on adult hands at the ring position.
- * The try-on "Fit" slider corrects individual hands.
- */
-export const FINGER_TO_KNUCKLE_SPACING = 0.78
+// Proportions of adult hands, calibrated on real photos (e2e/fixtures/photos). Everything is
+// measured in the image: MediaPipe's world landmarks get directions roughly right but
+// exaggerate depth, which drew rings twice too large and tipped toward the camera.
+
+/** Finger width at the ring / knuckle spacing. The try-on "Fit" slider corrects individual hands. */
+export const FINGER_TO_KNUCKLE_SPACING = 0.84
+/** Finger width / palm length (wrist to middle knuckle). */
+export const FINGER_TO_PALM_LENGTH = 0.205
+/** Knuckle-to-middle-joint length / finger width, for a finger flat to the camera. */
+export const PHALANX_TO_FINGER = 2.13
+/** Area of the wrist–index–pinky knuckle triangle / finger width², back of the hand facing the camera. */
+export const PALM_AREA_TO_FINGER_SQ = 7.3
+/** World back-of-hand normal z below which its sign is not trusted. */
+const EDGE_ON = 0.3
 
 export interface View {
   /** Video frame size, px. */
@@ -99,15 +108,47 @@ export function computePose(input: PoseInput, view: View): RingPose | null {
   const { image, world } = input
   if (image.length < 21 || world.length < 21) return null
   const layout = coverLayout(view)
+  const P = image.map((l) => toScreen(l, view, layout))
+  const W = worldToScreen(world, view.mirrored)
   const [a, b] = SEGMENT[input.finger]
 
-  const W = worldToScreen(world, view.mirrored)
-  const axis = new THREE.Vector3().subVectors(W[b], W[a])
-  if (axis.lengthSq() < 1e-10) return null
-  axis.normalize()
+  // Finger width on screen from two lengths that foreshorten differently (a hand turned about
+  // its long axis narrows the knuckle row, a hand tipped back shortens the palm): take the larger.
+  const spacing = KNUCKLE_PAIRS.reduce((sum, [i, j]) => sum + P[i].distanceTo(P[j]), 0) / KNUCKLE_PAIRS.length
+  const fingerPx = Math.max(spacing * FINGER_TO_KNUCKLE_SPACING, P[0].distanceTo(P[9]) * FINGER_TO_PALM_LENGTH)
+  if (fingerPx < 4) return null
+  const pxPerMm = fingerPx / input.innerDiameterMm
 
-  // Back-of-hand normal from the palm triangle (wrist, index base, pinky base).
-  const dorsal = knuckleNormal(W).multiplyScalar(-input.palmSide)
+  // Along the finger: the direction on screen, tipped toward or away from the camera. Both the
+  // world landmarks (exaggerated depth) and the segment's length on screen (against an assumed
+  // proportion) overstate the tip in some poses, so it takes the smaller; the world says which way.
+  const seg = new THREE.Vector3().subVectors(P[b], P[a])
+  const worldAxis = new THREE.Vector3().subVectors(W[b], W[a])
+  if (seg.lengthSq() < 1e-6 || worldAxis.lengthSq() < 1e-10) return null
+  worldAxis.normalize()
+  let axis = worldAxis
+  if (input.finger !== 'thumb') {
+    const tipFromImage = Math.sqrt(1 - Math.min(1, seg.length() / (PHALANX_TO_FINGER * fingerPx)) ** 2)
+    const tip = Math.min(tipFromImage, Math.abs(worldAxis.z))
+    axis = seg.normalize().multiplyScalar(Math.sqrt(1 - tip * tip)).setZ(Math.sign(worldAxis.z) * tip)
+  }
+
+  // Back-of-hand normal. How squarely it faces the camera: the larger of the world normal's
+  // and the palm triangle's area on screen (which shrinks when the finger width is overestimated).
+  // Its sign is the world landmarks', which the palm side vote is measured against (the image
+  // landmarks sometimes disagree with them about which hand this is), unless the world normal is
+  // nearly edge-on, where its sign is noise and the triangle's winding decides.
+  const n = knuckleNormal(W)
+  const e5 = new THREE.Vector3().subVectors(P[5], P[0])
+  const e17 = new THREE.Vector3().subVectors(P[17], P[0])
+  const winding = e5.x * e17.y - e5.y * e17.x
+  const sign = Math.abs(n.z) > EDGE_ON ? Math.sign(n.z) : Math.sign(winding) || 1
+  const facing = Math.min(1, Math.max(Math.abs(n.z), Math.abs(winding) / 2 / (PALM_AREA_TO_FINGER_SQ * fingerPx ** 2))) * sign
+  const side = Math.hypot(n.x, n.y)
+  const sideScale = side > 1e-9 ? Math.sqrt(1 - facing * facing) / side : 0
+  n.set(n.x * sideScale, n.y * sideScale, facing)
+
+  const dorsal = n.multiplyScalar(-input.palmSide)
   if (input.flip) dorsal.negate()
   dorsal.addScaledVector(axis, -dorsal.dot(axis))
   if (dorsal.lengthSq() < 1e-12) return null
@@ -116,23 +157,7 @@ export function computePose(input: PoseInput, view: View): RingPose | null {
   const x = new THREE.Vector3().crossVectors(axis, dorsal)
   const m = new THREE.Matrix4().makeBasis(x, axis, dorsal)
   const quaternion = new THREE.Quaternion().setFromRotationMatrix(m)
-
-  const pa = toScreen(image[a], view, layout)
-  const pb = toScreen(image[b], view, layout)
-  const position = pa.clone().lerp(pb, input.along)
-
-  // Scale from the knuckle spacing in the image. MediaPipe's metric world landmarks are not
-  // reliable in absolute size, but their directions tell how foreshortened the spacing is.
-  let spacingPx = 0
-  for (const [i, j] of KNUCKLE_PAIRS) {
-    const p = toScreen(image[i], view, layout).sub(toScreen(image[j], view, layout))
-    const w = new THREE.Vector3().subVectors(W[i], W[j])
-    const inPlane = w.length() > 1e-9 ? Math.hypot(w.x, w.y) / w.length() : 1
-    spacingPx += Math.hypot(p.x, p.y) / Math.max(inPlane, 0.35)
-  }
-  spacingPx /= KNUCKLE_PAIRS.length
-  if (spacingPx < 1) return null
-  const pxPerMm = (spacingPx * FINGER_TO_KNUCKLE_SPACING) / input.innerDiameterMm
+  const position = P[a].clone().lerp(P[b], input.along)
 
   return { position, quaternion, pxPerMm, axis, dorsal }
 }

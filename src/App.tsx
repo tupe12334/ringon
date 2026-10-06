@@ -1,5 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Customizer } from './customizer/Customizer'
+import i18n from './i18n'
 import { DEFAULT_SPEC } from './ring/spec'
 import { BUILTIN_TEMPLATES } from './templates/builtin'
 import { isTryOnHash, specFromHash, specHash } from './templates/share'
@@ -15,7 +17,7 @@ function keepUnsavedDesign() {
   const { spec, templates, addTemplates } = useStore.getState()
   const same = (a: unknown) => JSON.stringify(a) === JSON.stringify(spec)
   if (templates.some((t) => same(t.spec)) || BUILTIN_TEMPLATES.some((t) => same(t)) || same(DEFAULT_SPEC)) return
-  addTemplates([{ ...spec, name: `${spec.name} (before opening a link)`.slice(0, 60) }])
+  addTemplates([{ ...spec, name: i18n.t('templates.beforeLink', { name: spec.name }).slice(0, 60) }])
 }
 
 export default function App() {
@@ -23,6 +25,7 @@ export default function App() {
   const spec = useStore((s) => s.spec)
   const setSpec = useStore((s) => s.setSpec)
   const pushed = useRef(false)
+  const { t } = useTranslation()
 
   // Open a shared design (#r=... or an older #d=...), on load or when a link is followed in an open tab.
   useEffect(() => {
@@ -56,7 +59,7 @@ export default function App() {
 
   if (view === 'tryon')
     return (
-      <Suspense fallback={<div className="tryon loading">Loading try-on…</div>}>
+      <Suspense fallback={<div className="tryon loading">{t('app.loadingTryOn')}</div>}>
         <TryOn
           onBack={() => {
             if (pushed.current) return history.back()

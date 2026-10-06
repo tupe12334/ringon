@@ -1,6 +1,9 @@
 import { defineConfig, devices } from '@playwright/test'
 import { BACK_OF_HAND_FEED, PALM_FEED, STILL_HAND_FEED } from './e2e/fake-camera'
 
+// PORT: run beside another checkout's preview server.
+const port = Number(process.env.PORT ?? 4173)
+
 /** An emulated phone whose camera plays `feed`. */
 const phone = (feed: string) => ({
   ...devices['Pixel 7'],
@@ -26,7 +29,7 @@ export default defineConfig({
   reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
   globalSetup: './e2e/fake-camera.ts',
   use: {
-    baseURL: 'http://localhost:4173',
+    baseURL: `http://localhost:${port}`,
     permissions: ['camera'],
     // Screen capture (tracing's screencast, mid-test screenshots) can stall the fake camera
     // feed in headless Chromium: no tracing, and screenshots only at the end.
@@ -34,14 +37,20 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
   projects: [
-    { name: 'phone', testIgnore: /real-hand|still-hand|photoreal/, use: phone(BACK_OF_HAND_FEED) },
+    { name: 'phone', testIgnore: /real-hand|still-hand|photos|photoreal/, use: phone(BACK_OF_HAND_FEED) },
     { name: 'phone-still-hand', testMatch: /still-hand/, use: phone(STILL_HAND_FEED) },
     { name: 'phone-photoreal', testMatch: /photoreal/, use: phone(BACK_OF_HAND_FEED) },
     { name: 'phone-real-hand', testMatch: /real-hand/, use: phone(PALM_FEED) },
+    // Still photos stand in for the camera (photo-camera.ts); the viewport is sized per photo.
+    {
+      name: 'photos',
+      testMatch: /photos/,
+      use: { ...devices['Desktop Chrome'], launchOptions: { args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] } },
+    },
   ],
   webServer: {
-    command: 'pnpm build && pnpm preview --port 4173 --strictPort',
-    url: 'http://localhost:4173',
+    command: `pnpm build && pnpm preview --port ${port} --strictPort`,
+    url: `http://localhost:${port}`,
     // Always build: a leftover preview server would serve a stale build.
     reuseExistingServer: false,
     timeout: 180_000,

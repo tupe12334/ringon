@@ -1,17 +1,25 @@
 // Live try-on: the camera feed with the ring tracked onto a finger, in real time.
 
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import type { HandLandmarker } from '@mediapipe/tasks-vision'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import * as THREE from 'three'
+import i18n from '../i18n'
 import { RingModel, StudioEnvironment } from '../ring/RingModel'
 import type { RingSpec } from '../ring/spec'
 import { useStore } from '../templates/store'
-import { computePose, coverLayout, FINGERS, PalmSideVote, palmSideEvidence, palmSideFromLabel, worldToScreen, type Finger, type RingPose, type View } from './pose'
+import { computePose, coverLayout, FINGERS, PalmSideVote, palmSideEvidence, palmSideFromLabel, worldToScreen, type Finger, type Lm, type RingPose, type View } from './pose'
 import { useRecorder } from './recorder'
 import { PoseSmoother } from './smoothing'
 import { DEPTH_ONLY, handJoints, occluderBones, placeHand, UNIT_CYLINDER, UNIT_SPHERE } from './handOccluder'
-import { loadHandLandmarker } from './tracker'
+import { loadHandTracker, type HandTracker } from './tracker'
+
+/** One frame's landmarks, as MediaPipe returned them. */
+export interface TrackedHand {
+  image: Lm[]
+  world: Lm[]
+  view: View
+}
 
 type Status = 'loading' | 'searching' | 'tracking' | 'error'
 type Facing = 'environment' | 'user'
@@ -19,9 +27,6 @@ type Facing = 'environment' | 'user'
 type Hand = 'auto' | 'Left' | 'Right'
 
 const HANDS: Hand[] = ['auto', 'Left', 'Right']
-const HAND_LABEL: Record<Hand, string> = { auto: 'Auto', Left: 'Left hand', Right: 'Right hand' }
-
-const FINGER_LABEL: Record<Finger, string> = { thumb: 'Thumb', index: 'Index', middle: 'Middle', ring: 'Ring', pinky: 'Pinky' }
 
 /** The camera image, scaled to cover the screen, drawn behind the ring. */
 function VideoBackdrop({ video, mirrored }: { video: HTMLVideoElement; mirrored: boolean }) {
@@ -50,15 +55,15 @@ function VideoBackdrop({ video, mirrored }: { video: HTMLVideoElement; mirrored:
 interface TrackedRingProps {
   spec: RingSpec
   video: HTMLVideoElement
-  landmarker: HandLandmarker
+  landmarker: HandTracker
   mirrored: boolean
   finger: Finger
   hand: Hand
   flip: boolean
   fit: number
   onStatus: (s: Status) => void
-  /** Receives the on-screen pose each frame (for the accessible readout and tests). */
-  onPose: (p: RingPose | null) => void
+  /** Receives the on-screen pose and the hand it came from each frame (readout and tests). */
+  onPose: (p: RingPose | null, hand?: TrackedHand) => void
 }
 
 /** Ring shadow on the skin; `?shadow=0` turns it off (for comparisons). */
@@ -111,9 +116,9 @@ function TrackedRing({ spec, video, landmarker, mirrored, finger, hand, flip, fi
     if (!g || video.readyState < 2 || video.currentTime === last.current.time) return
     last.current.time = video.currentTime
     const now = performance.now()
-    let result: ReturnType<HandLandmarker['detectForVideo']>
+    let result: ReturnType<HandTracker['detect']>
     try {
-      result = landmarker.detectForVideo(video, now)
+      result = landmarker.detect(video, now)
     } catch {
       return // a dropped frame (e.g. the camera is switching); try the next one
     }
@@ -121,12 +126,13 @@ function TrackedRing({ spec, video, landmarker, mirrored, finger, hand, flip, fi
     const image = result.landmarks[0]
     const world = result.worldLandmarks[0]
     let pose: RingPose | null = null
-    const along = finger === 'thumb' ? 0.5 : 0.4
+    const along = finger === 'thumb' ? 0.5 : 0.6
     if (image && world) {
       const label = result.handedness[0]?.[0]?.categoryName ?? 'Right'
       // A hand the user named settles it; otherwise vote on the finger bend.
       const palmSide =
         hand === 'auto' ? vote.update(palmSideEvidence(worldToScreen(world, mirrored)), palmSideFromLabel(label, mirrored)) : palmSideFromLabel(hand, mirrored)
+      // Real rings sit ~0.6 of the way from the knuckle to the middle joint (e2e/fixtures/photos).
       pose = computePose({ image, world, palmSide, finger, along, flip, innerDiameterMm: spec.innerDiameterMm }, view)
     }
 
@@ -145,7 +151,7 @@ function TrackedRing({ spec, video, landmarker, mirrored, finger, hand, flip, fi
       if (joints && handRef.current) placeHand(handRef.current, joints, bones, innerR * p.pxPerMm * fit * 0.85, p.position.clone().sub(pose.position))
       last.current.seen = now
       status = 'tracking'
-      onPose(p)
+      onPose(p, { image, world, view })
     } else {
       // Keep the ring a moment through dropped frames, then hide it.
       if (now - last.current.seen > 250) {
@@ -218,7 +224,7 @@ function useCamera(facing: Facing) {
     const stop = () => stream?.getTracks().forEach((t) => t.stop())
     ;(async () => {
       try {
-        if (!navigator.mediaDevices?.getUserMedia) throw new Error('This browser cannot open the camera (it needs HTTPS).')
+        if (!navigator.mediaDevices?.getUserMedia) throw new Error(i18n.t('tryon.noCamera'))
         stream = await navigator.mediaDevices.getUserMedia({
           audio: false,
           video: { facingMode: { ideal: facing }, width: { ideal: 1280 }, height: { ideal: 720 } },
@@ -244,19 +250,20 @@ function useCamera(facing: Facing) {
 
 export function TryOn({ onBack }: { onBack: () => void }) {
   const spec = useStore((s) => s.spec)
+  const { t } = useTranslation()
   const [facing, setFacing] = useState<Facing>('environment')
   const [finger, setFinger] = useState<Finger>('ring')
   const [hand, setHand] = useState<Hand>('auto')
   const [flip, setFlip] = useState(false)
   const [fit, setFit] = useState(1)
   const [status, setStatus] = useState<Status>('loading')
-  const [landmarker, setLandmarker] = useState<HandLandmarker | null>(null)
+  const [landmarker, setLandmarker] = useState<HandTracker | null>(null)
   const [loadError, setLoadError] = useState('')
   const { video, error: camError } = useCamera(facing)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const recorder = useRecorder(canvasRef)
   const poseRef = useRef<HTMLOutputElement>(null)
-  const onPose = useCallback((p: RingPose | null) => {
+  const onPose = useCallback((p: RingPose | null, hand?: TrackedHand) => {
     const el = poseRef.current
     if (!el) return
     el.dataset.visible = String(!!p)
@@ -264,6 +271,10 @@ export function TryOn({ onBack }: { onBack: () => void }) {
     el.dataset.x = p.position.x.toFixed(1)
     el.dataset.y = p.position.y.toFixed(1)
     el.dataset.stoneZ = p.dorsal.z.toFixed(3)
+    el.dataset.axisX = p.axis.x.toFixed(3)
+    el.dataset.axisY = p.axis.y.toFixed(3)
+    // Raw landmarks for tests (e2e/photos.spec.ts), kept off the DOM attributes.
+    Object.assign(el, { hand })
     el.dataset.pxPerMm = p.pxPerMm.toFixed(3)
   }, [])
 
@@ -275,7 +286,7 @@ export function TryOn({ onBack }: { onBack: () => void }) {
   }, [video, facing])
 
   useEffect(() => {
-    loadHandLandmarker().then(setLandmarker, (e) => setLoadError(String(e?.message ?? e)))
+    loadHandTracker().then(setLandmarker, (e) => setLoadError(String(e?.message ?? e)))
   }, [])
 
   const error = camError || loadError
@@ -305,67 +316,67 @@ export function TryOn({ onBack }: { onBack: () => void }) {
 
       <output ref={poseRef} data-testid="pose" hidden />
       <div className="tryon-top">
-        <button type="button" onClick={onBack} aria-label="Back to designer">
-          ← Design
+        <button type="button" onClick={onBack} aria-label={t('tryon.back')}>
+          {t('tryon.backLabel')}
         </button>
         <span className={`status ${shownStatus}`} data-testid="tracking-status" data-status={shownStatus}>
-          {shownStatus === 'loading' && 'Starting camera…'}
-          {shownStatus === 'searching' && 'Show your hand, back facing the camera'}
-          {shownStatus === 'tracking' && 'Tracking'}
-          {shownStatus === 'error' && `Camera unavailable: ${error}`}
+          {shownStatus === 'loading' && t('tryon.loading')}
+          {shownStatus === 'searching' && t('tryon.searching')}
+          {shownStatus === 'tracking' && t('tryon.tracking')}
+          {shownStatus === 'error' && t('tryon.error', { error })}
         </span>
-        <button type="button" onClick={() => setFacing((f) => (f === 'user' ? 'environment' : 'user'))} aria-label="Switch camera">
-          ⟲ Camera
+        <button type="button" onClick={() => setFacing((f) => (f === 'user' ? 'environment' : 'user'))} aria-label={t('tryon.switchCamera')}>
+          {t('tryon.camera')}
         </button>
       </div>
 
       <div className="tryon-bottom">
-        <div className="chips" role="radiogroup" aria-label="Hand">
+        <div className="chips" role="radiogroup" aria-label={t('tryon.hand')}>
           {HANDS.map((h) => (
             <button key={h} type="button" role="radio" aria-checked={h === hand} className={h === hand ? 'chip on' : 'chip'} onClick={() => setHand(h)}>
-              {HAND_LABEL[h]}
+              {t(`tryon.hands.${h}`)}
             </button>
           ))}
         </div>
-        <div className="chips" role="radiogroup" aria-label="Finger">
+        <div className="chips" role="radiogroup" aria-label={t('tryon.finger')}>
           {FINGERS.map((f) => (
             <button key={f} type="button" role="radio" aria-checked={f === finger} className={f === finger ? 'chip on' : 'chip'} onClick={() => setFinger(f)}>
-              {FINGER_LABEL[f]}
+              {t(`tryon.fingers.${f}`)}
             </button>
           ))}
         </div>
         <div className="row">
           <label className="fit">
-            Fit
-            <input type="range" min={0.7} max={1.3} step={0.01} value={fit} onChange={(e) => setFit(Number(e.target.value))} aria-label="Ring fit" />
+            {t('tryon.fit')}
+            <input type="range" min={0.7} max={1.3} step={0.01} value={fit} onChange={(e) => setFit(Number(e.target.value))} aria-label={t('tryon.fitAria')} />
           </label>
           <button type="button" onClick={() => setFlip((v) => !v)} aria-pressed={flip}>
-            Flip side
+            {t('tryon.flip')}
           </button>
         </div>
         <div className="row capture">
           <button type="button" onClick={recorder.snapshot} disabled={!video}>
-            Photo
+            {t('tryon.photo')}
           </button>
           <button type="button" className={recorder.recording ? 'record on' : 'record'} onClick={recorder.recording ? recorder.stop : recorder.start} disabled={!video || !recorder.supported}>
-            {recorder.recording ? `■ Stop ${recorder.seconds}s` : '● Record video'}
+            {recorder.recording ? t('tryon.stop', { seconds: recorder.seconds }) : t('tryon.record')}
           </button>
         </div>
       </div>
 
       {recorder.result && (
-        <div className="capture-result" role="dialog" aria-label="Your capture">
+        <div className="capture-result" role="dialog" aria-label={t('tryon.capture')}>
           {recorder.result.kind === 'video' ? (
             <video src={recorder.result.url} controls autoPlay loop playsInline muted />
           ) : (
-            <img src={recorder.result.url} alt={`${spec.name} on your hand`} />
+            <img src={recorder.result.url} alt={t('tryon.onHand', { name: spec.name })} />
           )}
           <div className="row">
             <button type="button" className="primary" onClick={recorder.share}>
-              Save / share
+              {t('tryon.saveShare')}
             </button>
             <button type="button" onClick={recorder.dismiss}>
-              Close
+              {t('tryon.close')}
             </button>
           </div>
         </div>

@@ -8,12 +8,7 @@
 
 export type SizeSystem = 'us' | 'eu' | 'uk' | 'jp'
 
-export const SIZE_SYSTEMS: { id: SizeSystem; label: string }[] = [
-  { id: 'us', label: 'US / CA' },
-  { id: 'eu', label: 'EU / ISO' },
-  { id: 'uk', label: 'UK / AU' },
-  { id: 'jp', label: 'JP' },
-]
+export const SIZE_SYSTEMS: readonly SizeSystem[] = ['us', 'eu', 'uk', 'jp']
 
 export const MIN_DIAMETER_MM = 12
 export const MAX_DIAMETER_MM = 25

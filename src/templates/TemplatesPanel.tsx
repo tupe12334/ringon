@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ringTo3mf } from '../ring/export3mf'
 import { DesignIcon } from '../customizer/icons'
 import { BUILTIN_TEMPLATES } from './builtin'
@@ -20,17 +21,19 @@ export function TemplatesPanel() {
   const save = useStore((s) => s.saveTemplate)
   const remove = useStore((s) => s.deleteTemplate)
   const addTemplates = useStore((s) => s.addTemplates)
-  const [name, setName] = useState(spec.name)
+  const { t } = useTranslation()
+  const builtinName = (name: string) => t(`builtin.${name}`, { defaultValue: name })
+  const [name, setName] = useState(() => builtinName(spec.name))
   const [message, setMessage] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
 
   const share = async () => {
     const url = shareUrl(spec)
     try {
-      if (navigator.share) await navigator.share({ title: `Ringon: ${spec.name}`, url })
+      if (navigator.share) await navigator.share({ title: t('templates.shareTitle', { name: spec.name }), url })
       else {
         await navigator.clipboard.writeText(url)
-        setMessage('Link copied')
+        setMessage(t('templates.linkCopied'))
       }
     } catch {
       setMessage(url)
@@ -41,30 +44,30 @@ export function TemplatesPanel() {
     <>
       <div className="field">
         <div className="field-label">
-          <span>Save this design as a template</span>
+          <span>{t('templates.saveAs')}</span>
         </div>
         <div className="row">
-          <input type="text" aria-label="Template name" value={name} maxLength={60} onChange={(e) => setName(e.target.value)} />
+          <input type="text" aria-label={t('templates.name')} value={name} maxLength={60} onChange={(e) => setName(e.target.value)} />
           <button
             type="button"
             className="primary"
             onClick={() => {
-              save(name.trim() || 'My ring')
-              setMessage('Saved')
+              save(name.trim() || t('templates.defaultName'))
+              setMessage(t('templates.saved'))
             }}
           >
-            Save
+            {t('templates.save')}
           </button>
         </div>
       </div>
       <div className="row wrap">
-        <button type="button" onClick={share}>Share link</button>
-        <button type="button" onClick={() => download(`${spec.name || 'ring'}.ringon.json`, JSON.stringify(spec, null, 2))}>Export design</button>
-        <button type="button" onClick={() => download(`${spec.name || 'ring'}.3mf`, ringTo3mf(spec), 'model/3mf')}>Export 3MF</button>
+        <button type="button" onClick={share}>{t('templates.share')}</button>
+        <button type="button" onClick={() => download(`${spec.name || 'ring'}.ringon.json`, JSON.stringify(spec, null, 2))}>{t('templates.exportDesign')}</button>
+        <button type="button" onClick={() => download(`${spec.name || 'ring'}.3mf`, ringTo3mf(spec), 'model/3mf')}>{t('templates.export3mf')}</button>
         {templates.length > 0 && (
-          <button type="button" onClick={() => download('ringon-templates.json', JSON.stringify(templates.map((t) => t.spec), null, 2))}>Export my templates</button>
+          <button type="button" onClick={() => download('ringon-templates.json', JSON.stringify(templates.map((x) => x.spec), null, 2))}>{t('templates.exportMine')}</button>
         )}
-        <button type="button" onClick={() => fileRef.current?.click()}>Import</button>
+        <button type="button" onClick={() => fileRef.current?.click()}>{t('templates.import')}</button>
         <input
           ref={fileRef}
           type="file"
@@ -74,13 +77,13 @@ export function TemplatesPanel() {
             const file = e.target.files?.[0]
             e.target.value = ''
             if (!file) return
-            if (file.size > 1_000_000) return setMessage('That file is too large to be a Ringon design')
+            if (file.size > 1_000_000) return setMessage(t('templates.tooLarge'))
             try {
               const specs = parseImport(await file.text())
               addTemplates(specs)
-              setMessage(`Imported ${specs.length} design${specs.length === 1 ? '' : 's'}`)
+              setMessage(t('templates.imported', { count: specs.length }))
             } catch {
-              setMessage('That file is not a Ringon design')
+              setMessage(t('templates.notDesign'))
             }
           }}
         />
@@ -91,18 +94,18 @@ export function TemplatesPanel() {
         </p>
       )}
 
-      <h3>My templates</h3>
+      <h3>{t('templates.mine')}</h3>
       {templates.length === 0 ? (
-        <p className="note">Nothing saved yet. Your templates stay on this device.</p>
+        <p className="note">{t('templates.empty')}</p>
       ) : (
         <ul className="templates">
-          {templates.map((t) => (
-            <li key={t.id}>
-              <button type="button" className="template" onClick={() => setSpec(t.spec)}>
-                <DesignIcon spec={t.spec} />
-                {t.spec.name}
+          {templates.map((x) => (
+            <li key={x.id}>
+              <button type="button" className="template" onClick={() => setSpec(x.spec)}>
+                <DesignIcon spec={x.spec} />
+                {x.spec.name}
               </button>
-              <button type="button" className="icon" aria-label={`Delete ${t.spec.name}`} onClick={() => remove(t.id)}>
+              <button type="button" className="icon" aria-label={t('templates.delete', { name: x.spec.name })} onClick={() => remove(x.id)}>
                 ✕
               </button>
             </li>
@@ -110,20 +113,20 @@ export function TemplatesPanel() {
         </ul>
       )}
 
-      <h3>Start from a classic</h3>
+      <h3>{t('templates.classics')}</h3>
       <ul className="templates">
-        {BUILTIN_TEMPLATES.map((t) => (
-          <li key={t.name}>
+        {BUILTIN_TEMPLATES.map((b) => (
+          <li key={b.name}>
             <button
               type="button"
               className="template"
               onClick={() => {
-                setSpec({ ...t, innerDiameterMm: spec.innerDiameterMm })
-                setName(t.name)
+                setSpec({ ...b, innerDiameterMm: spec.innerDiameterMm })
+                setName(builtinName(b.name))
               }}
             >
-              <DesignIcon spec={t} />
-              {t.name}
+              <DesignIcon spec={b} />
+              {builtinName(b.name)}
             </button>
           </li>
         ))}

@@ -170,6 +170,33 @@ test('opens every real-ring example', async ({ page }) => {
   await expect(page.getByLabel('Bezel-set (each stone in its own rim)')).not.toBeChecked()
 })
 
+test('switches to Hebrew, right to left, and remembers it', async ({ page }) => {
+  const summary = page.getByTestId('summary')
+  await page.getByRole('button', { name: 'Switch to Hebrew' }).click()
+  await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
+  await expect(page.locator('html')).toHaveAttribute('lang', 'he')
+  await expect(summary).toContainText('זהב צהוב 18K')
+
+  await page.getByRole('tab', { name: 'מתכת' }).click()
+  await pick(page, 'מתכת החישוק', 'פלטינה')
+  await expect(summary).toContainText('פלטינה')
+  await expect(page.getByRole('button', { name: 'מדידה על היד' })).toBeVisible()
+
+  await page.reload()
+  await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
+  await page.getByRole('button', { name: 'החלפה לאנגלית' }).click()
+  await expect(page.locator('html')).toHaveAttribute('dir', 'ltr')
+  await expect(summary).toContainText('Platinum')
+})
+
+test('a ?lng=he link opens in Hebrew', async ({ page }) => {
+  await page.goto('/?lng=he')
+  await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
+  await expect(page.getByRole('tab', { name: 'תבניות' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'להתחיל מעיצוב קלאסי' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'סוליטר קלאסי' })).toBeVisible()
+})
+
 test('a try-on chunk gone after a redeploy asks to reload instead of a blank page', async ({ page }) => {
   await page.route(/\/assets\/TryOn-[^/]*\.js$/, (route) => route.fulfill({ status: 404 }))
   await page.getByRole('button', { name: 'Try on my hand' }).click()
