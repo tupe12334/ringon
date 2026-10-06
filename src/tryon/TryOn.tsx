@@ -226,6 +226,7 @@ function useCamera(facing: Facing) {
     const stop = () => stream?.getTracks().forEach((t) => t.stop())
     // getUserMedia can hang without ever failing (camera held by another app, some browsers).
     // It also waits while the permission prompt is open, so only give up once access is granted.
+    // (iOS Safari may keep reporting 'prompt' after the user allowed it: then no message.)
     const stuck = setTimeout(async () => {
       const state = await navigator.permissions?.query({ name: 'camera' as PermissionName }).then((p) => p.state, () => null)
       if (!cancelled && !stream && state === 'granted') setError(i18n.t('tryon.cameraStuck'))
@@ -240,13 +241,17 @@ function useCamera(facing: Facing) {
         if (cancelled) return stop()
         el.srcObject = stream
         await el.play()
-        if (!cancelled) setVideo(el)
+        if (!cancelled) {
+          setError('') // a late stream beats an earlier "did not start"
+          setVideo(el)
+        }
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : String(e))
       }
     })()
     return () => {
       clearTimeout(stuck)
+      setError('') // the next attempt (e.g. after switching camera) starts clean
       cancelled = true
       stop()
       el.srcObject = null
