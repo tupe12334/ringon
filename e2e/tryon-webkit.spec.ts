@@ -2,8 +2,7 @@ import { expect, test } from '@playwright/test'
 
 // Runs in the iphone-webkit project: iPhone Safari's engine with WebKit's mock camera.
 
-test('try-on starts the camera, loads hand tracking, records MP4 and takes a photo', async ({ page, context, browserName }) => {
-  test.skip(browserName !== 'webkit', 'Safari-engine smoke test')
+test('try-on starts the camera, loads hand tracking, records MP4 and takes a photo', async ({ page, context }) => {
   await context.grantPermissions(['camera'])
   await page.goto('/')
   await page.getByRole('button', { name: /Try on/ }).click()
