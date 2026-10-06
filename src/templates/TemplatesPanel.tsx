@@ -1,13 +1,14 @@
 import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { ringTo3mf } from '../ring/export3mf'
 import { DesignIcon } from '../customizer/icons'
 import { BUILTIN_TEMPLATES } from './builtin'
 import { parseImport, shareUrl } from './share'
 import { useStore } from './store'
 
-function download(name: string, text: string) {
+function download(name: string, data: string | Uint8Array<ArrayBuffer>, type = 'application/json') {
   const a = document.createElement('a')
-  a.href = URL.createObjectURL(new Blob([text], { type: 'application/json' }))
+  a.href = URL.createObjectURL(new Blob([data], { type }))
   a.download = name
   a.click()
   setTimeout(() => URL.revokeObjectURL(a.href), 1000)
@@ -62,6 +63,7 @@ export function TemplatesPanel() {
       <div className="row wrap">
         <button type="button" onClick={share}>{t('templates.share')}</button>
         <button type="button" onClick={() => download(`${spec.name || 'ring'}.ringon.json`, JSON.stringify(spec, null, 2))}>{t('templates.exportDesign')}</button>
+        <button type="button" onClick={() => download(`${spec.name || 'ring'}.3mf`, ringTo3mf(spec), 'model/3mf')}>{t('templates.export3mf')}</button>
         {templates.length > 0 && (
           <button type="button" onClick={() => download('ringon-templates.json', JSON.stringify(templates.map((x) => x.spec), null, 2))}>{t('templates.exportMine')}</button>
         )}

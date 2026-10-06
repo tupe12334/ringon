@@ -147,3 +147,8 @@ input[type='color'] { width: 56px; height: 36px; border: none; background: none;
 .rotate-lock { position: absolute; top: 0.5rem; inset-inline-start: 0.75rem; min-height: 32px; padding: 0.2rem 0.7rem; font-size: 0.8rem; }
 .rotate-lock[aria-pressed='true'] { border-color: var(--accent); color: var(--accent); }
 .photoreal-note { position: absolute; top: 2.9rem; inset-inline-end: 0.75rem; margin: 0; font-size: 0.75rem; color: var(--muted); }
+
+.crash { max-width: 32rem; margin: 0 auto; padding: 3rem 1.25rem; display: grid; gap: 1rem; }
+.crash p { margin: 0; line-height: 1.5; }
+.crash-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.crash pre { margin: 0; color: var(--muted); font-size: 0.8rem; white-space: pre-wrap; }

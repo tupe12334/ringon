@@ -217,6 +217,22 @@ test('a ?lng=he link opens in Hebrew', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'סוליטר קלאסי' })).toBeVisible()
 })
 
+test('a try-on chunk gone after a redeploy asks to reload instead of a blank page', async ({ page }) => {
+  await page.route(/\/assets\/TryOn-[^/]*\.js$/, (route) => route.fulfill({ status: 404 }))
+  await page.getByRole('button', { name: 'Try on my hand' }).click()
+  await expect(page.getByRole('alert')).toContainText('Ringon was updated')
+  await page.unroute(/\/assets\/TryOn-/)
+  await page.getByRole('button', { name: 'Reload' }).click()
+  await expect(page.locator('.tryon')).toBeVisible()
+  await expect(page.getByRole('alert')).toBeHidden()
+})
+
+test('link previews point at the published card image', async ({ page }) => {
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', /\/og\.png$/)
+  const card = await page.request.get('/og.png')
+  expect(card.ok()).toBe(true)
+})
+
 test('rotation can be locked in the preview', async ({ page }) => {
   // The WebGL canvas alone (preserveDrawingBuffer), not the path-traced overlay above it.
   const canvas = page.getByTestId('preview').locator('canvas').first()
