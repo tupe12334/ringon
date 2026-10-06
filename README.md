@@ -5,6 +5,8 @@ runs in the browser, installable as an app (PWA), works offline once loaded.
 
 **Open it:** https://tupe12334.github.io/ringon/ (on your phone; the camera needs HTTPS)
 
+[![Ringon: design a ring, see it live on your hand](public/og.png)](https://tupe12334.github.io/ringon/)
+
 ## What you can do
 
 - **Design by jeweler conventions** – ring size in US/CA, EU/ISO, UK/AU or JP charts; band
@@ -39,6 +41,13 @@ runs in the browser, installable as an app (PWA), works offline once loaded.
 Rendering uses [three.js](https://threejs.org) via React Three Fiber; hand tracking uses
 [MediaPipe Hand Landmarker](https://ai.google.dev/edge/mediapipe/solutions/vision/hand_landmarker),
 served from this app (no third-party requests).
+
+## Privacy
+
+Everything runs on your device. The camera feed, hand tracking, photos and clips never leave the
+browser unless you share them; designs and saved templates stay in this browser's storage. No
+accounts, analytics or cookies. A share link carries the design itself in the part after `#`,
+which browsers never send to a server.
 
 ## Develop
 

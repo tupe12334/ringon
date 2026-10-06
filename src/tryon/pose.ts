@@ -17,7 +17,7 @@ export const FINGERS = ['thumb', 'index', 'middle', 'ring', 'pinky'] as const
 export type Finger = (typeof FINGERS)[number]
 
 /** Landmarks of the base joint and the next joint of each finger. */
-const SEGMENT: Record<Finger, [number, number]> = {
+export const SEGMENT: Record<Finger, [number, number]> = {
   thumb: [2, 3],
   index: [5, 6],
   middle: [9, 10],

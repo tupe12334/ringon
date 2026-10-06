@@ -9,6 +9,7 @@ import { useStore } from '../templates/store'
 import { computePose, coverLayout, FINGERS, PalmSideVote, palmSideEvidence, palmSideFromLabel, worldToScreen, type Finger, type Lm, type RingPose, type View } from './pose'
 import { useRecorder } from './recorder'
 import { PoseSmoother } from './smoothing'
+import { DEPTH_ONLY, handJoints, occluderBones, placeHand, UNIT_CYLINDER, UNIT_SPHERE } from './handOccluder'
 import { loadHandTracker, type HandTracker } from './tracker'
 
 /** One frame's landmarks, as MediaPipe returned them. */
@@ -73,6 +74,8 @@ function TrackedRing({ spec, video, landmarker, mirrored, finger, hand, flip, fi
   const vote = useMemo(() => new PalmSideVote(), [])
   const last = useRef({ time: -1, seen: 0, status: '' as Status | '' })
   const innerR = spec.innerDiameterMm / 2
+  const handRef = useRef<THREE.Group>(null)
+  const bones = useMemo(() => occluderBones(finger), [finger])
 
   useEffect(() => {
     smoother.reset()
@@ -94,13 +97,14 @@ function TrackedRing({ spec, video, landmarker, mirrored, finger, hand, flip, fi
     const image = result.landmarks[0]
     const world = result.worldLandmarks[0]
     let pose: RingPose | null = null
+    const along = finger === 'thumb' ? 0.5 : 0.6
     if (image && world) {
       const label = result.handedness[0]?.[0]?.categoryName ?? 'Right'
       // A hand the user named settles it; otherwise vote on the finger bend.
       const palmSide =
         hand === 'auto' ? vote.update(palmSideEvidence(worldToScreen(world, mirrored)), palmSideFromLabel(label, mirrored)) : palmSideFromLabel(hand, mirrored)
       // Real rings sit ~0.6 of the way from the knuckle to the middle joint (e2e/fixtures/photos).
-      pose = computePose({ image, world, palmSide, finger, along: finger === 'thumb' ? 0.5 : 0.6, flip, innerDiameterMm: spec.innerDiameterMm }, view)
+      pose = computePose({ image, world, palmSide, finger, along, flip, innerDiameterMm: spec.innerDiameterMm }, view)
     }
 
     let status: Status
@@ -110,6 +114,10 @@ function TrackedRing({ spec, video, landmarker, mirrored, finger, hand, flip, fi
       g.quaternion.copy(p.quaternion)
       g.scale.setScalar(p.pxPerMm * fit)
       g.visible = true
+      // The hand moves with the smoothed ring; neighbours are drawn a little thinner than the ring's
+      // finger so landmark noise never hides the front of the band.
+      const joints = handJoints(image, world, view, finger, along)
+      if (joints && handRef.current) placeHand(handRef.current, joints, bones, innerR * p.pxPerMm * fit * 0.85, p.position.clone().sub(pose.position))
       last.current.seen = now
       status = 'tracking'
       onPose(p, { image, world, view })
@@ -117,6 +125,7 @@ function TrackedRing({ spec, video, landmarker, mirrored, finger, hand, flip, fi
       // Keep the ring a moment through dropped frames, then hide it.
       if (now - last.current.seen > 250) {
         g.visible = false
+        if (handRef.current) handRef.current.visible = false
         smoother.reset()
         // Out of view for a while: it may be the other hand that comes back.
         if (now - last.current.seen > 1000) vote.reset()
@@ -131,14 +140,25 @@ function TrackedRing({ spec, video, landmarker, mirrored, finger, hand, flip, fi
   })
 
   return (
-    <group ref={group} visible={false} name="tracked-ring">
-      {/* Invisible finger: hides the part of the band behind it. */}
-      <mesh renderOrder={-1}>
-        <cylinderGeometry args={[innerR * 0.98, innerR * 0.98, 70, 32]} />
-        <meshBasicMaterial colorWrite={false} />
-      </mesh>
-      <RingModel spec={spec} />
-    </group>
+    <>
+      <group ref={group} visible={false} name="tracked-ring">
+        {/* Invisible finger, moving with the ring: hides the part of the band behind it. */}
+        <mesh renderOrder={-1}>
+          <cylinderGeometry args={[innerR * 0.98, innerR * 0.98, 70, 32]} />
+          <meshBasicMaterial colorWrite={false} />
+        </mesh>
+        <RingModel spec={spec} />
+      </group>
+      <group ref={handRef} visible={false} name="hand-occluder">
+        {/* The rest of the hand: bent joints, other fingers and the palm hide the band too. */}
+        {bones.map(([i, j]) => (
+          <mesh key={`${i}-${j}`} geometry={UNIT_CYLINDER} material={DEPTH_ONLY} renderOrder={-1} />
+        ))}
+        {Array.from({ length: 21 }, (_, i) => (
+          <mesh key={i} geometry={UNIT_SPHERE} material={DEPTH_ONLY} renderOrder={-1} />
+        ))}
+      </group>
+    </>
   )
 }
 
