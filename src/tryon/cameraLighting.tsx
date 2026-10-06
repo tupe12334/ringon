@@ -12,11 +12,14 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 import { STUDIO_HDR } from '../ring/RingModel'
+import { isSoftwareRenderer } from '../gpu'
 import { exposureFor, meanLuminance } from './cameraExposure'
 
 /** How strongly the camera's colours are added on top of the studio light. */
 const CAMERA_WEIGHT = 0.35
 const UPDATE_MS = 500
+/** Cube face size of the environment: it is blurred anyway, and small keeps phones cool. */
+const ENV_SIZE = 64
 
 export function CameraLighting({ video, mirrored, readout }: { video: HTMLVideoElement; mirrored: boolean; readout?: React.RefObject<HTMLElement | null> }) {
   const gl = useThree((s) => s.gl)
@@ -57,7 +60,7 @@ export function CameraLighting({ video, mirrored, readout }: { video: HTMLVideoE
       cameraTexture.needsUpdate = true
       const mean = meanLuminance(ctx.getImageData(0, 0, canvas.width, canvas.height).data)
       exposure.current = exposureFor(mean)
-      const next = pmrem.fromScene(room, 0.02)
+      const next = pmrem.fromScene(room, 0.02, 0.1, 100, { size: ENV_SIZE })
       // oxlint-disable-next-line react/immutability -- the r3f scene is meant to be mutated
       scene.environment = next.texture
       target?.dispose()
@@ -69,7 +72,8 @@ export function CameraLighting({ video, mirrored, readout }: { video: HTMLVideoE
       }
     }
     update()
-    const id = setInterval(update, UPDATE_MS)
+    // On a CPU-only renderer each environment render is expensive: light once, don't follow.
+    const id = isSoftwareRenderer(gl) ? undefined : setInterval(update, UPDATE_MS)
     return () => {
       clearInterval(id)
       exposure.current = 1

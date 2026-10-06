@@ -9,6 +9,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import * as THREE from 'three'
 import { WebGLPathTracer } from 'three-gpu-pathtracer'
+import { isSoftwareRenderer } from '../gpu'
 import { RingModel, StudioEnvironment, type RenderMode } from '../ring/RingModel'
 import { isPausedForSlowness, isPhotorealOn, markTooSlow, SampleTimer, togglePhotoreal } from './photoreal'
 import type { RingSpec } from '../ring/spec'
@@ -22,13 +23,6 @@ export const MAX_SAMPLES = 256
 /** A path-trace sample slower than this (ms, averaged) makes the page feel frozen. */
 const MAX_SAMPLE_MS = 120
 
-/** CPU-emulated WebGL (no GPU): path tracing would lock the page. */
-function isSoftwareRenderer(gl: THREE.WebGLRenderer) {
-  const ctx = gl.getContext()
-  const info = ctx.getExtension('WEBGL_debug_renderer_info')
-  const name = String(info ? ctx.getParameter(info.UNMASKED_RENDERER_WEBGL) : ctx.getParameter(ctx.RENDERER))
-  return /swiftshader|llvmpipe|software|basic render/i.test(name)
-}
 
 /** Phones and tablets: fewer, cheaper samples to spare battery. */
 const isTouchDevice = () => typeof matchMedia !== 'undefined' && matchMedia('(pointer: coarse)').matches
