@@ -326,6 +326,7 @@ export const he: Translation & { templates: { imported_two: string } } = {
     tracking: 'במעקב',
     error: 'המצלמה לא זמינה: {{error}}',
     noCamera: 'הדפדפן הזה לא יכול לפתוח את המצלמה (נדרש HTTPS).',
+    cameraStuck: 'המצלמה לא נפתחה. סגרו אפליקציות אחרות שמשתמשות בה ונסו שוב.',
     switchCamera: 'החלפת מצלמה',
     camera: '⟲ מצלמה',
     finger: 'אצבע',

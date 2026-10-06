@@ -326,6 +326,7 @@ export const en = {
     tracking: 'Tracking',
     error: 'Camera unavailable: {{error}}',
     noCamera: 'This browser cannot open the camera (it needs HTTPS).',
+    cameraStuck: 'The camera did not start. Close other apps using it, then try again.',
     switchCamera: 'Switch camera',
     camera: '⟲ Camera',
     finger: 'Finger',

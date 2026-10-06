@@ -207,6 +207,9 @@ function TrackedRing({ spec, video, landmarker, mirrored, finger, hand, flip, fi
   )
 }
 
+/** How long a granted camera may take to deliver video before we call it stuck. */
+const CAMERA_START_TIMEOUT_MS = 15_000
+
 function useCamera(facing: Facing) {
   const [video, setVideo] = useState<HTMLVideoElement | null>(null)
   const [error, setError] = useState('')
@@ -221,6 +224,12 @@ function useCamera(facing: Facing) {
     el.className = 'camera-source'
     document.body.append(el)
     const stop = () => stream?.getTracks().forEach((t) => t.stop())
+    // getUserMedia can hang without ever failing (camera held by another app, some browsers).
+    // It also waits while the permission prompt is open, so only give up once access is granted.
+    const stuck = setTimeout(async () => {
+      const state = await navigator.permissions?.query({ name: 'camera' as PermissionName }).then((p) => p.state, () => null)
+      if (!cancelled && !stream && state === 'granted') setError(i18n.t('tryon.cameraStuck'))
+    }, CAMERA_START_TIMEOUT_MS)
     ;(async () => {
       try {
         if (!navigator.mediaDevices?.getUserMedia) throw new Error(i18n.t('tryon.noCamera'))
@@ -237,6 +246,7 @@ function useCamera(facing: Facing) {
       }
     })()
     return () => {
+      clearTimeout(stuck)
       cancelled = true
       stop()
       el.srcObject = null

@@ -14,6 +14,8 @@ export const STILL_HAND_FEED = `${fixtures}still-hand.y4m`
 const ffmpeg = (...args: string[]) => execFileSync('ffmpeg', ['-y', '-loglevel', 'error', ...args])
 
 export default function globalSetup() {
+  // Only the Chromium projects use these feeds (the macOS WebKit CI job sets this).
+  if (process.env.NO_CAMERA_FEEDS) return
   if (!existsSync(BACK_OF_HAND_FEED))
     ffmpeg(
       '-loop', '1', '-i', `${fixtures}back-of-right-hand.png`, '-t', '4', '-r', '30',
