@@ -198,14 +198,20 @@ test('a ?lng=he link opens in Hebrew', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'סוליטר קלאסי' })).toBeVisible()
 })
 
-test('a try-on chunk gone after a redeploy asks to reload instead of a blank page', async ({ page }) => {
-  await page.route(/\/assets\/TryOn-[^/]*\.js$/, (route) => route.fulfill({ status: 404 }))
-  await page.getByRole('button', { name: 'Try on my hand' }).click()
-  await expect(page.getByRole('alert')).toContainText('Ringon was updated')
-  await page.unroute(/\/assets\/TryOn-/)
-  await page.getByRole('button', { name: 'Reload' }).click()
-  await expect(page.locator('.tryon')).toBeVisible()
-  await expect(page.getByRole('alert')).toBeHidden()
+test.describe('without the service worker', () => {
+  // The PWA's service worker precaches every chunk and answers from its cache, which
+  // page.route never sees: the 404 below would only work until it takes control.
+  test.use({ serviceWorkers: 'block' })
+
+  test('a try-on chunk gone after a redeploy asks to reload instead of a blank page', async ({ page }) => {
+    await page.route(/\/assets\/TryOn-[^/]*\.js$/, (route) => route.fulfill({ status: 404 }))
+    await page.getByRole('button', { name: 'Try on my hand' }).click()
+    await expect(page.getByRole('alert')).toContainText('Ringon was updated')
+    await page.unroute(/\/assets\/TryOn-/)
+    await page.getByRole('button', { name: 'Reload' }).click()
+    await expect(page.locator('.tryon')).toBeVisible()
+    await expect(page.getByRole('alert')).toBeHidden()
+  })
 })
 
 test('link previews point at the published card image', async ({ page }) => {
