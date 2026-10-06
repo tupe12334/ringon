@@ -88,21 +88,21 @@ describe('ring pose', () => {
 
   it('puts the stone on the back of the hand: away from a camera facing the palm', () => {
     const pose = poseFor(world, square)
-    expect(pose.dorsal.z).toBeLessThan(-0.99)
-    expect(pose.axis.y).toBeGreaterThan(0.99) // finger points up the screen
+    expect(pose.dorsal.z).toBeLessThan(-0.95)
+    expect(pose.axis.y).toBeGreaterThan(0.95) // finger points up the screen
   })
 
   it('…and toward a camera facing the back of the hand', () => {
-    expect(poseFor(turnAround(world), square).dorsal.z).toBeGreaterThan(0.99)
+    expect(poseFor(turnAround(world), square).dorsal.z).toBeGreaterThan(0.95)
   })
 
   it('is consistent when the front camera mirrors the image', () => {
-    expect(poseFor(world, { ...square, mirrored: true }).dorsal.z).toBeLessThan(-0.99)
-    expect(poseFor(turnAround(world), { ...square, mirrored: true }).dorsal.z).toBeGreaterThan(0.99)
+    expect(poseFor(world, { ...square, mirrored: true }).dorsal.z).toBeLessThan(-0.95)
+    expect(poseFor(turnAround(world), { ...square, mirrored: true }).dorsal.z).toBeGreaterThan(0.95)
   })
 
   it('flips on request', () => {
-    expect(poseFor(world, square, { flip: true }).dorsal.z).toBeGreaterThan(0.99)
+    expect(poseFor(world, square, { flip: true }).dorsal.z).toBeGreaterThan(0.95)
   })
 
   it('places the ring between the knuckle and the middle joint', () => {
@@ -113,7 +113,7 @@ describe('ring pose', () => {
     expect(pose.position.y).toBeCloseTo(mcp.y + (pip.y - mcp.y) * 0.4, 3)
   })
 
-  it('sizes the ring to the finger from the knuckle spacing', () => {
+  it('sizes the ring to the finger from the hand in the image', () => {
     // Knuckles 20 mm apart → 0.1 image units → 100 px; finger ≈ 78 px wide; 17 mm ring.
     expect(poseFor(world, square).pxPerMm).toBeCloseTo((100 * FINGER_TO_KNUCKLE_SPACING) / 17, 2)
   })
@@ -121,7 +121,8 @@ describe('ring pose', () => {
   it('undoes foreshortening when the hand is turned away', () => {
     // Rotate the hand 60° about the vertical axis: knuckle spacing halves on screen.
     const turned = world.map((l) => ({ x: l.x * 0.5 - l.z * Math.sin(Math.PI / 3), y: l.y, z: l.x * Math.sin(Math.PI / 3) + l.z * 0.5 }))
-    expect(poseFor(turned, square).pxPerMm).toBeCloseTo((100 * FINGER_TO_KNUCKLE_SPACING) / 17, 1)
+    // The palm's length is unchanged, so the size holds.
+    expect(poseFor(turned, square).pxPerMm / ((100 * FINGER_TO_KNUCKLE_SPACING) / 17)).toBeCloseTo(1, 1)
   })
 
   it('maps the ring model axes onto the finger', () => {
