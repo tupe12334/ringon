@@ -143,7 +143,6 @@ function TrackedRing({ spec, video, landmarker, mirrored, finger, hand, flip, fi
       g.quaternion.copy(p.quaternion)
       g.scale.setScalar(p.pxPerMm * fit)
       g.visible = true
-      if (light.current) light.current.castShadow = true
       aimShadowLight(light.current, g, p.pxPerMm * fit * (innerR + spec.band.thicknessMm + 12))
       // The hand moves with the smoothed ring; neighbours are drawn a little thinner than the ring's
       // finger so landmark noise never hides the front of the band.
@@ -156,7 +155,6 @@ function TrackedRing({ spec, video, landmarker, mirrored, finger, hand, flip, fi
       // Keep the ring a moment through dropped frames, then hide it.
       if (now - last.current.seen > 250) {
         g.visible = false
-        if (light.current) light.current.castShadow = false // no shadow pass for a hidden ring
         if (handRef.current) handRef.current.visible = false
         smoother.reset()
         // Out of view for a while: it may be the other hand that comes back.
@@ -175,7 +173,8 @@ function TrackedRing({ spec, video, landmarker, mirrored, finger, hand, flip, fi
     <>
       {SHADOWS && (
         // Overhead key light for the ring's shadow on the skin. Kept dim: the studio environment
-        // already lights the ring, so the try-on matches the designer.
+        // already lights the ring, so the try-on matches the designer. castShadow stays on: toggling it
+        // changes the shadow-light count and recompiles materials; a hidden ring draws nothing anyway.
         <directionalLight ref={light} intensity={0.15} castShadow shadow-mapSize={[256, 256]} shadow-bias={-0.002} shadow-normalBias={0.5} />
       )}
       <group ref={group} visible={false} name="tracked-ring">
