@@ -17,5 +17,5 @@ jobs:
       - name: Run linecheck
         uses: tupe12334/linecheck@v1.2.2
         with:
-          version: 1.2.2
+          version: 1.2.1
           paths: .
