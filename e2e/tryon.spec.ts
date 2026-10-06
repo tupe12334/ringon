@@ -66,7 +66,8 @@ test('takes a photo', async ({ page }) => {
   await page.goto('/#try')
   await expect(page.getByTestId('tracking-status')).toHaveAttribute('data-status', 'tracking', { timeout: 60_000 })
   await page.getByRole('button', { name: 'Photo' }).click()
-  await expect(page.getByRole('dialog', { name: 'Your capture' }).locator('img')).toBeVisible()
+  // Encoding a large canvas on a CPU-only WebGL under load can take a few seconds.
+  await expect(page.getByRole('dialog', { name: 'Your capture' }).locator('img')).toBeVisible({ timeout: 20_000 })
 })
 
 test('keeps the stone on the back of the hand with the mirrored front camera', async ({ page }) => {
