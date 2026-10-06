@@ -29,3 +29,26 @@ test('photoreal path tracing: paused on a GPU-less device, still available on re
   await expect(render).toHaveAttribute('data-mode', 'raster', { timeout: 60_000 })
   await expect(render).toHaveAttribute('data-samples', '0')
 })
+
+test('photoreal survives the GPU refusing a WebGL context', async ({ page }) => {
+  test.setTimeout(150_000)
+  // Safari hands out an already-lost context when the GPU is busy or out of memory, and three
+  // throws on it. The real-time canvas is in the page when it asks; the tracer's are not yet.
+  await page.addInitScript(() => {
+    const getContext = HTMLCanvasElement.prototype.getContext
+    HTMLCanvasElement.prototype.getContext = function (this: HTMLCanvasElement, ...args: Parameters<typeof getContext>) {
+      const ctx = getContext.apply(this, args)
+      if (!this.isConnected && ctx && 'getExtension' in ctx) ctx.getExtension('WEBGL_lose_context')?.loseContext()
+      return ctx
+    } as typeof getContext
+  })
+  await page.reload()
+  const render = page.getByTestId('render')
+  await expect(page.getByRole('status').filter({ hasText: 'Photoreal paused' })).toBeVisible({ timeout: 30_000 })
+  await page.getByRole('button', { name: /Photoreal off/ }).click()
+  await expect(render).toHaveAttribute('data-mode', 'pathtrace', { timeout: 30_000 })
+  // The tracer's renderer is made after SETTLE_MS; give it time to fail.
+  await page.waitForTimeout(3_000)
+  await expect(page.getByRole('alert')).toHaveCount(0)
+  await page.getByRole('tab', { name: 'Metal' }).click() // still usable
+})
