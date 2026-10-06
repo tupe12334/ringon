@@ -1,6 +1,7 @@
 // The ring design document. Everything the customizer can change lives here, so a template,
 // a share link and a saved design are all just a RingSpec.
 
+import { z } from 'zod/mini'
 import { MAX_DIAMETER_MM, MIN_DIAMETER_MM, usToDiameter } from './sizes'
 
 export const PROFILES = ['flat', 'd-shape', 'court', 'half-round', 'knife-edge', 'square'] as const
@@ -100,163 +101,6 @@ export type SideSetting = (typeof SIDE_SETTINGS)[number]
 export const FONTS = ['serif', 'sans', 'script'] as const
 export type EngravingFont = (typeof FONTS)[number]
 
-export interface StoneSpec {
-  enabled: boolean
-  shape: StoneShape
-  carat: number
-  gem: Gem
-  /** Hex colour, used when gem is "custom". */
-  customColor: string
-  setting: Setting
-  prongTip: ProngTip
-  /** Height of the girdle above the band surface, mm. */
-  settingHeightMm: number
-  /** Rotate the stone on the finger, degrees (e.g. east–west oval = 90). */
-  rotationDeg: number
-  /** Bezel look; also used by bezel-set side stones. */
-  bezel: {
-    /** Wall thickness, mm. */
-    wallMm: number
-    /** How far the wall rises over the girdle, as a share of the crown height (0 = flush). */
-    lip: number
-    edge: BezelEdge
-    halfWalls: HalfBezelWalls
-  }
-}
-
-export interface RingSpec {
-  version: 1
-  name: string
-  /** Canonical ring size: inner diameter, mm. */
-  innerDiameterMm: number
-  band: {
-    profile: Profile
-    widthMm: number
-    thicknessMm: number
-    /** Domed inside ("comfort fit"). */
-    comfortFit: boolean
-    /** Shank width under the finger relative to the top, 0.5 – 1 (1 = no taper). */
-    taper: number
-    metal: Metal
-    finish: Finish
-    /** Metal for prongs/bezel/halo; "match" uses the band metal (two-tone otherwise). */
-    headMetal: Metal | 'match'
-  }
-  stone: StoneSpec
-  halo: {
-    enabled: boolean
-    stoneMm: number
-    gem: Gem
-    customColor: string
-    /** Classic frames the girdle; hidden sits under it, seen from the side. */
-    style: HaloStyle
-    /** 1 = single halo, 2 = double halo. */
-    rows: number
-  }
-  accents: {
-    style: Accent
-    /** Band stone size across the band, mm. */
-    stoneMm: number
-    gem: Gem
-    customColor: string
-    /** Pavé / channel: how far the stones run down each side of the band, degrees from the top. */
-    coverageDeg: number
-    /** Pavé / eternity: rows across the band, capped by what fits; 0 = auto (two on a wide pavé band). */
-    rows: number
-    /** Band stone cut; "auto" = princess in a channel, round otherwise. Long axis runs across the band. */
-    meleeCut: StoneShape | 'auto'
-    /** Extra metal between band stones, mm (wide spacing = "stations" / "diamonds by the yard"). */
-    spacingMm: number
-    /** Each band stone in its own bezel cup instead of pavé beads. */
-    bezelSet: boolean
-    /** Side stones beside the centre stone (three-stone, five-stone, toi et moi). */
-    side: {
-      /** Stones on each side of the centre: 0 none, 1 three-stone, 2 five-stone, 3 seven-stone. */
-      count: number
-      layout: SideLayout
-      shape: StoneShape | 'match'
-      /** First side stone size relative to the centre stone (by face-up size). */
-      ratio: number
-      /** Each further stone out relative to the previous one. */
-      graduation: number
-      gem: Gem
-      customColor: string
-      /** Rotation of the right stone, degrees; 0 = long axis along the finger, 90 = across. */
-      rotationDeg: number
-      /** Left stone is the mirror image of the right (pears/hearts point the same way relative to the centre). */
-      mirror: boolean
-      setting: SideSetting
-      /** Metal gap between the centre and each side stone, mm. */
-      gapMm: number
-      /** Side stone girdle height relative to the centre stone's, 0.4 – 1. */
-      height: number
-      /** Shift the side stones along the finger, mm (e.g. tuck them against a pear's round end;
-       * for toi et moi this sets the pair diagonally). */
-      offsetMm: number
-    }
-  }
-  engraving: {
-    text: string
-    font: EngravingFont
-  }
-}
-
-export const DEFAULT_SPEC: RingSpec = {
-  version: 1,
-  name: 'My ring',
-  innerDiameterMm: usToDiameter(6),
-  band: {
-    profile: 'court',
-    widthMm: 2.2,
-    thicknessMm: 1.7,
-    comfortFit: true,
-    taper: 0.85,
-    metal: 'yellow-gold-18k',
-    finish: 'polished',
-    headMetal: 'white-gold-18k',
-  },
-  stone: {
-    enabled: true,
-    shape: 'round',
-    carat: 1,
-    gem: 'diamond',
-    customColor: '#7fd3ff',
-    setting: 'prong-6',
-    prongTip: 'round',
-    settingHeightMm: 3,
-    rotationDeg: 0,
-    bezel: { wallMm: 0.5, lip: 0.3, edge: 'plain', halfWalls: 'sides' },
-  },
-  halo: { enabled: false, stoneMm: 1.2, gem: 'diamond', customColor: '#ffffff', style: 'classic', rows: 1 },
-  accents: {
-    style: 'none',
-    stoneMm: 1.3,
-    gem: 'diamond',
-    customColor: '#ffffff',
-    coverageDeg: 60,
-    rows: 0,
-    meleeCut: 'auto',
-    spacingMm: 0,
-    bezelSet: false,
-    side: {
-      count: 0,
-      layout: 'both',
-      shape: 'match',
-      ratio: 0.6,
-      graduation: 0.8,
-      gem: 'diamond',
-      customColor: '#ffffff',
-      rotationDeg: 0,
-      mirror: true,
-      setting: 'prong-4',
-      gapMm: 0.4,
-      height: 0.7,
-      offsetMm: 0,
-    },
-  },
-  engraving: { text: '', font: 'script' },
-}
-
 /** Allowed numeric ranges. Shared by the UI sliders and import sanitisation. */
 export const LIMITS = {
   innerDiameterMm: [MIN_DIAMETER_MM, MAX_DIAMETER_MM],
@@ -284,111 +128,160 @@ export const LIMITS = {
   engravingLength: [0, 40],
 } as const
 
-const clamp = (v: unknown, [lo, hi]: readonly [number, number], fallback: number) =>
-  typeof v === 'number' && Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : fallback
+// Every field falls back to its default instead of failing, so untrusted input (imported file,
+// share link, old localStorage) always yields a valid spec. The fallbacks are the defaults.
 
-const pick = <T extends string>(v: unknown, allowed: readonly T[], fallback: T): T =>
-  allowed.includes(v as T) ? (v as T) : fallback
+/** A finite number clamped to `range`; anything else is `fallback`. */
+const num = ([lo, hi]: readonly [number, number], fallback: number) =>
+  z.pipe(z.catch(z.number(), fallback), z.transform((v: number) => Math.min(hi, Math.max(lo, v))))
 
-const bool = (v: unknown, fallback: boolean) => (typeof v === 'boolean' ? v : fallback)
+const int = (range: readonly [number, number], fallback: number) => z.pipe(num(range, fallback), z.transform(Math.round))
 
-const color = (v: unknown, fallback: string) =>
-  typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v) ? v : fallback
+const pick = <const T extends readonly [string, ...string[]]>(allowed: T, fallback: T[number]) => z.catch(z.enum(allowed), fallback)
+
+const bool = (fallback: boolean) => z.catch(z.boolean(), fallback)
+
+const color = (fallback: string) => z.catch(z.string().check(z.regex(/^#[0-9a-f]{6}$/i)), fallback)
 
 const obj = (v: unknown): Record<string, unknown> =>
   v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, unknown>) : {}
+
+/** A nested object; a missing or non-object value becomes all defaults. */
+const section = <S extends z.core.$ZodShape>(shape: S) => z.pipe(z.transform(obj), z.object(shape))
+
+const StoneSchema = section({
+  enabled: bool(true),
+  shape: pick(STONE_SHAPES, 'round'),
+  carat: num(LIMITS.carat, 1),
+  gem: pick(GEMS, 'diamond'),
+  /** Hex colour, used when gem is "custom". */
+  customColor: color('#7fd3ff'),
+  setting: pick(SETTINGS, 'prong-6'),
+  prongTip: pick(PRONG_TIPS, 'round'),
+  /** Height of the girdle above the band surface, mm. */
+  settingHeightMm: num(LIMITS.settingHeightMm, 3),
+  /** Rotate the stone on the finger, degrees (e.g. east–west oval = 90). */
+  rotationDeg: num(LIMITS.rotationDeg, 0),
+  /** Bezel look; also used by bezel-set side stones. */
+  bezel: section({
+    /** Wall thickness, mm. */
+    wallMm: num(LIMITS.bezelWallMm, 0.5),
+    /** How far the wall rises over the girdle, as a share of the crown height (0 = flush). */
+    lip: num(LIMITS.bezelLip, 0.3),
+    edge: pick(BEZEL_EDGES, 'plain'),
+    halfWalls: pick(HALF_BEZEL_WALLS, 'sides'),
+  }),
+})
+
+const SideSchema = section({
+  /** Stones on each side of the centre: 0 none, 1 three-stone, 2 five-stone, 3 seven-stone. */
+  count: int(LIMITS.sideCount, 0),
+  layout: pick(SIDE_LAYOUTS, 'both'),
+  shape: pick([...STONE_SHAPES, 'match'], 'match'),
+  /** First side stone size relative to the centre stone (by face-up size). */
+  ratio: num(LIMITS.sideRatio, 0.6),
+  /** Each further stone out relative to the previous one. */
+  graduation: num(LIMITS.graduation, 0.8),
+  gem: pick(GEMS, 'diamond'),
+  customColor: color('#ffffff'),
+  /** Rotation of the right stone, degrees; 0 = long axis along the finger, 90 = across.
+   * Angles wrap (190° is −170°) rather than clamp. */
+  rotationDeg: z.pipe(z.catch(z.number(), 0), z.transform((v: number) => ((((v + 180) % 360) + 360) % 360) - 180)),
+  /** Left stone is the mirror image of the right (pears/hearts point the same way relative to the centre). */
+  mirror: bool(true),
+  setting: pick(SIDE_SETTINGS, 'prong-4'),
+  /** Metal gap between the centre and each side stone, mm. */
+  gapMm: num(LIMITS.sideGapMm, 0.4),
+  /** Side stone girdle height relative to the centre stone's, 0.4 – 1. */
+  height: num(LIMITS.sideHeight, 0.7),
+  /** Shift the side stones along the finger, mm (e.g. tuck them against a pear's round end;
+   * for toi et moi this sets the pair diagonally). */
+  offsetMm: num(LIMITS.sideOffsetMm, 0),
+})
+
+/** Designs from before side stones were separate used accent style "three-stone" with
+ * accents.sideRatio/gem/customColor; move those onto accents.side. */
+function migrateAccents(v: unknown): Record<string, unknown> {
+  const a = obj(v)
+  const side = obj(a.side)
+  const threeStone = a.style === 'three-stone'
+  return {
+    ...a,
+    side: {
+      ...side,
+      count: threeStone && !(typeof side.count === 'number' && Number.isFinite(side.count)) ? 1 : side.count,
+      ratio: side.ratio ?? a.sideRatio,
+      gem: side.gem ?? (threeStone ? a.gem : undefined),
+      customColor: side.customColor ?? (threeStone ? a.customColor : undefined),
+    },
+  }
+}
+
+export const RingSpecSchema = z.object({
+  version: z.catch(z.literal(1), 1),
+  name: z.pipe(z.catch(z.string().check(z.trim(), z.minLength(1)), 'My ring'), z.transform((s: string) => s.slice(0, 60))),
+  /** Canonical ring size: inner diameter, mm. */
+  innerDiameterMm: num(LIMITS.innerDiameterMm, usToDiameter(6)),
+  band: section({
+    profile: pick(PROFILES, 'court'),
+    widthMm: num(LIMITS.widthMm, 2.2),
+    thicknessMm: num(LIMITS.thicknessMm, 1.7),
+    /** Domed inside ("comfort fit"). */
+    comfortFit: bool(true),
+    /** Shank width under the finger relative to the top, 0.5 – 1 (1 = no taper). */
+    taper: num(LIMITS.taper, 0.85),
+    metal: pick(METALS, 'yellow-gold-18k'),
+    finish: pick(FINISHES, 'polished'),
+    /** Metal for prongs/bezel/halo; "match" uses the band metal (two-tone otherwise). */
+    headMetal: pick([...METALS, 'match'], 'white-gold-18k'),
+  }),
+  stone: StoneSchema,
+  halo: section({
+    enabled: bool(false),
+    stoneMm: num(LIMITS.haloStoneMm, 1.2),
+    gem: pick(GEMS, 'diamond'),
+    customColor: color('#ffffff'),
+    /** Classic frames the girdle; hidden sits under it, seen from the side. */
+    style: pick(HALO_STYLES, 'classic'),
+    /** 1 = single halo, 2 = double halo. */
+    rows: int(LIMITS.haloRows, 1),
+  }),
+  accents: z.pipe(
+    z.transform(migrateAccents),
+    z.object({
+      style: pick(ACCENTS, 'none'),
+      /** Band stone size across the band, mm. */
+      stoneMm: num(LIMITS.accentStoneMm, 1.3),
+      gem: pick(GEMS, 'diamond'),
+      customColor: color('#ffffff'),
+      /** Pavé / channel: how far the stones run down each side of the band, degrees from the top. */
+      coverageDeg: num(LIMITS.coverageDeg, 60),
+      /** Pavé / eternity: rows across the band, capped by what fits; 0 = auto (two on a wide pavé band). */
+      rows: int(LIMITS.rows, 0),
+      /** Band stone cut; "auto" = princess in a channel, round otherwise. Long axis runs across the band.
+       * Older designs had round/princess/baguette plus "auto". */
+      meleeCut: pick([...STONE_SHAPES, 'auto'], 'auto'),
+      /** Extra metal between band stones, mm (wide spacing = "stations" / "diamonds by the yard"). */
+      spacingMm: num(LIMITS.spacingMm, 0),
+      /** Each band stone in its own bezel cup instead of pavé beads. */
+      bezelSet: bool(false),
+      /** Side stones beside the centre stone (three-stone, five-stone, toi et moi). */
+      side: SideSchema,
+    }),
+  ),
+  engraving: section({
+    text: z.pipe(z.catch(z.string(), ''), z.transform((s: string) => s.slice(0, LIMITS.engravingLength[1]))),
+    font: pick(FONTS, 'script'),
+  }),
+})
+
+export type RingSpec = z.output<typeof RingSpecSchema>
+export type StoneSpec = RingSpec['stone']
 
 /**
  * Turn untrusted input (imported file, share link, old localStorage) into a valid spec.
  * Unknown values fall back to defaults; numbers are clamped to LIMITS.
  */
-export function sanitizeSpec(input: unknown): RingSpec {
-  const d = DEFAULT_SPEC
-  const i = obj(input)
-  const band = obj(i.band)
-  const stone = obj(i.stone)
-  const bz = obj(stone.bezel)
-  const dbz = d.stone.bezel
-  const halo = obj(i.halo)
-  const accents = obj(i.accents)
-  const side = obj(accents.side)
-  const ds = d.accents.side
-  const threeStone = accents.style === 'three-stone'
-  const engraving = obj(i.engraving)
-  const text = typeof engraving.text === 'string' ? engraving.text : ''
-  const name = typeof i.name === 'string' && i.name.trim() ? i.name.trim().slice(0, 60) : d.name
+export const sanitizeSpec = (input: unknown): RingSpec => RingSpecSchema.parse(obj(input))
 
-  return {
-    version: 1,
-    name,
-    innerDiameterMm: clamp(i.innerDiameterMm, LIMITS.innerDiameterMm, d.innerDiameterMm),
-    band: {
-      profile: pick(band.profile, PROFILES, d.band.profile),
-      widthMm: clamp(band.widthMm, LIMITS.widthMm, d.band.widthMm),
-      thicknessMm: clamp(band.thicknessMm, LIMITS.thicknessMm, d.band.thicknessMm),
-      comfortFit: bool(band.comfortFit, d.band.comfortFit),
-      taper: clamp(band.taper, LIMITS.taper, d.band.taper),
-      metal: pick(band.metal, METALS, d.band.metal),
-      finish: pick(band.finish, FINISHES, d.band.finish),
-      headMetal: pick(band.headMetal, [...METALS, 'match' as const], d.band.headMetal),
-    },
-    stone: {
-      enabled: bool(stone.enabled, d.stone.enabled),
-      shape: pick(stone.shape, STONE_SHAPES, d.stone.shape),
-      carat: clamp(stone.carat, LIMITS.carat, d.stone.carat),
-      gem: pick(stone.gem, GEMS, d.stone.gem),
-      customColor: color(stone.customColor, d.stone.customColor),
-      setting: pick(stone.setting, SETTINGS, d.stone.setting),
-      prongTip: pick(stone.prongTip, PRONG_TIPS, d.stone.prongTip),
-      settingHeightMm: clamp(stone.settingHeightMm, LIMITS.settingHeightMm, d.stone.settingHeightMm),
-      rotationDeg: clamp(stone.rotationDeg, LIMITS.rotationDeg, d.stone.rotationDeg),
-      bezel: {
-        wallMm: clamp(bz.wallMm, LIMITS.bezelWallMm, dbz.wallMm),
-        lip: clamp(bz.lip, LIMITS.bezelLip, dbz.lip),
-        edge: pick(bz.edge, BEZEL_EDGES, dbz.edge),
-        halfWalls: pick(bz.halfWalls, HALF_BEZEL_WALLS, dbz.halfWalls),
-      },
-    },
-    halo: {
-      enabled: bool(halo.enabled, d.halo.enabled),
-      stoneMm: clamp(halo.stoneMm, LIMITS.haloStoneMm, d.halo.stoneMm),
-      gem: pick(halo.gem, GEMS, d.halo.gem),
-      customColor: color(halo.customColor, d.halo.customColor),
-      style: pick(halo.style, HALO_STYLES, d.halo.style),
-      rows: Math.round(clamp(halo.rows, LIMITS.haloRows, d.halo.rows)),
-    },
-    accents: {
-      style: pick(accents.style, ACCENTS, d.accents.style),
-      stoneMm: clamp(accents.stoneMm, LIMITS.accentStoneMm, d.accents.stoneMm),
-      gem: pick(accents.gem, GEMS, d.accents.gem),
-      customColor: color(accents.customColor, d.accents.customColor),
-      coverageDeg: clamp(accents.coverageDeg, LIMITS.coverageDeg, d.accents.coverageDeg),
-      rows: Math.round(clamp(accents.rows, LIMITS.rows, d.accents.rows)),
-      // Older designs had round/princess/baguette plus "auto".
-      meleeCut: pick(accents.meleeCut, [...STONE_SHAPES, 'auto' as const], d.accents.meleeCut),
-      spacingMm: clamp(accents.spacingMm, LIMITS.spacingMm, d.accents.spacingMm),
-      bezelSet: bool(accents.bezelSet, d.accents.bezelSet),
-      side: {
-        // Designs from before side stones were separate used style "three-stone".
-        count: Math.round(clamp(side.count, LIMITS.sideCount, threeStone ? 1 : ds.count)),
-        layout: pick(side.layout, SIDE_LAYOUTS, ds.layout),
-        shape: pick(side.shape, [...STONE_SHAPES, 'match' as const], ds.shape),
-        ratio: clamp(side.ratio ?? accents.sideRatio, LIMITS.sideRatio, ds.ratio),
-        graduation: clamp(side.graduation, LIMITS.graduation, ds.graduation),
-        gem: pick(side.gem ?? (threeStone ? accents.gem : undefined), GEMS, ds.gem),
-        customColor: color(side.customColor ?? (threeStone ? accents.customColor : undefined), ds.customColor),
-        // Angles wrap (190° is −170°) rather than clamp.
-        rotationDeg: typeof side.rotationDeg === 'number' && Number.isFinite(side.rotationDeg) ? ((((side.rotationDeg + 180) % 360) + 360) % 360) - 180 : ds.rotationDeg,
-        mirror: bool(side.mirror, ds.mirror),
-        setting: pick(side.setting, SIDE_SETTINGS, ds.setting),
-        gapMm: clamp(side.gapMm, LIMITS.sideGapMm, ds.gapMm),
-        height: clamp(side.height, LIMITS.sideHeight, ds.height),
-        offsetMm: clamp(side.offsetMm, LIMITS.sideOffsetMm, ds.offsetMm),
-      },
-    },
-    engraving: {
-      text: text.slice(0, LIMITS.engravingLength[1]),
-      font: pick(engraving.font, FONTS, d.engraving.font),
-    },
-  }
-}
+export const DEFAULT_SPEC: RingSpec = sanitizeSpec({})
