@@ -1,5 +1,5 @@
 import { defineConfig, devices } from '@playwright/test'
-import { BACK_OF_HAND_FEED, PALM_FEED } from './e2e/fake-camera'
+import { BACK_OF_HAND_FEED, PALM_FEED, STILL_HAND_FEED } from './e2e/fake-camera'
 
 // PORT: run beside another checkout's preview server.
 const port = Number(process.env.PORT ?? 4173)
@@ -37,7 +37,8 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
   projects: [
-    { name: 'phone', testIgnore: /real-hand|photos|photoreal/, use: phone(BACK_OF_HAND_FEED) },
+    { name: 'phone', testIgnore: /real-hand|still-hand|photos|photoreal/, use: phone(BACK_OF_HAND_FEED) },
+    { name: 'phone-still-hand', testMatch: /still-hand/, use: phone(STILL_HAND_FEED) },
     { name: 'phone-photoreal', testMatch: /photoreal/, use: phone(BACK_OF_HAND_FEED) },
     { name: 'phone-real-hand', testMatch: /real-hand/, use: phone(PALM_FEED) },
     // Still photos stand in for the camera (photo-camera.ts); the viewport is sized per photo.

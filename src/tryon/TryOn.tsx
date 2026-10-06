@@ -1,7 +1,7 @@
 // Live try-on: the camera feed with the ring tracked onto a finger, in real time.
 
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import * as THREE from 'three'
 import i18n from '../i18n'
@@ -66,8 +66,32 @@ interface TrackedRingProps {
   onPose: (p: RingPose | null, hand?: TrackedHand) => void
 }
 
+/** Ring shadow on the skin; `?shadow=0` turns it off (for comparisons). */
+const SHADOWS = typeof location === 'undefined' || new URLSearchParams(location.search).get('shadow') !== '0'
+
+/** Every mesh of the ring casts a shadow, whatever the design adds or removes. */
+const markShadowCasters = (ring: THREE.Object3D) =>
+  ring.traverse((o) => {
+    if ((o as THREE.Mesh).isMesh) o.castShadow = true
+  })
+
+/** Keep the shadow light just above-front of the ring and its shadow box around it (px). */
+function aimShadowLight(light: THREE.DirectionalLight | null, ring: THREE.Object3D, extentPx: number) {
+  if (!light) return
+  light.target = ring
+  light.position.copy(ring.position).add(new THREE.Vector3(0.05, 0.8, 1).multiplyScalar(4 * extentPx))
+  const cam = light.shadow.camera
+  cam.left = cam.bottom = -extentPx
+  cam.right = cam.top = extentPx
+  cam.near = 1
+  cam.far = 10 * extentPx
+  cam.updateProjectionMatrix()
+}
+
 function TrackedRing({ spec, video, landmarker, mirrored, finger, hand, flip, fit, onStatus, onPose }: TrackedRingProps) {
   const group = useRef<THREE.Group>(null)
+  const light = useRef<THREE.DirectionalLight>(null)
+  const ringModel = useRef<THREE.Group>(null)
   const size = useThree((s) => s.size)
   const smoother = useMemo(() => new PoseSmoother(), [])
   const vote = useMemo(() => new PalmSideVote(), [])
@@ -75,6 +99,12 @@ function TrackedRing({ spec, video, landmarker, mirrored, finger, hand, flip, fi
   const innerR = spec.innerDiameterMm / 2
   const handRef = useRef<THREE.Group>(null)
   const bones = useMemo(() => occluderBones(finger), [finger])
+
+  // Mark the ring's meshes as shadow casters whenever the design changes (children's layout
+  // effects have mounted the stones by now).
+  useLayoutEffect(() => {
+    if (ringModel.current) markShadowCasters(ringModel.current)
+  }, [spec])
 
   useEffect(() => {
     smoother.reset()
@@ -113,6 +143,8 @@ function TrackedRing({ spec, video, landmarker, mirrored, finger, hand, flip, fi
       g.quaternion.copy(p.quaternion)
       g.scale.setScalar(p.pxPerMm * fit)
       g.visible = true
+      if (light.current) light.current.castShadow = true
+      aimShadowLight(light.current, g, p.pxPerMm * fit * (innerR + spec.band.thicknessMm + 12))
       // The hand moves with the smoothed ring; neighbours are drawn a little thinner than the ring's
       // finger so landmark noise never hides the front of the band.
       const joints = handJoints(image, world, view, finger, along)
@@ -124,6 +156,7 @@ function TrackedRing({ spec, video, landmarker, mirrored, finger, hand, flip, fi
       // Keep the ring a moment through dropped frames, then hide it.
       if (now - last.current.seen > 250) {
         g.visible = false
+        if (light.current) light.current.castShadow = false // no shadow pass for a hidden ring
         if (handRef.current) handRef.current.visible = false
         smoother.reset()
         // Out of view for a while: it may be the other hand that comes back.
@@ -140,13 +173,27 @@ function TrackedRing({ spec, video, landmarker, mirrored, finger, hand, flip, fi
 
   return (
     <>
+      {SHADOWS && (
+        // Overhead key light for the ring's shadow on the skin. Kept dim: the studio environment
+        // already lights the ring, so the try-on matches the designer.
+        <directionalLight ref={light} intensity={0.15} castShadow shadow-mapSize={[256, 256]} shadow-bias={-0.002} shadow-normalBias={0.5} />
+      )}
       <group ref={group} visible={false} name="tracked-ring">
         {/* Invisible finger, moving with the ring: hides the part of the band behind it. */}
         <mesh renderOrder={-1}>
           <cylinderGeometry args={[innerR * 0.98, innerR * 0.98, 70, 32]} />
           <meshBasicMaterial colorWrite={false} />
         </mesh>
-        <RingModel spec={spec} />
+        {SHADOWS && (
+          // The finger's skin, as a shadow catcher: shows only the ring's contact shadow.
+          <mesh receiveShadow name="skin-shadow" renderOrder={-0.5}>
+            <cylinderGeometry args={[innerR * 0.985, innerR * 0.985, spec.band.widthMm + 30, 48, 1, true]} />
+            <shadowMaterial opacity={0.3} depthWrite={false} />
+          </mesh>
+        )}
+        <group ref={ringModel}>
+          <RingModel spec={spec} />
+        </group>
       </group>
       <group ref={handRef} visible={false} name="hand-occluder">
         {/* The rest of the hand: bent joints, other fingers and the palm hide the band too. */}
@@ -249,6 +296,8 @@ export function TryOn({ onBack }: { onBack: () => void }) {
     <div className="tryon">
       <Canvas
         orthographic
+        // PCF shadows: accurate where the band touches the skin; a small map keeps them soft.
+        shadows
         camera={{ position: [0, 0, 1000], near: 1, far: 3000, zoom: 1 }}
         gl={{ antialias: true, preserveDrawingBuffer: true, toneMapping: THREE.NeutralToneMapping }}
         // The camera image is ~720p: more pixels than this only costs phones battery and frames.

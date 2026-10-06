@@ -1,5 +1,8 @@
 import { expect, test } from '@playwright/test'
 
+// Live tracking + rendering on CI's CPU-only WebGL runs ~2x slower than locally.
+test.describe.configure({ timeout: 180_000 })
+
 // The fake camera shows the back of a right hand, fingers up (see fake-camera.ts).
 
 test('tracks the ring onto the hand in live video, stone facing out', async ({ page }) => {

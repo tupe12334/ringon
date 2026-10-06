@@ -1,5 +1,8 @@
 import { expect, test } from '@playwright/test'
 
+// Live tracking + rendering on CI's CPU-only WebGL runs ~2x slower than locally.
+test.describe.configure({ timeout: 180_000 })
+
 // Real footage (see fixtures/ATTRIBUTION.md): a hand opening, closing and turning, palm toward
 // the camera. The ring must stay on the finger with the stone on the far (back) side
 // throughout, including through the fist, where MediaPipe's left/right label flips.
