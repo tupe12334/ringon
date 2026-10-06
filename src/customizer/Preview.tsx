@@ -56,7 +56,7 @@ function PathTracer({
 }: {
   spec: RingSpec
   mode: RenderMode
-  overlay: React.RefObject<HTMLCanvasElement | null>
+  overlay: React.RefObject<HTMLDivElement | null>
   readout: React.RefObject<HTMLElement | null>
   /** The device can't path trace without freezing the page. */
   onTooSlow: () => void
@@ -83,10 +83,11 @@ function PathTracer({
         e.warm.tracer.dispose()
         releaseRenderer(e.warm.renderer)
       }
-      // The overlay canvas outlives this component; a later renderer reuses its context, so
-      // dispose without forcing the context lost.
-      e.main?.tracer.dispose()
-      e.main?.renderer.dispose()
+      if (e.main) {
+        e.main.tracer.dispose()
+        releaseRenderer(e.main.renderer)
+        e.main.renderer.domElement.remove()
+      }
       e.warm = e.main = undefined
     }
   }, [])
@@ -98,9 +99,9 @@ function PathTracer({
   }, [mode, readout])
 
   useEffect(() => {
-    const canvas = overlay.current
+    const box = overlay.current
     const out = readout.current
-    if (mode !== 'pathtrace' || !canvas) return
+    if (mode !== 'pathtrace' || !box) return
     const software = isSoftwareRenderer(gl)
     if (software && !force) {
       onTooSlow()
@@ -112,6 +113,9 @@ function PathTracer({
     const timer = new SampleTimer(MAX_SAMPLE_MS)
     let frame = 0
 
+    // A fresh canvas each time: a canvas whose context was lost only ever returns that lost
+    // context. Safari can also hand out a context that is already lost (GPU busy or out of
+    // memory), and three throws on it; then stay in real time.
     const makeRenderer = (target: HTMLCanvasElement) => {
       const renderer = new THREE.WebGLRenderer({ canvas: target, preserveDrawingBuffer: true })
       renderer.toneMapping = gl.toneMapping
@@ -129,8 +133,14 @@ function PathTracer({
 
     const trace = () => {
       if (!e.main) {
-        const renderer = makeRenderer(canvas)
-        e.main = { renderer, tracer: new WebGLPathTracer(renderer) }
+        const canvas = document.createElement('canvas')
+        try {
+          const renderer = makeRenderer(canvas)
+          e.main = { renderer, tracer: new WebGLPathTracer(renderer) }
+        } catch {
+          return onTooSlow()
+        }
+        box.append(canvas)
       }
       const { renderer, tracer } = e.main
       // Cheaper pixels where battery or a CPU renderer would suffer; the tracer upscales.
@@ -144,7 +154,7 @@ function PathTracer({
         if (sample(tracer)) return
         const n = Math.floor(tracer.samples)
         showing.current = n >= 1
-        canvas.style.visibility = showing.current ? 'visible' : 'hidden'
+        box.style.visibility = showing.current ? 'visible' : 'hidden'
         if (out) out.dataset.samples = String(n)
         if (tracer.samples < maxSamples) frame = requestAnimationFrame(loop)
       }
@@ -154,8 +164,12 @@ function PathTracer({
     if (e.main) trace()
     else {
       if (!e.warm) {
-        const renderer = makeRenderer(Object.assign(document.createElement('canvas'), { width: 16, height: 16 }))
-        e.warm = { renderer, tracer: new WebGLPathTracer(renderer), frames: 0 }
+        try {
+          const renderer = makeRenderer(Object.assign(document.createElement('canvas'), { width: 16, height: 16 }))
+          e.warm = { renderer, tracer: new WebGLPathTracer(renderer), frames: 0 }
+        } catch {
+          return onTooSlow()
+        }
       }
       const warm = e.warm
       warm.tracer.setScene(scene, camera)
@@ -176,7 +190,7 @@ function PathTracer({
     return () => {
       cancelAnimationFrame(frame)
       showing.current = false
-      canvas.style.visibility = 'hidden'
+      box.style.visibility = 'hidden'
       if (out) out.dataset.samples = '0'
     }
   }, [spec, mode, overlay, readout, gl, scene, camera, size, dpr, onTooSlow, force])
@@ -203,7 +217,7 @@ export function Preview({ spec }: { spec: RingSpec }) {
   // The spec the view has been still on for SETTLE_MS; any edit or drag drops to real time.
   const [settled, setSettled] = useState<RingSpec | null>(null)
   const readout = useRef<HTMLOutputElement>(null)
-  const overlay = useRef<HTMLCanvasElement>(null)
+  const overlay = useRef<HTMLDivElement>(null)
   const floorY = -(spec.innerDiameterMm / 2 + spec.band.thicknessMm)
   const mode: RenderMode = photoreal && !dragging && settled === spec ? 'pathtrace' : 'raster'
 
@@ -246,7 +260,7 @@ export function Preview({ spec }: { spec: RingSpec }) {
           onEnd={() => setDragging(false)}
         />
       </Canvas>
-      <canvas ref={overlay} className="pathtraced" aria-hidden="true" />
+      <div ref={overlay} className="pathtraced" aria-hidden="true" />
       <output ref={readout} data-testid="render" hidden />
       <button
         type="button"
