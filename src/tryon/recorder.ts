@@ -1,6 +1,7 @@
 // Records the try-on canvas (camera image + ring) as a video clip, or grabs a photo.
 
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react'
+import i18n from '../i18n'
 
 export interface Capture {
   kind: 'video' | 'photo'
@@ -90,7 +91,7 @@ export function useRecorder(canvasRef: RefObject<HTMLCanvasElement | null>) {
     const file = new File([result.blob], `ringon-try-on.${ext}`, { type: result.blob.type.split(';')[0] })
     if (navigator.canShare?.({ files: [file] })) {
       try {
-        await navigator.share({ files: [file], title: 'My Ringon ring' })
+        await navigator.share({ files: [file], title: i18n.t('tryon.shareTitle') })
         return
       } catch (e) {
         if (e instanceof DOMException && e.name === 'AbortError') return // user closed the share sheet

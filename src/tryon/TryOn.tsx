@@ -3,7 +3,9 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import type { HandLandmarker } from '@mediapipe/tasks-vision'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import * as THREE from 'three'
+import i18n from '../i18n'
 import { RingModel, StudioEnvironment } from '../ring/RingModel'
 import type { RingSpec } from '../ring/spec'
 import { useStore } from '../templates/store'
@@ -19,9 +21,6 @@ type Facing = 'environment' | 'user'
 type Hand = 'auto' | 'Left' | 'Right'
 
 const HANDS: Hand[] = ['auto', 'Left', 'Right']
-const HAND_LABEL: Record<Hand, string> = { auto: 'Auto', Left: 'Left hand', Right: 'Right hand' }
-
-const FINGER_LABEL: Record<Finger, string> = { thumb: 'Thumb', index: 'Index', middle: 'Middle', ring: 'Ring', pinky: 'Pinky' }
 
 /** The camera image, scaled to cover the screen, drawn behind the ring. */
 function VideoBackdrop({ video, mirrored }: { video: HTMLVideoElement; mirrored: boolean }) {
@@ -171,7 +170,7 @@ function useCamera(facing: Facing) {
     const stop = () => stream?.getTracks().forEach((t) => t.stop())
     ;(async () => {
       try {
-        if (!navigator.mediaDevices?.getUserMedia) throw new Error('This browser cannot open the camera (it needs HTTPS).')
+        if (!navigator.mediaDevices?.getUserMedia) throw new Error(i18n.t('tryon.noCamera'))
         stream = await navigator.mediaDevices.getUserMedia({
           audio: false,
           video: { facingMode: { ideal: facing }, width: { ideal: 1280 }, height: { ideal: 720 } },
@@ -197,6 +196,7 @@ function useCamera(facing: Facing) {
 
 export function TryOn({ onBack }: { onBack: () => void }) {
   const spec = useStore((s) => s.spec)
+  const { t } = useTranslation()
   const [facing, setFacing] = useState<Facing>('environment')
   const [finger, setFinger] = useState<Finger>('ring')
   const [hand, setHand] = useState<Hand>('auto')
@@ -256,67 +256,67 @@ export function TryOn({ onBack }: { onBack: () => void }) {
 
       <output ref={poseRef} data-testid="pose" hidden />
       <div className="tryon-top">
-        <button type="button" onClick={onBack} aria-label="Back to designer">
-          ← Design
+        <button type="button" onClick={onBack} aria-label={t('tryon.back')}>
+          {t('tryon.backLabel')}
         </button>
         <span className={`status ${shownStatus}`} data-testid="tracking-status" data-status={shownStatus}>
-          {shownStatus === 'loading' && 'Starting camera…'}
-          {shownStatus === 'searching' && 'Show your hand, back facing the camera'}
-          {shownStatus === 'tracking' && 'Tracking'}
-          {shownStatus === 'error' && `Camera unavailable: ${error}`}
+          {shownStatus === 'loading' && t('tryon.loading')}
+          {shownStatus === 'searching' && t('tryon.searching')}
+          {shownStatus === 'tracking' && t('tryon.tracking')}
+          {shownStatus === 'error' && t('tryon.error', { error })}
         </span>
-        <button type="button" onClick={() => setFacing((f) => (f === 'user' ? 'environment' : 'user'))} aria-label="Switch camera">
-          ⟲ Camera
+        <button type="button" onClick={() => setFacing((f) => (f === 'user' ? 'environment' : 'user'))} aria-label={t('tryon.switchCamera')}>
+          {t('tryon.camera')}
         </button>
       </div>
 
       <div className="tryon-bottom">
-        <div className="chips" role="radiogroup" aria-label="Hand">
+        <div className="chips" role="radiogroup" aria-label={t('tryon.hand')}>
           {HANDS.map((h) => (
             <button key={h} type="button" role="radio" aria-checked={h === hand} className={h === hand ? 'chip on' : 'chip'} onClick={() => setHand(h)}>
-              {HAND_LABEL[h]}
+              {t(`tryon.hands.${h}`)}
             </button>
           ))}
         </div>
-        <div className="chips" role="radiogroup" aria-label="Finger">
+        <div className="chips" role="radiogroup" aria-label={t('tryon.finger')}>
           {FINGERS.map((f) => (
             <button key={f} type="button" role="radio" aria-checked={f === finger} className={f === finger ? 'chip on' : 'chip'} onClick={() => setFinger(f)}>
-              {FINGER_LABEL[f]}
+              {t(`tryon.fingers.${f}`)}
             </button>
           ))}
         </div>
         <div className="row">
           <label className="fit">
-            Fit
-            <input type="range" min={0.7} max={1.3} step={0.01} value={fit} onChange={(e) => setFit(Number(e.target.value))} aria-label="Ring fit" />
+            {t('tryon.fit')}
+            <input type="range" min={0.7} max={1.3} step={0.01} value={fit} onChange={(e) => setFit(Number(e.target.value))} aria-label={t('tryon.fitAria')} />
           </label>
           <button type="button" onClick={() => setFlip((v) => !v)} aria-pressed={flip}>
-            Flip side
+            {t('tryon.flip')}
           </button>
         </div>
         <div className="row capture">
           <button type="button" onClick={recorder.snapshot} disabled={!video}>
-            Photo
+            {t('tryon.photo')}
           </button>
           <button type="button" className={recorder.recording ? 'record on' : 'record'} onClick={recorder.recording ? recorder.stop : recorder.start} disabled={!video || !recorder.supported}>
-            {recorder.recording ? `■ Stop ${recorder.seconds}s` : '● Record video'}
+            {recorder.recording ? t('tryon.stop', { seconds: recorder.seconds }) : t('tryon.record')}
           </button>
         </div>
       </div>
 
       {recorder.result && (
-        <div className="capture-result" role="dialog" aria-label="Your capture">
+        <div className="capture-result" role="dialog" aria-label={t('tryon.capture')}>
           {recorder.result.kind === 'video' ? (
             <video src={recorder.result.url} controls autoPlay loop playsInline muted />
           ) : (
-            <img src={recorder.result.url} alt={`${spec.name} on your hand`} />
+            <img src={recorder.result.url} alt={t('tryon.onHand', { name: spec.name })} />
           )}
           <div className="row">
             <button type="button" className="primary" onClick={recorder.share}>
-              Save / share
+              {t('tryon.saveShare')}
             </button>
             <button type="button" onClick={recorder.dismiss}>
-              Close
+              {t('tryon.close')}
             </button>
           </div>
         </div>
