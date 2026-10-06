@@ -23,8 +23,10 @@ export default defineConfig({
   timeout: 90_000,
   // Software WebGL + hand tracking is CPU-heavy: parallel browsers starve each other.
   workers: 1,
-  // Software WebGL on a shared runner occasionally starves or crashes the browser.
+  // Software WebGL on a shared runner occasionally starves or crashes the browser; a retried
+  // pass is reported as flaky.
   retries: process.env.CI ? 1 : 0,
+  reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
   globalSetup: './e2e/fake-camera.ts',
   use: {
     baseURL: `http://localhost:${port}`,
@@ -35,7 +37,8 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
   projects: [
-    { name: 'phone', testIgnore: /real-hand|photos/, use: phone(BACK_OF_HAND_FEED) },
+    { name: 'phone', testIgnore: /real-hand|photos|photoreal/, use: phone(BACK_OF_HAND_FEED) },
+    { name: 'phone-photoreal', testMatch: /photoreal/, use: phone(BACK_OF_HAND_FEED) },
     { name: 'phone-real-hand', testMatch: /real-hand/, use: phone(PALM_FEED) },
     // Still photos stand in for the camera (photo-camera.ts); the viewport is sized per photo.
     {
