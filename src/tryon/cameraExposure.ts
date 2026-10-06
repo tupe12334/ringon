@@ -12,7 +12,8 @@ export function exposureFor(mean: number) {
   return Math.min(1.4, Math.max(0.6, Math.sqrt(mean / TARGET_LUMINANCE)))
 }
 
-/** Mean relative luminance of RGBA sRGB pixels, 0–1. */
+/** Mean luma of RGBA sRGB pixels (Rec. 709 weights on the encoded values), 0–1. A brightness
+ * heuristic, not linear relative luminance. */
 export function meanLuminance(rgba: Uint8ClampedArray) {
   let sum = 0
   for (let i = 0; i < rgba.length; i += 4) sum += 0.2126 * rgba[i] + 0.7152 * rgba[i + 1] + 0.0722 * rgba[i + 2]

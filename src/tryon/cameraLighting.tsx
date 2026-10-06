@@ -2,7 +2,8 @@
 //
 // Twice a second the camera frame is shrunk to a few pixels (a strong blur for free) and laid
 // over the studio HDR on a sphere; three.js's PMREMGenerator turns that into the environment the
-// metal reflects. The studio keeps its bright highlights; the camera adds the room's colours.
+// metal reflects. The studio keeps its bright highlights; the camera adds the room's colours
+// (the frame is spread over the whole sphere: a colour cast, not a geometric reflection).
 // Exposure follows the frame's brightness, so the ring dims in a dim room. Gemstones keep their
 // own ray-traced studio environment (RingModel), so they still sparkle.
 
@@ -13,8 +14,8 @@ import * as THREE from 'three'
 import { STUDIO_HDR } from '../ring/RingModel'
 import { exposureFor, meanLuminance } from './cameraExposure'
 
-/** How much of the environment comes from the camera (the rest is the studio). */
-const CAMERA_WEIGHT = 0.55
+/** How strongly the camera's colours are added on top of the studio light. */
+const CAMERA_WEIGHT = 0.35
 const UPDATE_MS = 500
 
 export function CameraLighting({ video, mirrored, readout }: { video: HTMLVideoElement; mirrored: boolean; readout?: React.RefObject<HTMLElement | null> }) {
@@ -30,13 +31,16 @@ export function CameraLighting({ video, mirrored, readout }: { video: HTMLVideoE
     const cameraTexture = new THREE.CanvasTexture(canvas)
     cameraTexture.colorSpace = THREE.SRGBColorSpace
     const room = new THREE.Scene()
-    room.add(new THREE.Mesh(new THREE.SphereGeometry(10, 32, 16), new THREE.MeshBasicMaterial({ map: studio, side: THREE.BackSide })))
-    room.add(
-      new THREE.Mesh(
-        new THREE.SphereGeometry(9, 32, 16),
-        new THREE.MeshBasicMaterial({ map: cameraTexture, side: THREE.BackSide, transparent: true, opacity: CAMERA_WEIGHT }),
-      ),
+    const studioSphere = new THREE.Mesh(new THREE.SphereGeometry(10, 32, 16), new THREE.MeshBasicMaterial({ map: studio, side: THREE.BackSide }))
+    // Added, not blended: the studio's HDR highlights stay at full strength, the room tints them.
+    const cameraSphere = new THREE.Mesh(
+      new THREE.SphereGeometry(9, 32, 16),
+      new THREE.MeshBasicMaterial({ map: cameraTexture, side: THREE.BackSide, transparent: true, opacity: CAMERA_WEIGHT, blending: THREE.AdditiveBlending, depthWrite: false }),
     )
+    // Seen from inside, a sphere shows its texture mirrored; flip it so the studio is oriented
+    // as in the designer's environment.
+    studioSphere.scale.x = cameraSphere.scale.x = -1
+    room.add(studioSphere, cameraSphere)
     const pmrem = new THREE.PMREMGenerator(gl)
     let target: THREE.WebGLRenderTarget | null = null
     const out = readout?.current
@@ -68,6 +72,9 @@ export function CameraLighting({ video, mirrored, readout }: { video: HTMLVideoE
     const id = setInterval(update, UPDATE_MS)
     return () => {
       clearInterval(id)
+      exposure.current = 1
+      // oxlint-disable-next-line react/immutability -- renderer settings are meant to be mutated
+      gl.toneMappingExposure = 1 // the studio fallback must not inherit the room's exposure
       if (scene.environment === target?.texture) scene.environment = null
       target?.dispose()
       pmrem.dispose()
