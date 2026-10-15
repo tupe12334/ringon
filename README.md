@@ -64,6 +64,10 @@ Try-on accuracy is checked on real photos of hands in [`e2e/fixtures/photos/`](e
 rings sit, finger widths, which side faces the camera). `DUMP=1` on the photos project refreshes
 the landmarks that [`src/tryon/photos.test.ts`](src/tryon/photos.test.ts) checks the pose against.
 
+## See also
+
+- [moadim](https://moadim.io/) — loop engineering: build, schedule & run agent loops.
+
 ## License
 
 MIT. The bundled hand landmark model (`public/models/hand_landmarker.task`) and the test hand
