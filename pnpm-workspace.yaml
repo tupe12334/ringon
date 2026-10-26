@@ -1,0 +1,5 @@
+# pnpm needs an explicit decision per dependency build script, or install fails.
+# unrs-resolver builds the native binding eslint-import-resolver-typescript needs.
+allowBuilds:
+  core-js: false
+  unrs-resolver: true
