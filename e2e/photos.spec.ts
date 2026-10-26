@@ -43,7 +43,8 @@ test('tracks the ring onto real photos of hands', async ({ page }) => {
       if (!found) return
       await page.waitForTimeout(1500) // let the smoothing settle
 
-      const pose = await page.getByTestId('pose').evaluate((el) => ({ ...el.dataset, hand: (el as unknown as { hand: { image: []; world: []; view: unknown } }).hand }))
+      // Named instead of spreading el.dataset: Playwright's serialized return type drops the DOMStringMap index signature.
+      const pose = await page.getByTestId('pose').evaluate((el) => ({ stoneZ: el.dataset.stoneZ, pxPerMm: el.dataset.pxPerMm, hand: (el as unknown as { hand: { image: []; world: []; view: unknown } }).hand }))
       landmarks[photo] = { view: pose.hand.view, image: round(pose.hand.image), world: round(pose.hand.world) }
       await page.screenshot({ path: test.info().outputPath(photo.replace('.jpg', '.png')) })
 
