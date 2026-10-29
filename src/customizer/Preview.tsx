@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next'
 import * as THREE from 'three'
 import { WebGLPathTracer } from 'three-gpu-pathtracer'
 import { isSoftwareRenderer } from '../gpu'
+import { LostContextRetry } from '../LostContextRetry'
 import { RingModel, StudioEnvironment, type RenderMode } from '../ring/RingModel'
 import { isPausedForSlowness, isPhotorealOn, markTooSlow, SampleTimer, togglePhotoreal } from './photoreal'
 import type { RingSpec } from '../ring/spec'
@@ -229,6 +230,7 @@ export function Preview({ spec }: { spec: RingSpec }) {
 
   return (
     <>
+      <LostContextRetry>
       <Canvas dpr={[1, 2]} camera={{ fov: 35, position: [0, 32, 52], near: 1, far: 1000 }} gl={{ antialias: true, preserveDrawingBuffer: true, toneMapping: THREE.NeutralToneMapping }}>
         <color attach="background" args={[BACKGROUND]} />
         <StudioEnvironment />
@@ -260,6 +262,7 @@ export function Preview({ spec }: { spec: RingSpec }) {
           onEnd={() => setDragging(false)}
         />
       </Canvas>
+      </LostContextRetry>
       <div ref={overlay} className="pathtraced" aria-hidden="true" />
       <output ref={readout} data-testid="render" hidden />
       <button
