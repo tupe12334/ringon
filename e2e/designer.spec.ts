@@ -268,3 +268,24 @@ test('rotation can be locked in the preview', async ({ page }) => {
   await drag()
   await expect.poll(pixels).not.toBe(before)
 })
+
+test('the 3D view survives the GPU refusing its first WebGL context', async ({ page }) => {
+  // Safari hands out an already-lost context when the GPU is busy or out of memory, and three
+  // throws "null is not an object (evaluating '...getShaderPrecisionFormat(...).precision')".
+  await page.addInitScript(() => {
+    const getContext = HTMLCanvasElement.prototype.getContext
+    let refused = false
+    HTMLCanvasElement.prototype.getContext = function (this: HTMLCanvasElement, ...args: Parameters<typeof getContext>) {
+      const ctx = getContext.apply(this, args)
+      if (!refused && ctx && 'getExtension' in ctx) {
+        refused = true
+        ctx.getExtension('WEBGL_lose_context')?.loseContext()
+      }
+      return ctx
+    } as typeof getContext
+  })
+  await page.reload()
+  // The view draws again (path traced where there is a real GPU).
+  await expect(page.getByTestId('render')).toHaveAttribute('data-mode', /raster|pathtrace/, { timeout: 30_000 })
+  await expect(page.getByRole('alert')).toHaveCount(0)
+})

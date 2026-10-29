@@ -4,6 +4,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import * as THREE from 'three'
+import { LostContextRetry } from '../LostContextRetry'
 import { RingModel, StudioEnvironment } from '../ring/RingModel'
 import { CAMERA_LIGHTING } from './cameraExposure'
 import { CameraLighting } from './cameraLighting'
@@ -254,6 +255,7 @@ export function TryOn({ onBack }: { onBack: () => void }) {
 
   return (
     <div className="tryon">
+      <LostContextRetry>
       <Canvas
         orthographic
         // PCF shadows: accurate where the band touches the skin; a small map keeps them soft.
@@ -274,6 +276,7 @@ export function TryOn({ onBack }: { onBack: () => void }) {
           <TrackedRing spec={spec} video={video} landmarker={landmarker} mirrored={mirrored} finger={finger} hand={hand} flip={flip} fit={fit} onStatus={setStatus} onPose={onPose} />
         )}
       </Canvas>
+      </LostContextRetry>
 
       <output ref={poseRef} data-testid="pose" hidden />
       <div className="tryon-top">
