@@ -1,0 +1,49 @@
+# Weekly usage report as a GitHub issue that mentions the owner, so the numbers arrive by
+# email with no action. Reads the read-only hits.sh API (no extra hits); see README "Privacy".
+name: Usage report
+
+on:
+  schedule:
+    - cron: "0 6 * * 0" # Sunday 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Open the report issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          # Prints the counter's JSON; a never-hit counter (404) prints an empty one.
+          stats() {
+            code=$(curl -sS -o "$1.json" -w '%{http_code}' "https://hits.sh/api/urns/tupe12334.github.io/$1")
+            if [ "$code" = 404 ]; then echo '{"total":0,"weekly":0,"items":[]}' > "$1.json"; else [ "$code" = 200 ]; fi
+          }
+          stats ringon && stats ringon-users && stats ringon-daily-users
+          since=$(date -u -d '7 days ago' +%F)
+          daily=$(jq -r --arg since "$since" \
+            '[.items[].data[] | select(.day >= $since)] | sort_by(.day) | map("| \(.day) | \(.value) |") | .[]' \
+            ringon-daily-users.json)
+          {
+            echo "@${{ github.repository_owner }} ringon usage, week ending $(date -u +%F):"
+            echo
+            echo "| | This week | All time |"
+            echo "|---|---|---|"
+            echo "| New users | $(jq .weekly ringon-users.json) | $(jq .total ringon-users.json) |"
+            echo "| Visits | $(jq .weekly ringon.json) | $(jq .total ringon.json) |"
+            echo
+            echo "Daily active users:"
+            echo
+            echo "| Day | Users |"
+            echo "|---|---|"
+            echo "${daily:-| none | 0 |}"
+            echo
+            echo "Daily totals: [stats.csv](https://github.com/${{ github.repository }}/blob/stats/stats.csv)."
+          } > body.md
+          cat body.md >> "$GITHUB_STEP_SUMMARY"
+          gh issue create --title "Usage report $(date -u +%F)" --body-file body.md
