@@ -30,13 +30,19 @@ jobs:
           # 404 = counter not hit yet (0); any other failure fails the run.
           total() {
             code=$(curl -sS -o body.json -w '%{http_code}' "https://hits.sh/api/urns/tupe12334.github.io/$1")
-            if [ "$code" = 404 ]; then echo 0; else [ "$code" = 200 ] && jq -e '.total' body.json; fi
+            if [ "$code" = 404 ]; then echo '{"items":[]}' > body.json; echo 0; else [ "$code" = 200 ] && jq -e '.total' body.json; fi
           }
           visits=$(total ringon)
           users=$(total ringon-users)
-          [ -f stats.csv ] || echo "date,visits_total,users_total" > stats.csv
-          echo "$(date -u +%F),$visits,$users" >> stats.csv
-          echo "Users: $users · Visits: $visits" >> "$GITHUB_STEP_SUMMARY"
+          # Daily active users for yesterday's hits.sh day (Korea time, UTC+9); at 00:30 UTC it is complete.
+          total ringon-daily-users > /dev/null
+          yesterday=$(TZ=Asia/Seoul date -d yesterday +%F)
+          daily=$(jq --arg d "$yesterday" '[.items[].data[] | select(.day == $d) | .value] | add // 0' body.json)
+          [ -f stats.csv ] || echo "date,visits_total,users_total,daily_users_yesterday" > stats.csv
+          # Older files lack the daily column: add it, leaving old rows blank.
+          head -1 stats.csv | grep -q daily_users || sed -i '1s/$/,daily_users_yesterday/; 2,$s/$/,/' stats.csv
+          echo "$(date -u +%F),$visits,$users,$daily" >> stats.csv
+          echo "Users: $users · Visits: $visits · Daily users ($yesterday): $daily" >> "$GITHUB_STEP_SUMMARY"
       - name: Push
         working-directory: stats
         run: |
