@@ -4,6 +4,9 @@ import './index.css'
 import './i18n'
 import App from './App.tsx'
 import { Crash } from './Crash.tsx'
+import { countUsage } from './usage-counter'
+
+countUsage()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
