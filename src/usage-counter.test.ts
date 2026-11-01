@@ -8,21 +8,22 @@ const memory = (): Store => {
     setItem: (k: string, v: string): void => void m.set(k, v),
   }
 }
-const day1 = new Date('2026-11-01T23:59:00Z')
-const day2 = new Date('2026-11-02T00:01:00Z')
+// hits.sh days run in Korea time (UTC+9): its day changes at 15:00 UTC.
+const day1 = new Date('2026-11-01T14:59:00Z')
+const day2 = new Date('2026-11-01T15:01:00Z')
 
 describe('usage counters', () => {
   it('counts a visit, a user and a daily user on the first load', () => {
     expect(countersToPing(LIVE_HOST, memory(), day1)).toEqual(['ringon', 'ringon-users', 'ringon-daily-users'])
   })
 
-  it('counts only the visit on a reload the same UTC day', () => {
+  it('counts only the visit on a reload the same hits.sh day', () => {
     const store = memory()
     countersToPing(LIVE_HOST, store, day1)
     expect(countersToPing(LIVE_HOST, store, day1)).toEqual(['ringon'])
   })
 
-  it('counts the daily user again on the next UTC day, not the user', () => {
+  it('counts the daily user again on the next hits.sh day, not the user', () => {
     const store = memory()
     countersToPing(LIVE_HOST, store, day1)
     expect(countersToPing(LIVE_HOST, store, day2)).toEqual(['ringon', 'ringon-daily-users'])
