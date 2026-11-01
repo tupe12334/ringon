@@ -5,11 +5,11 @@ rules:
   # current size so they can't grow further; lower these as they get split.
   - pattern: "src/ring/geometry.ts"
     warn: 400
-    error: 760
+    error: 600
     error_message: "Grandfathered file grew — split by responsibility instead of adding more"
   - pattern: "src/customizer/panels.tsx"
     warn: 400
-    error: 480
+    error: 460
     error_message: "Grandfathered file grew — split by responsibility instead of adding more"
   - pattern: "**/*.ts"
     warn: 200

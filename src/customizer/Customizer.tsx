@@ -6,7 +6,8 @@ import { TemplatesPanel } from '../templates/TemplatesPanel'
 import { tabIcons } from './icons'
 import { Preview } from './Preview'
 import { summary } from './summary'
-import { AccentsPanel, BandPanel, EngravePanel, MetalPanel, SettingPanel, SidesPanel, SizePanel, StonePanel } from './panels'
+import { MetalPanel } from './MetalPanel'
+import { AccentsPanel, BandPanel, EngravePanel, SettingPanel, SidesPanel, SizePanel, StonePanel } from './panels'
 
 const TABS = [
   { id: 'templates', Panel: TemplatesPanel },
