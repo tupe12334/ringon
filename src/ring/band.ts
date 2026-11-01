@@ -118,14 +118,17 @@ export function buildBandParts(o: BandOptions) {
   const open = gap > 0
   const start = gap
   const sweep = Math.PI * 2 - 2 * gap
-  const rows = open ? segments + 1 : segments
+  // A closed band repeats its first row at the end with u = 1, so the texture wraps instead of
+  // squeezing whole into the last quad.
+  const rows = segments + 1
   const ro = innerR + o.thicknessMm
 
   const sweepLine = (line: RY[], hammered: boolean) => {
     const positions: number[] = []
     const uvs: number[] = []
     for (let i = 0; i < rows; i++) {
-      const theta = start + (sweep * i) / segments
+      const u = (start + (sweep * i) / segments) / (Math.PI * 2)
+      const theta = start + (sweep * (open ? i : i % segments)) / segments
       const top = (1 + Math.cos(theta)) / 2 // 1 at the top, 0 under the finger
       const widthScale = o.taper + (1 - o.taper) * top
       line.forEach(([r, y]) => {
@@ -133,14 +136,13 @@ export function buildBandParts(o: BandOptions) {
         if (hammered) rr -= dimple(theta * ro, y) * 0.07
         positions.push(rr * Math.sin(theta), y * widthScale, rr * Math.cos(theta))
         // v across the band in mm / width, so every surface shares one texture mapping.
-        uvs.push(theta / (Math.PI * 2), 0.5 + y / o.widthMm)
+        uvs.push(u, 0.5 + y / o.widthMm)
       })
     }
     const index: number[] = []
     const m = line.length
-    const quads = open ? rows - 1 : rows
-    for (let i = 0; i < quads; i++) {
-      const i2 = (i + 1) % rows
+    for (let i = 0; i < segments; i++) {
+      const i2 = i + 1
       for (let j = 0; j < m - 1; j++) {
         const a = i * m + j
         const b = i2 * m + j
@@ -154,6 +156,17 @@ export function buildBandParts(o: BandOptions) {
     g.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2))
     g.setIndex(index)
     g.computeVertexNormals()
+    if (!open) {
+      // The first and last rows are one place: give them one normal so no crease shows.
+      const n = g.getAttribute('normal')
+      const v = new THREE.Vector3()
+      for (let j = 0; j < m; j++) {
+        const last = segments * m + j
+        v.fromBufferAttribute(n, j).add(new THREE.Vector3().fromBufferAttribute(n, last)).normalize()
+        n.setXYZ(j, v.x, v.y, v.z)
+        n.setXYZ(last, v.x, v.y, v.z)
+      }
+    }
     return g
   }
 

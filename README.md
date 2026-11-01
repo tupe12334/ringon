@@ -81,4 +81,5 @@ the landmarks that [`src/tryon/photos.test.ts`](src/tryon/photos.test.ts) checks
 
 MIT. The bundled hand landmark model (`public/models/hand_landmarker.task`) and the test hand
 image are from Google MediaPipe, Apache-2.0. Test photos: see
-[`e2e/fixtures/photos/ATTRIBUTION.md`](e2e/fixtures/photos/ATTRIBUTION.md).
+[`e2e/fixtures/photos/ATTRIBUTION.md`](e2e/fixtures/photos/ATTRIBUTION.md). Wood textures (CC0 and
+CC BY-SA photos): see [`public/textures/wood/ATTRIBUTION.md`](public/textures/wood/ATTRIBUTION.md).

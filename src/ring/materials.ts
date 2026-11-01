@@ -2,14 +2,14 @@
 
 import * as THREE from 'three'
 import { CRUSHED_INFO, FINISH_INFO, GEM_INFO, METAL_INFO, gemColor } from './catalog'
-import { isWood, type BandMaterial, type CrushedStone, type Gem, type InlayMaterial, type RingSpec } from './spec'
+import { isWood, type BandMaterial, type CrushedStone, type Gem, type InlayMaterial, type RingSpec, type Wood } from './spec'
 
 /** Material for any band surface: metal, wood, or crushed stone in resin. */
 export function metalMaterial(material: InlayMaterial, finish: RingSpec['band']['finish']) {
   if (material in CRUSHED_INFO) return crushedMaterial(material as CrushedStone)
   const metal = material as BandMaterial
   const info = METAL_INFO[metal]
-  if (isWood(metal)) return woodMaterial(info.color, info.grain!, info.roughness + FINISH_INFO[finish].roughnessAdd, finish === 'polished')
+  if (isWood(metal)) return woodMaterial(metal, info.color, info.grain!, info.roughness + FINISH_INFO[finish].roughnessAdd, finish === 'polished')
   const brushed = finish === 'brushed' || finish === 'satin'
   return new THREE.MeshPhysicalMaterial({
     color: info.color,
@@ -20,11 +20,71 @@ export function metalMaterial(material: InlayMaterial, finish: RingSpec['band'][
   })
 }
 
+/** Photo of each wood's face grain, grain along u (see public/textures/wood/ATTRIBUTION.md). */
+export const woodTextureUrl = (wood: Wood) => `${import.meta.env.BASE_URL}textures/wood/${wood}.webp`
+
+// Shared by every material of that wood, so never disposed with a material.
+const woodPhotos = new Map<Wood, Promise<THREE.Texture>>()
+const loadedWoodPhotos = new Map<Wood, THREE.Texture>()
+
+function woodPhoto(wood: Wood) {
+  let photo = woodPhotos.get(wood)
+  if (!photo) {
+    photo = new THREE.TextureLoader().loadAsync(woodTextureUrl(wood)).then((map) => {
+      map.colorSpace = THREE.SRGBColorSpace
+      map.wrapS = THREE.RepeatWrapping
+      // The strip is 4:1 and the band about 9:1 (55 mm round, ~6 mm wide): twice round keeps
+      // the grain near its true proportions.
+      map.repeat.x = 2
+      map.anisotropy = 8
+      loadedWoodPhotos.set(wood, map)
+      return map
+    })
+    // Offline before it was cached: forget the failure so a later design can try again.
+    photo.catch(() => woodPhotos.delete(wood))
+    woodPhotos.set(wood, photo)
+  }
+  return photo
+}
+
 /**
- * Oiled or lacquered wood. Grain runs around the band (the band's u), so growth rings show as
- * stripes across its width (v) that wander a little along the way.
+ * Oiled or lacquered wood: a real photo of the species. Until it has loaded (or if it cannot),
+ * a drawn stand-in of the same colours shows instead.
  */
-function woodMaterial(color: string, grain: string, roughness: number, lacquered: boolean) {
+function woodMaterial(wood: Wood, color: string, grain: string, roughness: number, lacquered: boolean) {
+  const material = new THREE.MeshPhysicalMaterial({
+    map: loadedWoodPhotos.get(wood),
+    metalness: 0,
+    roughness: Math.min(1, roughness),
+    clearcoat: lacquered ? 1 : 0,
+    clearcoatRoughness: 0.08,
+    envMapIntensity: 1,
+  })
+  if (material.map) return material
+  const drawn = drawnWood(color, grain)
+  material.map = drawn
+  let disposed = false
+  material.addEventListener('dispose', () => {
+    disposed = true
+    drawn.dispose()
+  })
+  woodPhoto(wood).then(
+    (map) => {
+      if (disposed) return
+      material.map = map
+      material.needsUpdate = true
+      drawn.dispose()
+    },
+    () => {},
+  )
+  return material
+}
+
+/**
+ * Stand-in grain: growth rings as stripes across the band's width (v) that wander a little
+ * along the way round (u).
+ */
+function drawnWood(color: string, grain: string) {
   const w = 512
   const h = 128
   const canvas = document.createElement('canvas')
@@ -58,14 +118,7 @@ function woodMaterial(color: string, grain: string, roughness: number, lacquered
   map.colorSpace = THREE.SRGBColorSpace
   map.wrapS = THREE.RepeatWrapping
   map.anisotropy = 8
-  return new THREE.MeshPhysicalMaterial({
-    map,
-    metalness: 0,
-    roughness: Math.min(1, roughness),
-    clearcoat: lacquered ? 1 : 0,
-    clearcoatRoughness: 0.08,
-    envMapIntensity: 1,
-  })
+  return map
 }
 
 /** Stone fragments set in resin and polished flush: random chips over a dark resin ground. */

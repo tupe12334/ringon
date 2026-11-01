@@ -38,7 +38,7 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,hdr}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,hdr}', 'textures/**/*.webp'],
         // Install-sheet screenshots are only for the browser's install UI.
         globIgnores: ['screenshots/**'],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
