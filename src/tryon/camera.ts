@@ -8,7 +8,8 @@ export type Facing = 'environment' | 'user'
 /** How long a granted camera may take to deliver video before we call it stuck. */
 const CAMERA_START_TIMEOUT_MS = 15_000
 
-export function useCamera(facing: Facing) {
+/** `attempt`: bump it to ask for the camera again (after an error). */
+export function useCamera(facing: Facing, attempt = 0) {
   const [video, setVideo] = useState<HTMLVideoElement | null>(null)
   const [error, setError] = useState('')
   useEffect(() => {
@@ -56,6 +57,6 @@ export function useCamera(facing: Facing) {
       el.remove()
       setVideo(null)
     }
-  }, [facing])
+  }, [facing, attempt])
   return { video, error }
 }

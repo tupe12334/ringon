@@ -61,7 +61,9 @@ counted; no id is sent). hits.sh sees your IP address and
 nothing else. Counts are public:
 [visits](https://hits.sh/tupe12334.github.io/ringon),
 [users](https://hits.sh/tupe12334.github.io/ringon-users),
-[daily users](https://hits.sh/tupe12334.github.io/ringon-daily-users). A share link carries the design itself in the part after `#`,
+[daily users](https://hits.sh/tupe12334.github.io/ringon-daily-users). A daily workflow copies the
+visit and user totals to
+[`stats.csv`](https://github.com/tupe12334/ringon/blob/stats/stats.csv) on the `stats` branch. A share link carries the design itself in the part after `#`,
 which browsers never send to a server. "Report a problem" in the try-on makes a file on your device
 (a photo of your hand, the hand tracking data, the ring design and device details); it leaves the
 device only if you send it, by download, the share sheet or a GitHub issue you attach it to.

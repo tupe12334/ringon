@@ -3,6 +3,7 @@
 import type { Translation } from './en'
 import { imagegenHe } from './imagegen'
 import { reportHe } from './report'
+import { tryonHe } from './tryon'
 
 export const he: Translation & { templates: { imported_two: string } } = {
   app: {
@@ -367,32 +368,6 @@ export const he: Translation & { templates: { imported_two: string } } = {
     lockTitle: 'הטבעת לא תסתובב כשגוררים אותה',
   },
   imagegen: imagegenHe,
-  tryon: {
-    back: 'חזרה לעיצוב',
-    backLabel: '→ עיצוב',
-    loading: 'מפעיל מצלמה…',
-    searching: 'הראו את היד, גב היד מול המצלמה',
-    tracking: 'במעקב',
-    error: 'המצלמה לא זמינה: {{error}}',
-    noCamera: 'הדפדפן הזה לא יכול לפתוח את המצלמה (נדרש HTTPS).',
-    cameraStuck: 'המצלמה לא נפתחה. סגרו אפליקציות אחרות שמשתמשות בה ונסו שוב.',
-    switchCamera: 'החלפת מצלמה',
-    camera: '⟲ מצלמה',
-    finger: 'אצבע',
-    hand: 'יד',
-    hands: { auto: 'אוטומטי', Left: 'יד שמאל', Right: 'יד ימין' },
-    fingers: { thumb: 'אגודל', index: 'מורה', middle: 'אמצעית', ring: 'קמיצה', pinky: 'זרת' },
-    fit: 'התאמה',
-    fitAria: 'התאמת הטבעת',
-    flip: 'הפיכת צד',
-    photo: 'צילום',
-    stop: '■ עצירה {{seconds}} שנ׳',
-    record: '● צילום וידאו',
-    capture: 'הצילום שלך',
-    onHand: '{{name}} על היד שלך',
-    saveShare: 'שמירה / שיתוף',
-    shareTitle: 'טבעת ה־Ringon שלי',
-    close: 'סגירה',
-  },
+  tryon: tryonHe,
   report: reportHe,
 }
