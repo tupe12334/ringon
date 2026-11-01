@@ -1,0 +1,46 @@
+# Daily snapshot of the hits.sh counters (see README "Privacy") into stats.csv on the
+# `stats` branch, so usage history survives if hits.sh resets or goes away.
+# The /api/urns endpoint is read-only: it does not add a hit.
+name: Usage stats
+
+on:
+  schedule:
+    - cron: "30 0 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: usage-stats
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the stats branch (created on first run)
+        run: |
+          git init -q stats && cd stats
+          git remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          if git fetch -q --depth 1 origin stats; then git checkout -q -b stats FETCH_HEAD; else git checkout -q --orphan stats; fi
+      - name: Append today's totals
+        working-directory: stats
+        run: |
+          # 404 = counter not hit yet (0); any other failure fails the run.
+          total() {
+            code=$(curl -sS -o body.json -w '%{http_code}' "https://hits.sh/api/urns/tupe12334.github.io/$1")
+            if [ "$code" = 404 ]; then echo 0; else [ "$code" = 200 ] && jq -e '.total' body.json; fi
+          }
+          visits=$(total ringon)
+          users=$(total ringon-users)
+          [ -f stats.csv ] || echo "date,visits_total,users_total" > stats.csv
+          echo "$(date -u +%F),$visits,$users" >> stats.csv
+          echo "Users: $users · Visits: $visits" >> "$GITHUB_STEP_SUMMARY"
+      - name: Push
+        working-directory: stats
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add stats.csv
+          git commit -qm "Usage stats $(date -u +%F)"
+          git push -q origin stats
