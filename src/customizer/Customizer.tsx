@@ -6,6 +6,7 @@ import { TemplatesPanel } from '../templates/TemplatesPanel'
 import { tabIcons } from './icons'
 import { Preview } from './Preview'
 import { summary } from './summary'
+import { ImagePanel } from '../imagegen/ImagePanel'
 import { MetalPanel } from './MetalPanel'
 import { AccentsPanel, BandPanel, EngravePanel, SettingPanel, SidesPanel, SizePanel, StonePanel } from './panels'
 
@@ -19,6 +20,7 @@ const TABS = [
   { id: 'sides', Panel: SidesPanel },
   { id: 'accents', Panel: AccentsPanel },
   { id: 'engrave', Panel: EngravePanel },
+  { id: 'image', Panel: ImagePanel },
 ] as const satisfies readonly { id: string; Panel: ComponentType }[]
 
 type Tab = (typeof TABS)[number]['id']
