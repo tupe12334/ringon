@@ -1,0 +1,28 @@
+# The owner's GitHub Actions notifications may be off, so a failed usage run (for example
+# hits.sh down) would go unseen. This opens an issue that @-mentions the owner instead;
+# mentions notify even when Actions notifications are off.
+name: Usage alert
+
+on:
+  workflow_run:
+    workflows: [Usage stats, Usage report]
+    types: [completed]
+  workflow_dispatch: # sends a test alert
+
+permissions:
+  issues: write
+
+jobs:
+  alert:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'failure'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Open the alert issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_NAME: ${{ github.event.workflow_run.name || 'test alert' }}
+          RUN_URL: ${{ github.event.workflow_run.html_url || 'no run (manual test)' }}
+        run: |
+          gh issue create --title "Usage counting failed: $RUN_NAME $(date -u +%F)" --body \
+            "@${{ github.repository_owner }} the $RUN_NAME run failed, so ringon usage was not recorded: $RUN_URL. Check that https://hits.sh/api/urns/tupe12334.github.io/ringon still answers, then re-run the workflow."
