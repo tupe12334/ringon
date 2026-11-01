@@ -16,7 +16,7 @@ test('customises every section and updates the summary', async ({ page }) => {
   await expect(summary).toContainText('18k yellow gold')
 
   await page.getByRole('tab', { name: 'Metal' }).click()
-  await pick(page, 'Band metal', 'Platinum')
+  await pick(page, 'Band material', 'Platinum')
   await expect(summary).toContainText('Platinum')
 
   await page.getByRole('tab', { name: 'Stone', exact: true }).click()
@@ -39,7 +39,7 @@ test('customises every section and updates the summary', async ({ page }) => {
 
 test('saves a custom template that survives a reload', async ({ page }) => {
   await page.getByRole('tab', { name: 'Metal' }).click()
-  await pick(page, 'Band metal', '18k rose gold')
+  await pick(page, 'Band material', '18k rose gold')
   await page.getByRole('tab', { name: 'Templates' }).click()
   await page.getByLabel('Template name').fill('Anniversary')
   await page.getByRole('button', { name: 'Save', exact: true }).click()
@@ -61,7 +61,7 @@ test('opens a shared design link', async ({ page }) => {
 test('the address bar always links to the design on screen', async ({ page, browser }) => {
   await page.getByRole('button', { name: 'Oval halo' }).click()
   await page.getByRole('tab', { name: 'Metal' }).click()
-  await pick(page, 'Band metal', 'Palladium')
+  await pick(page, 'Band material', 'Palladium')
   const summary = await page.getByTestId('summary').textContent()
   const fresh = await browser.newPage()
   await fresh.goto(page.url())
@@ -72,7 +72,7 @@ test('the address bar always links to the design on screen', async ({ page, brow
 
 test('opening a link keeps the unsaved design as a template', async ({ page }) => {
   await page.getByRole('tab', { name: 'Metal' }).click()
-  await pick(page, 'Band metal', 'Palladium')
+  await pick(page, 'Band material', 'Palladium')
   const spec = { name: 'Shared', stone: { shape: 'pear' } }
   await page.goto(`/#d=${Buffer.from(JSON.stringify(spec)).toString('base64url')}`)
   await expect(page.getByTestId('summary')).toContainText('pear')
@@ -179,7 +179,7 @@ test('switches to Hebrew, right to left, and remembers it', async ({ page }) => 
   await expect(summary).toContainText('זהב צהוב 18K')
 
   await page.getByRole('tab', { name: 'מתכת' }).click()
-  await pick(page, 'מתכת החישוק', 'פלטינה')
+  await pick(page, 'חומר החישוק', 'פלטינה')
   await expect(summary).toContainText('פלטינה')
   await expect(page.getByRole('button', { name: 'מדידה על היד' })).toBeVisible()
 
