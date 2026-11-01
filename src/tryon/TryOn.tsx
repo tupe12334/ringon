@@ -16,6 +16,8 @@ import { PoseSmoother } from './smoothing'
 import { DEPTH_ONLY, handJoints, occluderBones, placeHand, UNIT_CYLINDER, UNIT_SPHERE } from './handOccluder'
 import { loadHandTracker, type HandTracker } from './tracker'
 import { useCamera, type Facing } from './camera'
+import { snapshotReport, TrackLog, type ReportDraft } from './report'
+import { ReportSheet } from './ReportSheet'
 
 /** One frame's landmarks, as MediaPipe returned them. */
 export interface TrackedHand {
@@ -66,6 +68,8 @@ interface TrackedRingProps {
   onStatus: (s: Status) => void
   /** Receives the on-screen pose and the hand it came from each frame (readout and tests). */
   onPose: (p: RingPose | null, hand?: TrackedHand) => void
+  /** Recent frames, for bug reports. */
+  log?: TrackLog
 }
 
 /** Ring shadow on the skin; `?shadow=0` turns it off (for comparisons). */
@@ -90,7 +94,7 @@ function aimShadowLight(light: THREE.DirectionalLight | null, ring: THREE.Object
   cam.updateProjectionMatrix()
 }
 
-function TrackedRing({ spec, video, landmarker, mirrored, finger, hand, flip, fit, onStatus, onPose }: TrackedRingProps) {
+function TrackedRing({ spec, video, landmarker, mirrored, finger, hand, flip, fit, onStatus, onPose, log }: TrackedRingProps) {
   const group = useRef<THREE.Group>(null)
   const light = useRef<THREE.DirectionalLight>(null)
   const ringModel = useRef<THREE.Group>(null)
@@ -113,7 +117,7 @@ function TrackedRing({ spec, video, landmarker, mirrored, finger, hand, flip, fi
     vote.reset()
   }, [finger, hand, flip, mirrored, smoother, vote])
 
-  useFrame(() => {
+  useFrame((_, delta) => {
     const g = group.current
     if (!g || video.readyState < 2 || video.currentTime === last.current.time) return
     last.current.time = video.currentTime
@@ -124,23 +128,26 @@ function TrackedRing({ spec, video, landmarker, mirrored, finger, hand, flip, fi
     } catch {
       return // a dropped frame (e.g. the camera is switching); try the next one
     }
+    const inferenceMs = performance.now() - now
     const view: View = { videoWidth: video.videoWidth, videoHeight: video.videoHeight, width: size.width, height: size.height, mirrored }
     const image = result.landmarks[0]
     const world = result.worldLandmarks[0]
     let pose: RingPose | null = null
+    let palmSide: 1 | -1 | null = null
     const along = finger === 'thumb' ? 0.5 : 0.6
     if (image && world) {
       const label = result.handedness[0]?.[0]?.categoryName ?? 'Right'
       // A hand the user named settles it; otherwise vote on the finger bend.
-      const palmSide =
+      palmSide =
         hand === 'auto' ? vote.update(palmSideEvidence(worldToScreen(world, mirrored)), palmSideFromLabel(label, mirrored)) : palmSideFromLabel(hand, mirrored)
       // Real rings sit ~0.6 of the way from the knuckle to the middle joint (e2e/fixtures/photos).
       pose = computePose({ image, world, palmSide, finger, along, flip, innerDiameterMm: spec.innerDiameterMm }, view)
     }
 
     let status: Status
+    let p: RingPose | null = null
     if (pose) {
-      const p = smoother.apply(pose, now / 1000)
+      p = smoother.apply(pose, now / 1000)
       g.position.copy(p.position)
       g.quaternion.copy(p.quaternion)
       g.scale.setScalar(p.pxPerMm * fit)
@@ -165,6 +172,8 @@ function TrackedRing({ spec, video, landmarker, mirrored, finger, hand, flip, fi
       }
       status = 'searching'
     }
+    const occluderVisible = !!handRef.current?.visible
+    log?.push({ t: now, videoTime: video.currentTime, inferenceMs, frameMs: delta * 1000, view, along, result, palmSide, pose, smoothed: p, occluderVisible })
     if (status !== last.current.status) {
       last.current.status = status
       onStatus(status)
@@ -211,7 +220,7 @@ function TrackedRing({ spec, video, landmarker, mirrored, finger, hand, flip, fi
 
 export function TryOn({ onBack }: { onBack: () => void }) {
   const spec = useStore((s) => s.spec)
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [facing, setFacing] = useState<Facing>('environment')
   const [finger, setFinger] = useState<Finger>('ring')
   const [hand, setHand] = useState<Hand>('auto')
@@ -224,6 +233,8 @@ export function TryOn({ onBack }: { onBack: () => void }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const recorder = useRecorder(canvasRef)
   const poseRef = useRef<HTMLOutputElement>(null)
+  const log = useMemo(() => new TrackLog(), [])
+  const [report, setReport] = useState<ReportDraft | null>(null)
   const onPose = useCallback((p: RingPose | null, hand?: TrackedHand) => {
     const el = poseRef.current
     if (!el) return
@@ -273,7 +284,7 @@ export function TryOn({ onBack }: { onBack: () => void }) {
         {video && CAMERA_LIGHTING ? <CameraLighting video={video} mirrored={mirrored} readout={poseRef} /> : <StudioEnvironment />}
         {video && <VideoBackdrop video={video} mirrored={mirrored} />}
         {video && landmarker && (
-          <TrackedRing spec={spec} video={video} landmarker={landmarker} mirrored={mirrored} finger={finger} hand={hand} flip={flip} fit={fit} onStatus={setStatus} onPose={onPose} />
+          <TrackedRing spec={spec} video={video} landmarker={landmarker} mirrored={mirrored} finger={finger} hand={hand} flip={flip} fit={fit} onStatus={setStatus} onPose={onPose} log={log} />
         )}
       </Canvas>
       </LostContextRetry>
@@ -293,6 +304,16 @@ export function TryOn({ onBack }: { onBack: () => void }) {
           {t('tryon.camera')}
         </button>
       </div>
+
+      <button
+        type="button"
+        className="report-open"
+        onClick={() =>
+          setReport(snapshotReport({ video, canvas: canvasRef.current, log, spec, readout: poseRef.current, language: i18n.resolvedLanguage ?? i18n.language, settings: { status: shownStatus, finger, hand, flip, fit, facing, mirrored } }))
+        }
+      >
+        {t('report.open')}
+      </button>
 
       <div className="tryon-bottom">
         <div className="chips" role="radiogroup" aria-label={t('tryon.hand')}>
@@ -327,6 +348,8 @@ export function TryOn({ onBack }: { onBack: () => void }) {
           </button>
         </div>
       </div>
+
+      {report && <ReportSheet draft={report} onClose={() => setReport(null)} />}
 
       {recorder.result && (
         <div className="capture-result" role="dialog" aria-label={t('tryon.capture')}>

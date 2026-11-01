@@ -390,6 +390,35 @@ export const en = {
     shareTitle: 'My Ringon ring',
     close: 'Close',
   },
+  report: {
+    open: 'Report a problem',
+    title: 'Report a problem',
+    preview: 'The moment you reported',
+    what: 'What looks wrong?',
+    categories: {
+      position: 'Ring in the wrong place',
+      size: 'Wrong size',
+      angle: 'Wrong angle',
+      jitter: 'Jitters',
+      occlusion: 'Hidden or shown wrongly',
+      lighting: 'Colours or lighting look wrong',
+      other: 'Other',
+    },
+    comment: 'Comment',
+    commentHint: 'Anything else? (optional)',
+    contains: 'The file holds:',
+    contents: {
+      photo: 'A photo of your hand from the camera, with and without the ring',
+      tracking: 'Where the app found your hand in the last 2 seconds',
+      settings: 'The ring design and your try-on settings',
+      device: 'Camera, browser and device details (no names or accounts)',
+    },
+    private: 'The file is made on this device. It leaves it only if you send it.',
+    pick: 'Pick what looks wrong to make the file.',
+    download: 'Download report',
+    share: 'Share report',
+    issue: 'Open a GitHub issue (attach the downloaded file)',
+  },
 }
 
 /** Same keys as English, any text. */
