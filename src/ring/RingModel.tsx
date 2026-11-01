@@ -12,7 +12,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { GEM_INFO, METAL_INFO, gemColor } from './catalog'
 import { buildRing, type StonePlacement } from './geometry'
 import { gemMaterial, metalMaterial } from './materials'
-import type { EngravingFont, Metal, RingSpec } from './spec'
+import { headMetalOf, isWood, type BandMaterial, type EngravingFont, type RingSpec } from './spec'
 
 export type RenderMode = 'raster' | 'pathtrace'
 
@@ -102,7 +102,7 @@ const FONT_CSS: Record<EngravingFont, string> = {
   script: 'italic 76px "Brush Script MT", "Snell Roundhand", "Segoe Script", cursive',
 }
 
-function Engraving({ text, font, radius, width, metal }: { text: string; font: EngravingFont; radius: number; width: number; metal: Metal }) {
+function Engraving({ text, font, radius, width, metal }: { text: string; font: EngravingFont; radius: number; width: number; metal: BandMaterial }) {
   const texture = useMemo(() => {
     const canvas = document.createElement('canvas')
     canvas.width = 2048
@@ -135,7 +135,7 @@ function Engraving({ text, font, radius, width, metal }: { text: string; font: E
         alphaMap={texture}
         transparent
         side={THREE.BackSide}
-        metalness={1}
+        metalness={isWood(metal) ? 0 : 1}
         roughness={0.5}
         polygonOffset
         polygonOffsetFactor={-1}
@@ -148,13 +148,20 @@ function Engraving({ text, font, radius, width, metal }: { text: string; font: E
 export function RingModel({ spec, mode = 'raster' }: { spec: RingSpec; mode?: RenderMode }) {
   const parts = useMemo(() => buildRing(spec), [spec])
   const bandMat = useMemo(() => metalMaterial(spec.band.metal, spec.band.finish), [spec.band.metal, spec.band.finish])
-  const headMetal = spec.band.headMetal === 'match' ? spec.band.metal : spec.band.headMetal
+  const headMetal = headMetalOf(spec.band)
   const headFinish = spec.band.finish === 'hammered' ? 'polished' : spec.band.finish
   const headMat = useMemo(() => metalMaterial(headMetal, headFinish), [headMetal, headFinish])
+  const { inlay, inlay2, liner } = spec.band
+  const inlayMat = useMemo(() => (inlay === 'none' ? null : metalMaterial(inlay, 'polished')), [inlay])
+  const inlay2Mat = useMemo(() => (inlay2 === 'none' ? null : metalMaterial(inlay2, 'polished')), [inlay2])
+  const linerMat = useMemo(() => (liner === 'none' ? null : metalMaterial(liner, 'polished')), [liner])
 
   useEffect(
     () => () => {
       parts.band.dispose()
+      parts.inlay?.dispose()
+      parts.inlay2?.dispose()
+      parts.liner?.dispose()
       parts.head?.dispose()
       parts.stones.forEach((s) => s.geometry.dispose())
     },
@@ -162,10 +169,16 @@ export function RingModel({ spec, mode = 'raster' }: { spec: RingSpec; mode?: Re
   )
   useEffect(() => () => bandMat.dispose(), [bandMat])
   useEffect(() => () => headMat.dispose(), [headMat])
+  useEffect(() => () => inlayMat?.dispose(), [inlayMat])
+  useEffect(() => () => inlay2Mat?.dispose(), [inlay2Mat])
+  useEffect(() => () => linerMat?.dispose(), [linerMat])
 
   return (
     <group name="ring">
       <mesh geometry={parts.band} material={bandMat} name="band" />
+      {parts.inlay && inlayMat && <mesh geometry={parts.inlay} material={inlayMat} name="inlay" />}
+      {parts.inlay2 && inlay2Mat && <mesh geometry={parts.inlay2} material={inlay2Mat} name="inlay2" />}
+      {parts.liner && linerMat && <mesh geometry={parts.liner} material={linerMat} name="liner" />}
       {parts.head && <mesh geometry={parts.head} material={headMat} name="head" />}
       {parts.stones.map((s) => (
         <Stones key={`${s.key}-${s.matrices.length}-${mode}`} placement={s} mode={mode} />
@@ -176,7 +189,7 @@ export function RingModel({ spec, mode = 'raster' }: { spec: RingSpec; mode?: Re
           font={spec.engraving.font}
           radius={parts.engraving.radius}
           width={parts.engraving.width}
-          metal={spec.band.metal}
+          metal={liner === 'none' ? spec.band.metal : liner}
         />
       )}
     </group>

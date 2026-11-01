@@ -10,11 +10,14 @@ runs in the browser, installable as an app (PWA), works offline once loaded.
 ## What you can do
 
 - **Design by jeweler conventions** – ring size in US/CA, EU/ISO, UK/AU or JP charts; band
-  profile, width, thickness, comfort fit and shank taper; 13 metals and 6 finishes, two-tone heads;
+  profile, width, thickness, comfort fit and shank taper; 15 metals, 18 woods and 6 finishes, two-tone heads;
   15 stone shapes (incl. baguette, tapered baguette, trapezoid, half moon, trillion) sized by carat
   weight (and gem density); prong (4/6, round/claw/V tips), bezel (wall thickness, lip, plain /
   rounded / milgrain edge, half bezel open at the sides or ends) or tension settings; classic,
   double or hidden halo; inside engraving.
+- **Wood rings** – solid (bentwood) wood bands, wood or crushed stone (turquoise, malachite, lapis,
+  opal) inlays in metal or wood, a second pinstripe inlay, centred or offset, and liners: a metal
+  core inside a wood ring or a wood-lined metal band.
 - **Side stones** – three, five or seven stones or a toi et moi pair, each with its own shape, gem,
   size and graduation, orientation (pears pointing in or out, half moons flat edge to the centre),
   prong or bezel setting, gap and offset along the finger.

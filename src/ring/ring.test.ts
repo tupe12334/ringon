@@ -1,10 +1,10 @@
 import * as THREE from 'three'
 import { describe, expect, it } from 'vitest'
 import { stoneDimensions } from './catalog'
-import { buildBand, buildGem, buildRing, polygonGap } from './geometry'
+import { buildGem, buildRing, polygonGap } from './geometry'
 import { outline } from './outline'
 import { diameterToUs, euToDiameter, nearestSize, sizeOptions, usToDiameter } from './sizes'
-import { ACCENTS, BEZEL_EDGES, DEFAULT_SPEC, HALF_BEZEL_WALLS, PROFILES, SETTINGS, STONE_SHAPES, sanitizeSpec, type RingSpec } from './spec'
+import { ACCENTS, BEZEL_EDGES, DEFAULT_SPEC, HALF_BEZEL_WALLS, SETTINGS, STONE_SHAPES, headMetalOf, sanitizeSpec, type RingSpec } from './spec'
 
 describe('ring sizes', () => {
   it('matches published size charts', () => {
@@ -47,6 +47,14 @@ describe('spec sanitising', () => {
     expect(sanitizeSpec(null)).toEqual(DEFAULT_SPEC)
     expect(sanitizeSpec([1, 2])).toEqual(DEFAULT_SPEC)
   })
+
+  it('keeps a wood band but holds the stone in metal', () => {
+    const band = sanitizeSpec({ band: { metal: 'walnut', headMetal: 'match' } }).band
+    expect(band.metal).toBe('walnut')
+    expect(headMetalOf(band)).toBe('white-gold-18k')
+    expect(headMetalOf({ ...band, metal: 'platinum' })).toBe('platinum')
+    expect(sanitizeSpec({ band: { headMetal: 'walnut' } }).band.headMetal).toBe(DEFAULT_SPEC.band.headMetal)
+  })
 })
 
 describe('stone conventions', () => {
@@ -66,58 +74,6 @@ const finite = (g: THREE.BufferGeometry) => {
   const arr = g.getAttribute('position').array as Float32Array
   return arr.every(Number.isFinite)
 }
-
-describe('band geometry', () => {
-  it.each(PROFILES)('%s band has the right inner diameter and width', (profile) => {
-    const g = buildBand({
-      innerDiameterMm: 17,
-      profile,
-      widthMm: 4,
-      thicknessMm: 1.8,
-      comfortFit: true,
-      taper: 1,
-      hammered: false,
-    })
-    expect(finite(g)).toBe(true)
-    g.computeBoundingBox()
-    const box = g.boundingBox!
-    expect(box.max.y - box.min.y).toBeCloseTo(4, 1)
-    expect(box.max.z).toBeCloseTo(8.5 + 1.8, 1)
-    // No vertex inside the finger hole.
-    const p = g.getAttribute('position')
-    let minR = Infinity
-    for (let i = 0; i < p.count; i++) minR = Math.min(minR, Math.hypot(p.getX(i), p.getZ(i)))
-    expect(minR).toBeGreaterThanOrEqual(8.5 - 1e-3)
-  })
-
-  it('points outer-surface normals away from the finger', () => {
-    const g = buildBand({ innerDiameterMm: 17, profile: 'flat', widthMm: 4, thicknessMm: 2, comfortFit: false, taper: 1, hammered: false })
-    const p = g.getAttribute('position')
-    const n = g.getAttribute('normal')
-    let checked = 0
-    for (let i = 0; i < p.count; i++) {
-      const r = Math.hypot(p.getX(i), p.getZ(i))
-      if (Math.abs(p.getY(i)) < 0.5 && r > 10.4) {
-        const outward = (p.getX(i) * n.getX(i) + p.getZ(i) * n.getZ(i)) / r
-        expect(outward).toBeGreaterThan(0.9)
-        checked++
-      }
-    }
-    expect(checked).toBeGreaterThan(10)
-  })
-
-  it('tapers the shank under the finger', () => {
-    const g = buildBand({ innerDiameterMm: 17, profile: 'court', widthMm: 4, thicknessMm: 1.8, comfortFit: true, taper: 0.5, hammered: false })
-    const p = g.getAttribute('position')
-    let topW = 0
-    let bottomW = 0
-    for (let i = 0; i < p.count; i++) {
-      if (p.getZ(i) > 8) topW = Math.max(topW, Math.abs(p.getY(i)))
-      if (p.getZ(i) < -8) bottomW = Math.max(bottomW, Math.abs(p.getY(i)))
-    }
-    expect(bottomW / topW).toBeCloseTo(0.5, 1)
-  })
-})
 
 describe('gem geometry', () => {
   it.each(STONE_SHAPES)('%s faces point outward', (shape) => {

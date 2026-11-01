@@ -6,7 +6,6 @@ import { meleeCarat, stoneDimensions } from '../ring/catalog'
 import { SIZE_SYSTEMS, nearestSize, sizeOptions } from '../ring/sizes'
 import {
   ACCENTS,
-  FINISHES,
   FONTS,
   GEMS,
   LIMITS,
@@ -15,7 +14,6 @@ import {
   HALF_BEZEL_WALLS,
   HALO_STYLES,
   SIDE_LAYOUTS,
-  METALS,
   PRONG_TIPS,
   PROFILES,
   SETTINGS,
@@ -34,14 +32,11 @@ import {
   autoIcon,
   bezelEdgeIcons,
   fieldIcons as fi,
-  finishIcons,
   fontIcons,
   gemIcons,
   haloRowIcons,
   haloStyleIcons,
   halfWallIcons,
-  matchIcon,
-  metalIcons,
   profileIcons,
   prongTipIcons,
   settingIcons,
@@ -51,13 +46,13 @@ import {
 } from './icons'
 
 /** Labels for every option of a group, e.g. labels('metal').platinum. */
-const labels = <K extends 'metal' | 'finish' | 'profile' | 'gem' | 'shape' | 'setting' | 'prongTip' | 'accent' | 'sizeSystem' | 'font'>(
+export const labels = <K extends 'metal' | 'finish' | 'profile' | 'gem' | 'shape' | 'setting' | 'prongTip' | 'accent' | 'sizeSystem' | 'font'>(
   t: ReturnType<typeof useTranslation>['t'],
   group: K,
 ) => t(group as 'metal', { returnObjects: true }) as unknown as Translation[K]
 
 /** "2.0 mm", in the current language. */
-function useMm() {
+export function useMm() {
   const { t } = useTranslation()
   return (v: number) => t('mm', { v: v.toFixed(1) })
 }
@@ -121,29 +116,6 @@ export function BandPanel() {
         onChange={(v) => update((d) => void (d.band.taper = v))}
       />
       <Toggle label={t('band.comfortFit')} icon={fi.comfort} value={band.comfortFit} onChange={(v) => update((d) => void (d.band.comfortFit = v))} />
-    </>
-  )
-}
-
-export function MetalPanel() {
-  const band = useStore((s) => s.spec.band)
-  const update = useStore((s) => s.update)
-  const { t } = useTranslation()
-  const metalLabels = labels(t, 'metal')
-  return (
-    <>
-      <Chips label={t('metalPanel.band')} value={band.metal} options={METALS} labels={metalLabels} icons={metalIcons} onChange={(v) => update((d) => void (d.band.metal = v))} />
-      <Chips label={t('metalPanel.finish')} value={band.finish} options={FINISHES} labels={labels(t, 'finish')} icons={finishIcons} onChange={(v) => update((d) => void (d.band.finish = v))} />
-      <Chips
-        label={t('metalPanel.head')}
-        icon={fi.headMetal}
-        icons={{ match: matchIcon, ...metalIcons }}
-        value={band.headMetal}
-        options={['match', ...METALS] as const}
-        labels={{ match: t('metalPanel.sameAsBand'), ...metalLabels }}
-        onChange={(v) => update((d) => void (d.band.headMetal = v))}
-      />
-      <p className="note">{t('metalPanel.note')}</p>
     </>
   )
 }

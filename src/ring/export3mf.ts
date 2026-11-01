@@ -4,9 +4,9 @@
 import { strToU8, zipSync } from 'fflate'
 import * as THREE from 'three'
 import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
-import { METAL_INFO, gemColor } from './catalog'
+import { gemColor, metalColor } from './catalog'
 import { buildRing } from './geometry'
-import type { RingSpec } from './spec'
+import { headMetalOf, type InlayMaterial, type RingSpec } from './spec'
 
 const CONTENT_TYPES = `<?xml version="1.0" encoding="UTF-8"?>
 <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
@@ -45,11 +45,14 @@ function meshXml(geometry: THREE.BufferGeometry) {
 
 export function ringTo3mf(spec: RingSpec): Uint8Array<ArrayBuffer> {
   const parts = buildRing(spec)
-  const headMetal = spec.band.headMetal === 'match' ? spec.band.metal : spec.band.headMetal
+  const headMetal = headMetalOf(spec.band)
   const items: { name: string; color: string; geometry: THREE.BufferGeometry }[] = [
-    { name: 'Band', color: METAL_INFO[spec.band.metal].color, geometry: parts.band },
+    { name: 'Band', color: metalColor(spec.band.metal), geometry: parts.band },
   ]
-  if (parts.head) items.push({ name: 'Head', color: METAL_INFO[headMetal].color, geometry: parts.head })
+  if (parts.inlay) items.push({ name: 'Inlay', color: metalColor(spec.band.inlay as InlayMaterial), geometry: parts.inlay })
+  if (parts.inlay2) items.push({ name: 'Inlay 2', color: metalColor(spec.band.inlay2 as InlayMaterial), geometry: parts.inlay2 })
+  if (parts.liner) items.push({ name: 'Liner', color: metalColor(spec.band.liner as InlayMaterial), geometry: parts.liner })
+  if (parts.head) items.push({ name: 'Head', color: metalColor(headMetal), geometry: parts.head })
   for (const s of parts.stones)
     s.matrices.forEach((m, i) =>
       items.push({ name: `Stone ${s.key} ${i + 1}`, color: gemColor(s.gem, s.customColor), geometry: s.geometry.clone().applyMatrix4(m) }),
@@ -69,10 +72,8 @@ export function ringTo3mf(spec: RingSpec): Uint8Array<ArrayBuffer> {
 <build>${build.join('')}</build>
 </model>`
 
-  parts.band.dispose()
-  parts.head?.dispose()
+  items.forEach((it) => it.geometry.dispose())
   parts.stones.forEach((s) => s.geometry.dispose())
-  items.slice(parts.head ? 2 : 1).forEach((it) => it.geometry.dispose())
 
   // fflate always allocates a plain ArrayBuffer; Blob wants that spelled out.
   return zipSync({

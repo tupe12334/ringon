@@ -3,184 +3,10 @@
 // Ring frame: the finger runs along +Y, the top of the ring (where the stone sits) is +Z.
 
 import * as THREE from 'three'
-import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
+import { buildBandParts, merge } from './band'
 import { SHAPE_INFO, stoneDimensions } from './catalog'
 import { alongPerimeter, offsetOutline, outline, perimeter, type Pt } from './outline'
-import type { BezelEdge, Gem, Profile, RingSpec, StoneShape } from './spec'
-
-// ---------------------------------------------------------------------------------- band
-
-type RY = [number, number] // (radius, y along the finger)
-
-/** Cross-section of the band as separate polylines, so edges between them stay crisp. */
-export function bandProfile(
-  profile: Profile,
-  innerR: number,
-  thickness: number,
-  width: number,
-  comfortFit: boolean,
-  n = 24,
-): RY[][] {
-  const hw = width / 2
-  const ro = innerR + thickness
-  const comfort = comfortFit || profile === 'court'
-  const dome = comfort ? Math.min(thickness * 0.3, 0.45) : 0
-  const rIn = (y: number) => innerR + dome * (y / hw) ** 2
-
-  const outer = outerShape(profile, ro, thickness, hw)
-  // y sampled densely near the edges (y = hw·sin φ).
-  const ys = Array.from({ length: n + 1 }, (_, k) => hw * Math.sin(-Math.PI / 2 + (Math.PI * k) / n))
-
-  const inner: RY[] = ys.map((y) => [rIn(y), y])
-  const outerLine: RY[] = [...ys].reverse().map((y) => [outer(y), y])
-  const right: RY[] = [
-    [rIn(hw), hw],
-    [outer(hw), hw],
-  ]
-  const left: RY[] = [
-    [outer(-hw), -hw],
-    [rIn(-hw), -hw],
-  ]
-  return [inner, right, outerLine, left]
-}
-
-function outerShape(profile: Profile, ro: number, t: number, hw: number) {
-  const rounded = (edge: number) => (y: number) => {
-    const e = Math.min(edge, hw * 0.9, t * 0.9)
-    const a = Math.abs(y)
-    if (a <= hw - e) return ro
-    const dy = a - (hw - e)
-    return ro - e + Math.sqrt(Math.max(0, e * e - dy * dy))
-  }
-  const dome = (side: number) => (y: number) => {
-    const s = t * side
-    return ro - t + s + (t - s) * Math.sqrt(Math.max(0, 1 - (y / hw) ** 2))
-  }
-  switch (profile) {
-    case 'flat':
-      return rounded(0.35)
-    case 'square':
-      return rounded(0.1)
-    case 'd-shape':
-      return dome(0.45)
-    case 'half-round':
-      return dome(0.15)
-    case 'court':
-      return dome(0.55)
-    case 'knife-edge':
-      return (y: number) => {
-        const s = t * 0.35
-        return ro - t + s + (t - s) * (1 - Math.abs(y / hw) ** 1.15)
-      }
-  }
-}
-
-export interface BandOptions {
-  innerDiameterMm: number
-  profile: Profile
-  widthMm: number
-  thicknessMm: number
-  comfortFit: boolean
-  taper: number
-  hammered: boolean
-  /** Leave an opening at the top (tension setting), radians each side of +Z. */
-  gapHalfAngle?: number
-  segments?: number
-}
-
-/** Sweep the profile around the finger axis. */
-export function buildBand(o: BandOptions): THREE.BufferGeometry {
-  const innerR = o.innerDiameterMm / 2
-  const segments = o.segments ?? 192
-  const gap = o.gapHalfAngle ?? 0
-  const open = gap > 0
-  const start = gap
-  const sweep = Math.PI * 2 - 2 * gap
-  const rows = open ? segments + 1 : segments
-
-  const parts: THREE.BufferGeometry[] = []
-  const lines = bandProfile(o.profile, innerR, o.thicknessMm, o.widthMm, o.comfortFit)
-  const ro = innerR + o.thicknessMm
-
-  lines.forEach((line, lineIdx) => {
-    const isOuter = lineIdx === 2
-    const positions: number[] = []
-    const uvs: number[] = []
-    for (let i = 0; i < rows; i++) {
-      const theta = start + (sweep * i) / segments
-      const top = (1 + Math.cos(theta)) / 2 // 1 at the top, 0 under the finger
-      const widthScale = o.taper + (1 - o.taper) * top
-      line.forEach(([r, y], j) => {
-        let rr = r
-        if (isOuter && o.hammered) rr -= dimple(theta * ro, y) * 0.07
-        positions.push(rr * Math.sin(theta), y * widthScale, rr * Math.cos(theta))
-        uvs.push(theta / (Math.PI * 2), j / (line.length - 1))
-      })
-    }
-    const index: number[] = []
-    const m = line.length
-    const quads = open ? rows - 1 : rows
-    for (let i = 0; i < quads; i++) {
-      const i2 = (i + 1) % rows
-      for (let j = 0; j < m - 1; j++) {
-        const a = i * m + j
-        const b = i2 * m + j
-        const c = i2 * m + j + 1
-        const d = i * m + j + 1
-        index.push(a, d, b, b, d, c)
-      }
-    }
-    const g = new THREE.BufferGeometry()
-    g.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
-    g.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2))
-    g.setIndex(index)
-    g.computeVertexNormals()
-    parts.push(g)
-  })
-
-  if (open) {
-    const loop = lines.flatMap((l) => l.slice(0, -1))
-    parts.push(bandCap(loop, start, o.taper, true), bandCap(loop, start + sweep, o.taper, false))
-  }
-  return merge(parts)
-}
-
-function bandCap(loop: RY[], theta: number, taper: number, flip: boolean) {
-  const top = (1 + Math.cos(theta)) / 2
-  const widthScale = taper + (1 - taper) * top
-  const shape = loop.map(([r, y]) => new THREE.Vector2(r, y))
-  const tris = THREE.ShapeUtils.triangulateShape(shape, [])
-  const positions = loop.flatMap(([r, y]) => [r * Math.sin(theta), y * widthScale, r * Math.cos(theta)])
-  const g = new THREE.BufferGeometry()
-  g.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
-  g.setAttribute('uv', new THREE.Float32BufferAttribute(loop.flatMap(() => [0, 0]), 2))
-  g.setIndex(tris.flatMap(([a, b, c]) => (flip ? [a, c, b] : [a, b, c])))
-  g.computeVertexNormals()
-  return g
-}
-
-/** Hammered texture: round dimples on a jittered grid. Returns depth 0..1. */
-function dimple(u: number, v: number) {
-  const cell = 0.9
-  const cu = Math.floor(u / cell)
-  const cv = Math.floor(v / cell)
-  let best = Infinity
-  for (let du = -1; du <= 1; du++)
-    for (let dv = -1; dv <= 1; dv++) {
-      const h1 = hash(cu + du, cv + dv)
-      const h2 = hash(cv + dv + 17, cu + du - 9)
-      const px = (cu + du + h1) * cell
-      const py = (cv + dv + h2) * cell
-      best = Math.min(best, Math.hypot(u - px, v - py))
-    }
-  const f = Math.min(1, best / (cell * 0.75))
-  return 1 - f * f
-}
-
-function hash(a: number, b: number) {
-  const s = Math.sin(a * 127.1 + b * 311.7) * 43758.5453
-  return s - Math.floor(s)
-}
+import type { BezelEdge, Gem, RingSpec, StoneShape } from './spec'
 
 // ---------------------------------------------------------------------------------- gems
 
@@ -274,6 +100,12 @@ export interface StonePlacement {
 
 export interface RingParts {
   band: THREE.BufferGeometry
+  /** Strip in the outer surface, in the inlay material. */
+  inlay: THREE.BufferGeometry | null
+  /** Second strip (a pinstripe beside the first), in the second inlay material. */
+  inlay2: THREE.BufferGeometry | null
+  /** Inside sleeve, in the liner material. */
+  liner: THREE.BufferGeometry | null
   /** Prongs, bezels, halo frame. Uses the head metal. */
   head: THREE.BufferGeometry | null
   stones: StonePlacement[]
@@ -389,17 +221,6 @@ function alongOpen(pts: Pt[], count: number): Pt[] {
   return out
 }
 
-function merge(parts: THREE.BufferGeometry[]) {
-  const clean = parts.map((g) => {
-    const ng = g.index ? g.toNonIndexed() : g
-    for (const name of Object.keys(ng.attributes))
-      if (!['position', 'normal', 'uv'].includes(name)) ng.deleteAttribute(name)
-    return ng
-  })
-  const merged = mergeGeometries(clean, false)
-  if (!merged) throw new Error('could not merge ring geometry')
-  return merged
-}
 
 /** Matrix placing a stone (table up) at a point on the band, tilted to follow the surface. */
 function onBand(theta: number, y: number, r: number, scale = 1) {
@@ -421,7 +242,20 @@ export function buildRing(spec: RingSpec): RingParts {
   // Tension: the stone is clamped between the band ends, girdle level with the band top.
   const gapHalfAngle = tension ? Math.asin(Math.min(0.95, (dims.width * 0.42) / ro)) : 0
 
-  const band = buildBand({
+  const b = spec.band
+  const hw = b.widthMm / 2
+  const strip = (width: number, offset: number): [number, number] => [
+    Math.max(-hw, (offset - width / 2) * b.widthMm),
+    Math.min(hw, (offset + width / 2) * b.widthMm),
+  ]
+  const on = b.inlay !== 'none'
+  const {
+    main: band,
+    inlays: [inlay = null, inlay2 = null],
+    liner,
+  } = buildBandParts({
+    inlays: on ? [strip(b.inlayWidth, b.inlayOffset), ...(b.inlay2 !== 'none' ? [strip(b.inlay2Width, b.inlay2Offset)] : [])] : [],
+    linerMm: b.liner === 'none' ? undefined : b.thicknessMm * 0.35,
     innerDiameterMm: spec.innerDiameterMm,
     profile: spec.band.profile,
     widthMm: spec.band.widthMm,
@@ -651,6 +485,9 @@ export function buildRing(spec: RingSpec): RingParts {
 
   return {
     band,
+    inlay,
+    inlay2,
+    liner,
     head: parts.length ? merge(parts) : null,
     stones,
     // Narrow enough to stay on the flat middle of a comfort-fit (domed) inside.
