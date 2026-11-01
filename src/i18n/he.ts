@@ -3,6 +3,7 @@
 import type { Translation } from './en'
 import { imagegenHe } from './imagegen'
 import { reportHe } from './report'
+import { tryonHe } from './tryon'
 
 export const he: Translation & { templates: { imported_two: string } } = {
   app: {
@@ -367,45 +368,6 @@ export const he: Translation & { templates: { imported_two: string } } = {
     lockTitle: 'הטבעת לא תסתובב כשגוררים אותה',
   },
   imagegen: imagegenHe,
-  tryon: {
-    back: 'חזרה לעיצוב',
-    backLabel: '→ עיצוב',
-    backToDesigner: '→ חזרה לעיצוב',
-    phase: {
-      camera: 'פותח את המצלמה…',
-      cameraHint: 'אשרו גישה למצלמה אם הדפדפן מבקש.',
-      tracker: 'טוען זיהוי יד…',
-      starting: 'מכין את הטבעת…',
-    },
-    coach: {
-      auto: 'הרימו את היד, גב היד מול המצלמה',
-      Left: 'הרימו את יד שמאל, גב היד מול המצלמה',
-      Right: 'הרימו את יד ימין, גב היד מול המצלמה',
-    },
-    errorTitle: 'לא הצלחנו להפעיל את המדידה',
-    retry: 'נסו שוב',
-    searching: 'הראו את היד, גב היד מול המצלמה',
-    tracking: 'במעקב',
-    error: 'המצלמה לא זמינה: {{error}}',
-    noCamera: 'הדפדפן הזה לא יכול לפתוח את המצלמה (נדרש HTTPS).',
-    cameraStuck: 'המצלמה לא נפתחה. סגרו אפליקציות אחרות שמשתמשות בה ונסו שוב.',
-    switchCamera: 'החלפת מצלמה',
-    camera: '⟲ מצלמה',
-    finger: 'אצבע',
-    hand: 'יד',
-    hands: { auto: 'אוטומטי', Left: 'יד שמאל', Right: 'יד ימין' },
-    fingers: { thumb: 'אגודל', index: 'מורה', middle: 'אמצעית', ring: 'קמיצה', pinky: 'זרת' },
-    fit: 'התאמה',
-    fitAria: 'התאמת הטבעת',
-    flip: 'הפיכת צד',
-    photo: 'צילום',
-    stop: '■ עצירה {{seconds}} שנ׳',
-    record: '● צילום וידאו',
-    capture: 'הצילום שלך',
-    onHand: '{{name}} על היד שלך',
-    saveShare: 'שמירה / שיתוף',
-    shareTitle: 'טבעת ה־Ringon שלי',
-    close: 'סגירה',
-  },
+  tryon: tryonHe,
   report: reportHe,
 }

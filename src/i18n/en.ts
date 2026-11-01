@@ -1,6 +1,7 @@
 // English UI text. The shape of this object is the shape every other language must match.
 import { imagegenEn } from './imagegen'
 import { reportEn } from './report'
+import { tryonEn } from './tryon'
 
 export const en = {
   app: {
@@ -364,46 +365,7 @@ export const en = {
     lockTitle: 'Stop the ring turning when you drag it',
   },
   imagegen: imagegenEn,
-  tryon: {
-    back: 'Back to designer',
-    backLabel: '← Design',
-    backToDesigner: '← Back to designer',
-    phase: {
-      camera: 'Opening the camera…',
-      cameraHint: 'Allow camera access if your browser asks.',
-      tracker: 'Loading hand tracking…',
-      starting: 'Getting the ring ready…',
-    },
-    coach: {
-      auto: 'Hold up your hand, back of the hand to the camera',
-      Left: 'Hold up your left hand, back of the hand to the camera',
-      Right: 'Hold up your right hand, back of the hand to the camera',
-    },
-    errorTitle: 'The try-on could not start',
-    retry: 'Try again',
-    searching: 'Show your hand, back facing the camera',
-    tracking: 'Tracking',
-    error: 'Camera unavailable: {{error}}',
-    noCamera: 'This browser cannot open the camera (it needs HTTPS).',
-    cameraStuck: 'The camera did not start. Close other apps using it, then try again.',
-    switchCamera: 'Switch camera',
-    camera: '⟲ Camera',
-    finger: 'Finger',
-    hand: 'Hand',
-    hands: { auto: 'Auto', Left: 'Left hand', Right: 'Right hand' },
-    fingers: { thumb: 'Thumb', index: 'Index', middle: 'Middle', ring: 'Ring', pinky: 'Pinky' },
-    fit: 'Fit',
-    fitAria: 'Ring fit',
-    flip: 'Flip side',
-    photo: 'Photo',
-    stop: '■ Stop {{seconds}}s',
-    record: '● Record video',
-    capture: 'Your capture',
-    onHand: '{{name}} on your hand',
-    saveShare: 'Save / share',
-    shareTitle: 'My Ringon ring',
-    close: 'Close',
-  },
+  tryon: tryonEn,
   report: reportEn,
 }
 
