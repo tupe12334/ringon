@@ -1,6 +1,8 @@
 // Hebrew UI text. Keys mirror en.ts; Hebrew adds a "two" plural form.
 
 import type { Translation } from './en'
+import { imagegenHe } from './imagegen'
+import { reportHe } from './report'
 
 export const he: Translation & { templates: { imported_two: string } } = {
   app: {
@@ -20,6 +22,7 @@ export const he: Translation & { templates: { imported_two: string } } = {
     sides: 'אבני צד',
     accents: 'אבנים בחישוק',
     engrave: 'חריטה',
+    image: 'צילום AI',
   },
   mm: '{{v}} מ״מ',
   summary: {
@@ -363,6 +366,7 @@ export const he: Translation & { templates: { imported_two: string } } = {
     lockRotation: '🔒 נעילת סיבוב',
     lockTitle: 'הטבעת לא תסתובב כשגוררים אותה',
   },
+  imagegen: imagegenHe,
   tryon: {
     back: 'חזרה לעיצוב',
     backLabel: '→ עיצוב',
@@ -390,33 +394,5 @@ export const he: Translation & { templates: { imported_two: string } } = {
     shareTitle: 'טבעת ה־Ringon שלי',
     close: 'סגירה',
   },
-  report: {
-    open: 'דיווח על בעיה',
-    title: 'דיווח על בעיה',
-    preview: 'הרגע שעליו דיווחת',
-    what: 'מה נראה לא נכון?',
-    categories: {
-      position: 'הטבעת לא במקום',
-      size: 'גודל לא נכון',
-      angle: 'זווית לא נכונה',
-      jitter: 'הטבעת רועדת',
-      occlusion: 'מוסתרת או מוצגת לא נכון',
-      lighting: 'הצבעים או התאורה לא נכונים',
-      other: 'אחר',
-    },
-    comment: 'הערה',
-    commentHint: 'עוד משהו? (לא חובה)',
-    contains: 'הקובץ כולל:',
-    contents: {
-      photo: 'תמונה של היד שלך מהמצלמה, עם הטבעת ובלעדיה',
-      tracking: 'איפה האפליקציה זיהתה את היד ב־2 השניות האחרונות',
-      settings: 'עיצוב הטבעת והגדרות המדידה שלך',
-      device: 'פרטי המצלמה, הדפדפן והמכשיר (בלי שמות או חשבונות)',
-    },
-    private: 'הקובץ נוצר במכשיר הזה. הוא יוצא ממנו רק אם תשלחו אותו.',
-    pick: 'בחרו מה לא נכון כדי ליצור את הקובץ.',
-    download: 'הורדת הדיווח',
-    share: 'שיתוף הדיווח',
-    issue: 'פתיחת issue ב־GitHub (צרפו את הקובץ שהורדתם)',
-  },
+  report: reportHe,
 }

@@ -30,6 +30,10 @@ runs in the browser, installable as an app (PWA), works offline once loaded.
 - **Live try-on** – point the camera at your hand: the ring follows your finger in real time,
   turns with it, and hides behind it like a real ring. Pick the finger, flip the stone side,
   fine-tune the fit, take a photo or record a video clip to share.
+- **AI photo** – a ready-to-copy prompt for any image generator that describes the design, the
+  hand, the finger and the kind of shot. Or generate the photo here with your own API key for
+  OpenAI, Google Gemini, OpenRouter or fal.ai: Ringon sends the 3D view (or your own ring image)
+  and, if you add one, a photo of your hand.
 
 ## How it works
 
@@ -40,6 +44,7 @@ runs in the browser, installable as an app (PWA), works offline once loaded.
 | 3D geometry (band sweep, faceted gems, settings) | [`src/ring/geometry.ts`](src/ring/geometry.ts) |
 | Templates, sharing, saved designs | [`src/templates/`](src/templates) |
 | Hand tracking → ring pose | [`src/tryon/pose.ts`](src/tryon/pose.ts), [`src/tryon/TryOn.tsx`](src/tryon/TryOn.tsx) |
+| AI photo prompt and image services | [`src/imagegen/prompt.ts`](src/imagegen/prompt.ts), [`src/imagegen/providers.ts`](src/imagegen/providers.ts) |
 
 Rendering uses [three.js](https://threejs.org) via React Three Fiber; hand tracking uses
 [MediaPipe Hand Landmarker](https://ai.google.dev/edge/mediapipe/solutions/vision/hand_landmarker),
@@ -53,6 +58,11 @@ accounts, analytics or cookies. A share link carries the design itself in the pa
 which browsers never send to a server. "Report a problem" in the try-on makes a file on your device
 (a photo of your hand, the hand tracking data, the ring design and device details); it leaves the
 device only if you send it, by download, the share sheet or a GitHub issue you attach it to.
+
+AI photo: when you click **Generate photo**, the prompt, the ring image and your hand photo go
+straight from the browser to the service you chose, and nowhere else; none of it is sent before you
+click (choosing OpenRouter only loads its public model list). Your API key stays in the browser: in memory only, or in this browser's storage if you tick
+"Remember the key".
 
 ## Develop
 

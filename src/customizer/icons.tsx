@@ -324,6 +324,7 @@ export const tabIcons: Record<string, ReactNode> = {
   sides: sideCountIcons[1],
   accents: accentIcons['half-eternity'],
   engrave: fieldIcons.engrave,
+  image: <Svg><rect x={3} y={5} width={18} height={14} rx={2} /><circle cx={9} cy={10} r={1.6} /><path d="M4 18l5-5 4 4 3-3 4 4" /></Svg>,
 }
 
 /** Centre stone flanked by side stones turned `rotate`°; the left one mirrored or turned the same way. */
