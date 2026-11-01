@@ -1,3 +1,4 @@
-date,visits_total,users_total
-2026-11-01,2,0
-2026-11-01,6,1
+date,visits_total,users_total,daily_users_yesterday
+2026-11-01,2,0,
+2026-11-01,6,1,
+2026-11-01,6,1,0
