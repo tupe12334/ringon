@@ -1,4 +1,5 @@
 // English UI text. The shape of this object is the shape every other language must match.
+import { imagegenEn } from './imagegen'
 
 export const en = {
   app: {
@@ -364,36 +365,7 @@ export const en = {
     lockRotation: '🔒 Lock rotation',
     lockTitle: 'Stop the ring turning when you drag it',
   },
-  imagegen: {
-    shot: 'Photo',
-    shots: { 'close-up': 'On a hand, close up', lifestyle: 'Lifestyle', product: 'Ring alone' },
-    hand: 'Hand',
-    hands: { left: 'Left hand', right: 'Right hand' },
-    finger: 'Finger',
-    handPhoto: 'Your hand photo (optional)',
-    ringPhoto: 'Ring image (optional)',
-    ringPhotoNote: 'Without a ring image, the current 3D view is sent. Turn the ring to the angle you want first.',
-    remove: 'Remove',
-    notes: 'Extra instructions',
-    notesPlaceholder: 'e.g. soft daylight, red nail polish',
-    prompt: 'Prompt',
-    copy: 'Copy prompt',
-    copied: 'Copied',
-    generateTitle: 'Generate with your own API key',
-    service: 'Service',
-    model: 'Model',
-    modelDefault: 'empty = {{model}}',
-    key: '{{service}} API key',
-    getKey: 'Get a {{service}} key',
-    remember: 'Remember the key in this browser',
-    privacy: 'Clicking Generate sends the prompt, the ring image and your hand photo straight from this browser to {{service}}, billed to your key. Ringon has no server and never sees them.',
-    generate: 'Generate photo',
-    generating: 'Generating…',
-    failed: 'Failed: {{error}}',
-    noRender: 'Could not capture the 3D view. Add a ring image instead.',
-    resultAlt: 'Generated photo of the ring',
-    download: 'Download',
-  },
+  imagegen: imagegenEn,
   tryon: {
     back: 'Back to designer',
     backLabel: '← Design',

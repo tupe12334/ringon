@@ -1,6 +1,7 @@
 // Hebrew UI text. Keys mirror en.ts; Hebrew adds a "two" plural form.
 
 import type { Translation } from './en'
+import { imagegenHe } from './imagegen'
 
 export const he: Translation & { templates: { imported_two: string } } = {
   app: {
@@ -364,36 +365,7 @@ export const he: Translation & { templates: { imported_two: string } } = {
     lockRotation: '🔒 נעילת סיבוב',
     lockTitle: 'הטבעת לא תסתובב כשגוררים אותה',
   },
-  imagegen: {
-    shot: 'צילום',
-    shots: { 'close-up': 'על יד, מקרוב', lifestyle: 'אווירה', product: 'הטבעת לבד' },
-    hand: 'יד',
-    hands: { left: 'יד שמאל', right: 'יד ימין' },
-    finger: 'אצבע',
-    handPhoto: 'תמונה של היד שלך (לא חובה)',
-    ringPhoto: 'תמונת טבעת (לא חובה)',
-    ringPhotoNote: 'בלי תמונת טבעת נשלחת התצוגה התלת־ממדית הנוכחית. קודם סובבו את הטבעת לזווית הרצויה.',
-    remove: 'הסרה',
-    notes: 'הוראות נוספות',
-    notesPlaceholder: 'למשל אור יום רך, לק אדום',
-    prompt: 'פרומפט',
-    copy: 'העתקת הפרומפט',
-    copied: 'הועתק',
-    generateTitle: 'יצירה עם מפתח API משלך',
-    service: 'שירות',
-    model: 'מודל',
-    modelDefault: 'ריק = {{model}}',
-    key: 'מפתח API של {{service}}',
-    getKey: 'קבלת מפתח {{service}}',
-    remember: 'לזכור את המפתח בדפדפן הזה',
-    privacy: 'לחיצה על "יצירת תמונה" שולחת את הפרומפט, תמונת הטבעת ותמונת היד ישירות מהדפדפן הזה אל {{service}}, בחיוב על המפתח שלך. ל־Ringon אין שרת והוא לא רואה אותם.',
-    generate: 'יצירת תמונה',
-    generating: 'יוצר…',
-    failed: 'נכשל: {{error}}',
-    noRender: 'לא ניתן לצלם את התצוגה התלת־ממדית. הוסיפו תמונת טבעת במקום.',
-    resultAlt: 'תמונה שנוצרה של הטבעת',
-    download: 'הורדה',
-  },
+  imagegen: imagegenHe,
   tryon: {
     back: 'חזרה לעיצוב',
     backLabel: '→ עיצוב',
