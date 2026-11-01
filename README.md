@@ -92,6 +92,10 @@ It prints a `truth.json` entry to fill in by measuring the photo (and where the 
 as a starting point). Add the photo to `ATTRIBUTION.md` (only with the reporter's consent), then
 refresh the landmarks with `DUMP=1` as above.
 
+## See also
+
+- [moadim](https://moadim.io/) — loop engineering: build, schedule & run agent loops.
+
 ## License
 
 MIT. The bundled hand landmark model (`public/models/hand_landmarker.task`) and the test hand
