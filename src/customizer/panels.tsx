@@ -15,6 +15,8 @@ import {
   HALF_BEZEL_WALLS,
   HALO_STYLES,
   SIDE_LAYOUTS,
+  BAND_MATERIALS,
+  INLAY_MATERIALS,
   METALS,
   PRONG_TIPS,
   PROFILES,
@@ -130,9 +132,78 @@ export function MetalPanel() {
   const update = useStore((s) => s.update)
   const { t } = useTranslation()
   const metalLabels = labels(t, 'metal')
+  const mm = useMm()
   return (
     <>
-      <Chips label={t('metalPanel.band')} value={band.metal} options={METALS} labels={metalLabels} icons={metalIcons} onChange={(v) => update((d) => void (d.band.metal = v))} />
+      <Chips label={t('metalPanel.band')} value={band.metal} options={BAND_MATERIALS} labels={metalLabels} icons={metalIcons} onChange={(v) => update((d) => void (d.band.metal = v))} />
+      <Chips
+        label={t('metalPanel.inlay')}
+        value={band.inlay}
+        options={['none', ...INLAY_MATERIALS] as const}
+        labels={{ none: t('metalPanel.none'), ...metalLabels }}
+        icons={{ none: accentIcons.none, ...metalIcons }}
+        onChange={(v) => update((d) => void (d.band.inlay = v))}
+      />
+      {band.inlay !== 'none' && (
+        <>
+          <Slider
+            label={t('metalPanel.inlayWidth')}
+            value={band.inlayWidth}
+            min={LIMITS.inlayWidth[0]}
+            max={LIMITS.inlayWidth[1]}
+            step={0.05}
+            format={(v) => mm(v * band.widthMm)}
+            onChange={(v) => update((d) => void (d.band.inlayWidth = v))}
+          />
+          <Slider
+            label={t('metalPanel.inlayOffset')}
+            value={band.inlayOffset}
+            min={LIMITS.inlayOffset[0]}
+            max={LIMITS.inlayOffset[1]}
+            step={0.05}
+            format={(v) => (Math.abs(v) < 0.01 ? t('metalPanel.centred') : t('metalPanel.offset', { mm: mm(Math.abs(v) * band.widthMm) }))}
+            onChange={(v) => update((d) => void (d.band.inlayOffset = v))}
+          />
+          <Chips
+            label={t('metalPanel.inlay2')}
+            value={band.inlay2}
+            options={['none', ...INLAY_MATERIALS] as const}
+            labels={{ none: t('metalPanel.none'), ...metalLabels }}
+            icons={{ none: accentIcons.none, ...metalIcons }}
+            onChange={(v) => update((d) => void (d.band.inlay2 = v))}
+          />
+          {band.inlay2 !== 'none' && (
+            <>
+              <Slider
+                label={t('metalPanel.inlayWidth')}
+                value={band.inlay2Width}
+                min={LIMITS.inlayWidth[0]}
+                max={LIMITS.inlayWidth[1]}
+                step={0.05}
+                format={(v) => mm(v * band.widthMm)}
+                onChange={(v) => update((d) => void (d.band.inlay2Width = v))}
+              />
+              <Slider
+                label={t('metalPanel.inlayOffset')}
+                value={band.inlay2Offset}
+                min={LIMITS.inlayOffset[0]}
+                max={LIMITS.inlayOffset[1]}
+                step={0.05}
+                format={(v) => (Math.abs(v) < 0.01 ? t('metalPanel.centred') : t('metalPanel.offset', { mm: mm(Math.abs(v) * band.widthMm) }))}
+                onChange={(v) => update((d) => void (d.band.inlay2Offset = v))}
+              />
+            </>
+          )}
+        </>
+      )}
+      <Chips
+        label={t('metalPanel.liner')}
+        value={band.liner}
+        options={['none', ...BAND_MATERIALS] as const}
+        labels={{ none: t('metalPanel.none'), ...metalLabels }}
+        icons={{ none: accentIcons.none, ...metalIcons }}
+        onChange={(v) => update((d) => void (d.band.liner = v))}
+      />
       <Chips label={t('metalPanel.finish')} value={band.finish} options={FINISHES} labels={labels(t, 'finish')} icons={finishIcons} onChange={(v) => update((d) => void (d.band.finish = v))} />
       <Chips
         label={t('metalPanel.head')}
@@ -144,6 +215,7 @@ export function MetalPanel() {
         onChange={(v) => update((d) => void (d.band.headMetal = v))}
       />
       <p className="note">{t('metalPanel.note')}</p>
+      {[band.metal, band.inlay, band.inlay2, band.liner].some((m) => m !== 'none' && !(METALS as readonly string[]).includes(m)) && <p className="note">{t('metalPanel.woodNote')}</p>}
     </>
   )
 }

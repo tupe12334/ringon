@@ -4,7 +4,7 @@ import { stoneDimensions } from './catalog'
 import { buildBand, buildGem, buildRing, polygonGap } from './geometry'
 import { outline } from './outline'
 import { diameterToUs, euToDiameter, nearestSize, sizeOptions, usToDiameter } from './sizes'
-import { ACCENTS, BEZEL_EDGES, DEFAULT_SPEC, HALF_BEZEL_WALLS, PROFILES, SETTINGS, STONE_SHAPES, sanitizeSpec, type RingSpec } from './spec'
+import { ACCENTS, BEZEL_EDGES, DEFAULT_SPEC, HALF_BEZEL_WALLS, PROFILES, SETTINGS, STONE_SHAPES, headMetalOf, sanitizeSpec, type RingSpec } from './spec'
 
 describe('ring sizes', () => {
   it('matches published size charts', () => {
@@ -46,6 +46,14 @@ describe('spec sanitising', () => {
     expect(s.engraving.text).toHaveLength(40)
     expect(sanitizeSpec(null)).toEqual(DEFAULT_SPEC)
     expect(sanitizeSpec([1, 2])).toEqual(DEFAULT_SPEC)
+  })
+
+  it('keeps a wood band but holds the stone in metal', () => {
+    const band = sanitizeSpec({ band: { metal: 'walnut', headMetal: 'match' } }).band
+    expect(band.metal).toBe('walnut')
+    expect(headMetalOf(band)).toBe('white-gold-18k')
+    expect(headMetalOf({ ...band, metal: 'platinum' })).toBe('platinum')
+    expect(sanitizeSpec({ band: { headMetal: 'walnut' } }).band.headMetal).toBe(DEFAULT_SPEC.band.headMetal)
   })
 })
 
@@ -163,6 +171,55 @@ describe('full ring', () => {
     parts.stones.forEach((s) => expect(s.matrices.length).toBeGreaterThan(0))
     expect(parts.engraving).not.toBeNull()
     expect(parts.extent).toBeGreaterThan(spec.innerDiameterMm / 2)
+  })
+
+  /** Min/max y (along the finger) of a surface. */
+  const ySpan = (g: THREE.BufferGeometry) => {
+    g.computeBoundingBox()
+    return [g.boundingBox!.min.y, g.boundingBox!.max.y]
+  }
+  const banded = (band: Partial<RingSpec['band']>) =>
+    buildRing({ ...DEFAULT_SPEC, stone: { ...DEFAULT_SPEC.stone, enabled: false }, band: { ...DEFAULT_SPEC.band, widthMm: 8, taper: 1, ...band } })
+
+  it('cuts an inlay strip out of the outer surface, off centre when asked', () => {
+    const plain = banded({})
+    expect(plain.inlay).toBeNull()
+    const parts = banded({ inlay: 'koa', inlayWidth: 0.25, inlayOffset: -0.125 })
+    const [lo, hi] = ySpan(parts.inlay!)
+    expect(lo).toBeCloseTo(-2, 5)
+    expect(hi).toBeCloseTo(0, 5)
+    // The band keeps the rest, with no surface lost or doubled.
+    const count = (g: THREE.BufferGeometry) => g.getAttribute('position').count
+    // Both cuts here land on profile samples (y = 4·sin(−π/6) = −2 and 0), the exact-hit path.
+    expect(count(parts.band) + count(parts.inlay!)).toBe(count(plain.band))
+    expect(finite(parts.inlay!)).toBe(true)
+  })
+
+  it('lets a second strip sit inside the first (pinstripe)', () => {
+    const parts = banded({ inlay: 'koa', inlayWidth: 0.7, inlay2: 'turquoise', inlay2Width: 0.15, inlay2Offset: 0 })
+    const [lo2, hi2] = ySpan(parts.inlay2!)
+    expect(lo2).toBeCloseTo(-0.6, 5)
+    expect(hi2).toBeCloseTo(0.6, 5)
+    // The koa is split in two around the stripe: none of it lies inside the stripe.
+    const p = parts.inlay!.getAttribute('position')
+    for (let i = 0; i < p.count; i++) expect(Math.abs(p.getY(i))).toBeGreaterThanOrEqual(0.6 - 1e-5)
+    expect(ySpan(parts.inlay!)).toEqual([expect.closeTo(-2.8, 5), expect.closeTo(2.8, 5)])
+  })
+
+  it('ignores a second strip without a first', () => {
+    const parts = banded({ inlay2: 'turquoise' })
+    expect(parts.inlay).toBeNull()
+    expect(parts.inlay2).toBeNull()
+  })
+
+  it('lines the inside and shows the liner on the side walls', () => {
+    const parts = banded({ metal: 'koa', liner: 'titanium' })
+    const innerR = DEFAULT_SPEC.innerDiameterMm / 2
+    const p = parts.liner!.getAttribute('position')
+    let maxR = 0
+    for (let i = 0; i < p.count; i++) maxR = Math.max(maxR, Math.hypot(p.getX(i), p.getZ(i)))
+    expect(maxR).toBeLessThan(innerR + DEFAULT_SPEC.band.thicknessMm * 0.6)
+    expect(maxR).toBeGreaterThan(innerR + 0.1)
   })
 
   it('builds a plain band with no stones', () => {

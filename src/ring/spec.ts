@@ -21,8 +21,45 @@ export const METALS = [
   'titanium',
   'tungsten',
   'black-rhodium',
+  'black-titanium',
+  'black-tungsten',
 ] as const
 export type Metal = (typeof METALS)[number]
+
+/** Woods used for bentwood bands, inlays and liners. Stones are still held by a metal head. */
+export const WOODS = [
+  'walnut',
+  'maple',
+  'koa',
+  'ebony',
+  'whiskey-barrel-oak',
+  'rosewood',
+  'cocobolo',
+  'wenge',
+  'padauk',
+  'zebrawood',
+  'olive',
+  'cherry',
+  'teak',
+  'mahogany',
+  'purpleheart',
+  'redwood',
+  'bocote',
+  'aspen',
+] as const
+export type Wood = (typeof WOODS)[number]
+
+export const BAND_MATERIALS = [...METALS, ...WOODS] as const
+export type BandMaterial = (typeof BAND_MATERIALS)[number]
+export const isWood = (m: string): m is Wood => (WOODS as readonly string[]).includes(m)
+
+/** Crushed stone set in resin, for inlays. */
+export const CRUSHED_STONES = ['turquoise', 'malachite', 'lapis', 'opal'] as const
+export type CrushedStone = (typeof CRUSHED_STONES)[number]
+
+/** Anything that can fill an inlay or line the inside. */
+export const INLAY_MATERIALS = [...BAND_MATERIALS, ...CRUSHED_STONES] as const
+export type InlayMaterial = (typeof INLAY_MATERIALS)[number]
 
 export const FINISHES = ['polished', 'satin', 'brushed', 'hammered', 'matte', 'sandblasted'] as const
 export type Finish = (typeof FINISHES)[number]
@@ -125,6 +162,8 @@ export const LIMITS = {
   sideRotationDeg: [-180, 180],
   sideGapMm: [0.1, 3],
   sideHeight: [0.4, 1.2],
+  inlayWidth: [0.15, 0.9],
+  inlayOffset: [-0.35, 0.35],
   engravingLength: [0, 40],
 } as const
 
@@ -230,10 +269,22 @@ export const RingSpecSchema = z.object({
     comfortFit: bool(true),
     /** Shank width under the finger relative to the top, 0.5 – 1 (1 = no taper). */
     taper: num(LIMITS.taper, 0.85),
-    metal: pick(METALS, 'yellow-gold-18k'),
+    metal: pick(BAND_MATERIALS, 'yellow-gold-18k'),
     finish: pick(FINISHES, 'polished'),
     /** Metal for prongs/bezel/halo; "match" uses the band metal (two-tone otherwise). */
     headMetal: pick([...METALS, 'match'], 'white-gold-18k'),
+    /** Strip set into the outer surface: wood in a metal band, crushed stone in a wood band… */
+    inlay: pick(['none', ...INLAY_MATERIALS], 'none'),
+    /** Inlay width as a share of the band width. */
+    inlayWidth: num(LIMITS.inlayWidth, 0.6),
+    /** Inlay centre moved towards one edge, as a share of the band width (0 = centred). */
+    inlayOffset: num(LIMITS.inlayOffset, 0),
+    /** Optional second strip, e.g. a turquoise pinstripe next to a wood inlay. */
+    inlay2: pick(['none', ...INLAY_MATERIALS], 'none'),
+    inlay2Width: num(LIMITS.inlayWidth, 0.15),
+    inlay2Offset: num(LIMITS.inlayOffset, 0.3),
+    /** Sleeve on the inside: a metal core in a wood ring, or a wood-lined metal band. */
+    liner: pick(['none', ...BAND_MATERIALS], 'none'),
   }),
   stone: StoneSchema,
   halo: section({
@@ -277,6 +328,10 @@ export const RingSpecSchema = z.object({
 
 export type RingSpec = z.output<typeof RingSpecSchema>
 export type StoneSpec = RingSpec['stone']
+
+/** Metal of prongs/bezel/halo. Wood can't hold a stone, so "match" on a wood band means white gold. */
+export const headMetalOf = (band: RingSpec['band']): Metal =>
+  band.headMetal !== 'match' ? band.headMetal : isWood(band.metal) ? 'white-gold-18k' : band.metal
 
 /**
  * Turn untrusted input (imported file, share link, old localStorage) into a valid spec.

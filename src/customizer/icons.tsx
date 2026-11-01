@@ -2,7 +2,7 @@
 // All icons are 24×24, inherit currentColor, and are decorative (the chip text names the option).
 
 import type { ReactNode, SVGProps } from 'react'
-import { GEM_INFO, METAL_INFO, SHAPE_INFO, gemColor } from '../ring/catalog'
+import { CRUSHED_INFO, GEM_INFO, METAL_INFO, SHAPE_INFO, gemColor } from '../ring/catalog'
 import { outline } from '../ring/outline'
 import type {
   Accent,
@@ -12,7 +12,7 @@ import type {
   Gem,
   HaloStyle,
   HalfBezelWalls,
-  Metal,
+  InlayMaterial,
   Profile,
   ProngTip,
   RingSpec,
@@ -86,8 +86,8 @@ export function MetalIcon({ color }: { color: string }) {
 }
 
 export const metalIcons = Object.fromEntries(
-  Object.entries(METAL_INFO).map(([k, v]) => [k, <MetalIcon key={k} color={v.color} />]),
-) as Record<Metal, ReactNode>
+  Object.entries({ ...METAL_INFO, ...CRUSHED_INFO }).map(([k, v]) => [k, <MetalIcon key={k} color={v.color} />]),
+) as Record<InlayMaterial, ReactNode>
 
 export const gemIcons = (customColor: string) =>
   Object.fromEntries(

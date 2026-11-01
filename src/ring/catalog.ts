@@ -1,9 +1,10 @@
 // Real-world reference data: metal colours, gem optics, stone proportions.
 // Display names live in the translations (src/i18n).
 
-import type { Finish, Gem, Metal, StoneShape } from './spec'
+import type { BandMaterial, CrushedStone, Finish, Gem, InlayMaterial, StoneShape } from './spec'
 
-export const METAL_INFO: Record<Metal, { color: string; roughness: number }> = {
+/** Band materials. Woods: base colour, grain colour (darker late wood) and oiled-wood roughness. */
+export const METAL_INFO: Record<BandMaterial, { color: string; roughness: number; grain?: string }> = {
   'yellow-gold-14k': { color: '#ddb866', roughness: 0.08 },
   'yellow-gold-18k': { color: '#e6c46a', roughness: 0.07 },
   'yellow-gold-22k': { color: '#edc25e', roughness: 0.07 },
@@ -17,6 +18,34 @@ export const METAL_INFO: Record<Metal, { color: string; roughness: number }> = {
   titanium: { color: '#aaa59e', roughness: 0.18 },
   tungsten: { color: '#6f6f70', roughness: 0.12 },
   'black-rhodium': { color: '#2b2b2e', roughness: 0.1 },
+  'black-titanium': { color: '#323234', roughness: 0.14 },
+  'black-tungsten': { color: '#262628', roughness: 0.12 },
+  walnut: { color: '#6b4428', roughness: 0.45, grain: '#3e2614' },
+  maple: { color: '#e2c79a', roughness: 0.45, grain: '#c09a66' },
+  koa: { color: '#9a5a2c', roughness: 0.4, grain: '#5e3217' },
+  ebony: { color: '#2e2622', roughness: 0.35, grain: '#15100d' },
+  'whiskey-barrel-oak': { color: '#8c5d36', roughness: 0.5, grain: '#3f2614' },
+  rosewood: { color: '#6e3324', roughness: 0.4, grain: '#33150c' },
+  cocobolo: { color: '#a8562c', roughness: 0.38, grain: '#3e190b' },
+  wenge: { color: '#56443a', roughness: 0.5, grain: '#1d1511' },
+  padauk: { color: '#b5482b', roughness: 0.42, grain: '#7a2715' },
+  zebrawood: { color: '#dcc390', roughness: 0.45, grain: '#40301c' },
+  olive: { color: '#cbb17f', roughness: 0.42, grain: '#5e4428' },
+  cherry: { color: '#a9643d', roughness: 0.42, grain: '#6b3820' },
+  teak: { color: '#a97b46', roughness: 0.45, grain: '#664424' },
+  mahogany: { color: '#8b4128', roughness: 0.42, grain: '#552414' },
+  purpleheart: { color: '#74395e', roughness: 0.42, grain: '#43203a' },
+  redwood: { color: '#a24e36', roughness: 0.45, grain: '#5e2718' },
+  bocote: { color: '#bb8c4c', roughness: 0.42, grain: '#32200f' },
+  aspen: { color: '#e9ddc2', roughness: 0.45, grain: '#c7b28b' },
+}
+
+/** Crushed stone in resin: the stone's colours (fragments) and the resin seen between them. */
+export const CRUSHED_INFO: Record<CrushedStone, { color: string; fragments: string[]; resin: string }> = {
+  turquoise: { color: '#3fb5a6', fragments: ['#3fb5a6', '#56c7b8', '#2e9488', '#7dd3c4'], resin: '#2b2620' },
+  malachite: { color: '#1d8a58', fragments: ['#1d8a58', '#0f5e3a', '#36a874', '#0a4229'], resin: '#0d1f16' },
+  lapis: { color: '#2a4fa8', fragments: ['#2a4fa8', '#1d3a85', '#3b62c0', '#c9b26a'], resin: '#141a2e' },
+  opal: { color: '#dfe4ee', fragments: ['#e8ecf5', '#7fd6e8', '#9be08a', '#f2a3c6', '#7c8cf0'], resin: '#1a1a22' },
 }
 
 export const FINISH_INFO: Record<Finish, { roughnessAdd: number }> = {
@@ -91,6 +120,6 @@ export function gemColor(gem: Gem, customColor: string) {
   return gem === 'custom' ? customColor : GEM_INFO[gem].color
 }
 
-export function metalColor(metal: Metal) {
-  return METAL_INFO[metal].color
+export function metalColor(metal: InlayMaterial) {
+  return metal in CRUSHED_INFO ? CRUSHED_INFO[metal as CrushedStone].color : METAL_INFO[metal as BandMaterial].color
 }

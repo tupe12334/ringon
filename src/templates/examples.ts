@@ -155,4 +155,75 @@ export const EXAMPLE_TEMPLATES: RingSpec[] = [
     s.stone = { ...s.stone, enabled: false }
     s.accents = { ...s.accents, style: 'channel', meleeCut: 'baguette', stoneMm: 3, coverageDeg: 55 }
   }),
+  // Wood rings. Inlay widths and positions follow the listing's description and photos where
+  // the page gives no millimetres.
+  // https://cirellijewelers.com/products/thorsten-narra-tungsten-wood-ring-with-polished-bevels-and-padauk-real-wood-inlay4-8mm-w1897-pdwi
+  make('Padauk inlay tungsten', (s) => {
+    s.band = { ...s.band, profile: 'flat', widthMm: 8, thicknessMm: 2.3, metal: 'tungsten', taper: 1, comfortFit: true, inlay: 'padauk', inlayWidth: 0.6 }
+    s.stone = { ...s.stone, enabled: false }
+  }),
+  // https://foreveringsjewelry.com/products/whiskey-barrel-ring-men-wood-wedding-band-silver-tungsten-band-domed-beveled-wood-anniversary-gift-for-him-unique-ring-men-engagement
+  make('Whiskey barrel lined tungsten', (s) => {
+    s.band = { ...s.band, profile: 'd-shape', widthMm: 8, thicknessMm: 2.4, metal: 'tungsten', finish: 'brushed', taper: 1, comfortFit: true, liner: 'whiskey-barrel-oak' }
+    s.stone = { ...s.stone, enabled: false }
+  }),
+  // https://foreveringsjewelry.com/products/8mm-wenge-wood-ring-hammered-tungsten-wedding-band-dark-wood-ring-black-matte-brushed-flat-hammer-comfort-fit
+  make('Hammered black tungsten, wenge lined', (s) => {
+    s.band = { ...s.band, profile: 'flat', widthMm: 8, thicknessMm: 2.4, metal: 'black-tungsten', finish: 'hammered', taper: 1, comfortFit: true, liner: 'wenge' }
+    s.stone = { ...s.stone, enabled: false }
+  }),
+  // https://www.larsonjewelers.com/daring-off-set-koa-wood-inlaid-black-titanium-men-s-wedding-band-with-flat-brushed-finish-8mm
+  make('Offset koa black titanium', (s) => {
+    s.band = { ...s.band, profile: 'flat', widthMm: 8, thicknessMm: 2, metal: 'black-titanium', finish: 'brushed', taper: 1, comfortFit: true, inlay: 'koa', inlayWidth: 0.35, inlayOffset: 0.2 }
+    s.stone = { ...s.stone, enabled: false }
+  }),
+  // https://jewelrybyjohan.com/en-ca/products/koa-wood-wedding-band-in-titanium-size-9-rs11352 — 2 mm titanium, 2 mm koa, 4 mm titanium.
+  make('Koa stripe titanium', (s) => {
+    s.band = { ...s.band, profile: 'flat', widthMm: 8, thicknessMm: 2, metal: 'titanium', taper: 1, comfortFit: true, inlay: 'koa', inlayWidth: 0.25, inlayOffset: -0.125 }
+    s.stone = { ...s.stone, enabled: false }
+  }),
+  // https://www.justmensrings.com/products/jtg3239-tungsten-turquoise-and-koa-wood-inlay-ring
+  make('Koa and turquoise tungsten', (s) => {
+    s.band = {
+      ...s.band, profile: 'flat', widthMm: 8, thicknessMm: 2.3, metal: 'tungsten', taper: 1, comfortFit: true,
+      inlay: 'koa', inlayWidth: 0.45, inlayOffset: -0.1, inlay2: 'turquoise', inlay2Width: 0.25, inlay2Offset: 0.25,
+    }
+    s.stone = { ...s.stone, enabled: false }
+  }),
+  // https://www.happylaulea.com/collections/create-your-couples-ring/products/titanium-wedding-ring-with-hawaiian-koa-wood-and-opal-offset-inlay-8mm-width-flat-style
+  make('Koa and opal offset titanium', (s) => {
+    s.band = {
+      ...s.band, profile: 'flat', widthMm: 8, thicknessMm: 2, metal: 'titanium', taper: 1, comfortFit: true,
+      inlay: 'koa', inlayWidth: 0.4, inlayOffset: -0.15, inlay2: 'opal', inlay2Width: 0.15, inlay2Offset: 0.2,
+    }
+    s.stone = { ...s.stone, enabled: false }
+  }),
+  // https://acceptance.reach.dog/shop/peacefield-titanium/products/titanium-ring-with-koa-and-turquoise-pinstripe
+  make('Koa with turquoise pinstripe', (s) => {
+    s.band = {
+      ...s.band, profile: 'flat', widthMm: 8, thicknessMm: 2, metal: 'titanium', taper: 1, comfortFit: true,
+      inlay: 'koa', inlayWidth: 0.7, inlay2: 'turquoise', inlay2Width: 0.15, inlay2Offset: 0,
+    }
+    s.stone = { ...s.stone, enabled: false }
+  }),
+  // https://acceptance.reach.dog/shop/peacefield-titanium/products/koa-wood-ring-with-titanium-and-turquoise-inlay — bentwood koa over a titanium band.
+  make('Koa bentwood, turquoise, titanium core', (s) => {
+    s.band = { ...s.band, profile: 'court', widthMm: 8, thicknessMm: 2.4, metal: 'koa', taper: 1, comfortFit: true, liner: 'titanium', inlay: 'turquoise', inlayWidth: 0.3 }
+    s.stone = { ...s.stone, enabled: false }
+  }),
+  // https://atelierdubonbouleau.patternbyetsy.com/listing/796569990/zebrawood-men-ring-from-canada
+  make('Zebrawood bentwood', (s) => {
+    s.band = { ...s.band, profile: 'court', widthMm: 6, thicknessMm: 2.2, metal: 'zebrawood', finish: 'satin', taper: 1, comfortFit: true }
+    s.stone = { ...s.stone, enabled: false }
+  }),
+  // https://jewelrybyjohan.com/products/solitaire-diamond-ring-wood-2175 — Honduran rosewood in a 14k white gold band, four-prong diamond.
+  make('Rosewood diamond solitaire', (s) => {
+    s.band = { ...s.band, profile: 'flat', widthMm: 4, thicknessMm: 1.8, metal: 'white-gold-14k', headMetal: 'match', taper: 1, inlay: 'rosewood', inlayWidth: 0.5 }
+    s.stone = { ...s.stone, shape: 'round', carat: 0.5, setting: 'prong-4' }
+  }),
+  // https://jewelrybyjohan.com/products/moissanite-solitaire-engagement-ring-2418 — 6 mm moissanite, 14k yellow gold, aspen inlay.
+  make('Aspen moissanite solitaire', (s) => {
+    s.band = { ...s.band, profile: 'flat', widthMm: 4, thicknessMm: 1.8, metal: 'yellow-gold-14k', headMetal: 'match', taper: 1, inlay: 'aspen', inlayWidth: 0.5 }
+    s.stone = { ...s.stone, shape: 'round', gem: 'moissanite', carat: 0.72, setting: 'prong-4' }
+  }),
 ]

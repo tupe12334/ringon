@@ -85,11 +85,37 @@ export interface BandOptions {
   hammered: boolean
   /** Leave an opening at the top (tension setting), radians each side of +Z. */
   gapHalfAngle?: number
+  /** Inlay strips in the outer surface: from/to y along the finger, mm. A later strip covers an
+   * earlier one where they overlap. */
+  inlays?: [number, number][]
+  /** Liner (sleeve) thickness, mm. */
+  linerMm?: number
   segments?: number
 }
 
 /** Sweep the profile around the finger axis. */
 export function buildBand(o: BandOptions): THREE.BufferGeometry {
+  const { main, inlays, liner } = buildBandParts(o)
+  return merge([main, ...inlays, liner].filter((g) => g !== null))
+}
+
+/** Split a polyline running from +y to −y where it crosses `yCut`: [part above, part below]. */
+function cutAtY(line: RY[], yCut: number): [RY[], RY[]] {
+  for (let j = 0; j < line.length - 1; j++) {
+    const [[r0, y0], [r1, y1]] = [line[j], line[j + 1]]
+    if (y0 > yCut && y1 <= yCut) {
+      const p: RY = [r0 + ((r1 - r0) * (yCut - y0)) / (y1 - y0), yCut]
+      return [[...line.slice(0, j + 1), p], [p, ...line.slice(y1 === yCut ? j + 2 : j + 1)]]
+    }
+  }
+  return line[0][1] > yCut ? [line, []] : [[], line]
+}
+
+/**
+ * The band as separate surfaces: the main metal (or wood), inlay strips in the outer surface,
+ * and a liner (sleeve) on the inside that also shows as a layer on the side walls.
+ */
+export function buildBandParts(o: BandOptions) {
   const innerR = o.innerDiameterMm / 2
   const segments = o.segments ?? 192
   const gap = o.gapHalfAngle ?? 0
@@ -97,24 +123,21 @@ export function buildBand(o: BandOptions): THREE.BufferGeometry {
   const start = gap
   const sweep = Math.PI * 2 - 2 * gap
   const rows = open ? segments + 1 : segments
-
-  const parts: THREE.BufferGeometry[] = []
-  const lines = bandProfile(o.profile, innerR, o.thicknessMm, o.widthMm, o.comfortFit)
   const ro = innerR + o.thicknessMm
 
-  lines.forEach((line, lineIdx) => {
-    const isOuter = lineIdx === 2
+  const sweepLine = (line: RY[], hammered: boolean) => {
     const positions: number[] = []
     const uvs: number[] = []
     for (let i = 0; i < rows; i++) {
       const theta = start + (sweep * i) / segments
       const top = (1 + Math.cos(theta)) / 2 // 1 at the top, 0 under the finger
       const widthScale = o.taper + (1 - o.taper) * top
-      line.forEach(([r, y], j) => {
+      line.forEach(([r, y]) => {
         let rr = r
-        if (isOuter && o.hammered) rr -= dimple(theta * ro, y) * 0.07
+        if (hammered) rr -= dimple(theta * ro, y) * 0.07
         positions.push(rr * Math.sin(theta), y * widthScale, rr * Math.cos(theta))
-        uvs.push(theta / (Math.PI * 2), j / (line.length - 1))
+        // v across the band in mm / width, so every surface shares one texture mapping.
+        uvs.push(theta / (Math.PI * 2), 0.5 + y / o.widthMm)
       })
     }
     const index: number[] = []
@@ -135,14 +158,47 @@ export function buildBand(o: BandOptions): THREE.BufferGeometry {
     g.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2))
     g.setIndex(index)
     g.computeVertexNormals()
-    parts.push(g)
-  })
+    return g
+  }
 
+  const lines = bandProfile(o.profile, innerR, o.thicknessMm, o.widthMm, o.comfortFit)
+  const [inner, right, outerLine, left] = lines
+  const main: [RY[], boolean][] = [] // [line, hammered]
+  const linerLines: RY[][] = []
+
+  // Liner: the inside surface, plus its thickness on each side wall.
+  if (o.linerMm) {
+    const [[rr, ry], [rr2]] = right
+    const [[lr2], [lr, ly]] = left
+    const cutR = (r: number) => Math.min(r + o.linerMm!, r + (rr2 - rr) * 0.6)
+    linerLines.push(inner, [[rr, ry], [cutR(rr), ry]], [[cutR(lr), ly], [lr, ly]])
+    main.push([[[cutR(rr), ry], [rr2, ry]], false], [[[lr2, ly], [cutR(lr), ly]], false])
+  } else main.push([inner, false], [right, false], [left, false])
+
+  // Inlays: strips of the outer surface between two heights along the finger. Cut the outer line
+  // (running +y → −y) at every strip edge; each piece belongs to the last strip covering it, so
+  // a narrow second strip can sit inside a wide first one (a pinstripe).
+  const strips = o.inlays ?? []
+  const hw = o.widthMm / 2
+  const cuts = [...new Set(strips.flat().filter((y) => y > -hw && y < hw))].sort((p, q) => q - p)
+  const inlayLines: RY[][][] = strips.map(() => [])
+  let rest = outerLine
+  for (const [k, y] of [...cuts, -hw].entries()) {
+    const [piece, tail] = k < cuts.length ? cutAtY(rest, y) : [rest, []]
+    rest = tail
+    if (piece.length < 2) continue
+    const mid = (piece[0][1] + piece[piece.length - 1][1]) / 2
+    const owner = strips.findLastIndex(([lo, hi]) => lo < mid && mid < hi)
+    if (owner < 0) main.push([piece, o.hammered])
+    else inlayLines[owner].push(piece)
+  }
+  const surface = (ls: RY[][]) => (ls.length ? merge(ls.map((l) => sweepLine(l, false))) : null)
+  const mainParts = main.map(([l, hammered]) => sweepLine(l, hammered))
   if (open) {
     const loop = lines.flatMap((l) => l.slice(0, -1))
-    parts.push(bandCap(loop, start, o.taper, true), bandCap(loop, start + sweep, o.taper, false))
+    mainParts.push(bandCap(loop, start, o.taper, true), bandCap(loop, start + sweep, o.taper, false))
   }
-  return merge(parts)
+  return { main: merge(mainParts), inlays: inlayLines.map(surface), liner: surface(linerLines) }
 }
 
 function bandCap(loop: RY[], theta: number, taper: number, flip: boolean) {
@@ -274,6 +330,12 @@ export interface StonePlacement {
 
 export interface RingParts {
   band: THREE.BufferGeometry
+  /** Strip in the outer surface, in the inlay material. */
+  inlay: THREE.BufferGeometry | null
+  /** Second strip (a pinstripe beside the first), in the second inlay material. */
+  inlay2: THREE.BufferGeometry | null
+  /** Inside sleeve, in the liner material. */
+  liner: THREE.BufferGeometry | null
   /** Prongs, bezels, halo frame. Uses the head metal. */
   head: THREE.BufferGeometry | null
   stones: StonePlacement[]
@@ -421,7 +483,20 @@ export function buildRing(spec: RingSpec): RingParts {
   // Tension: the stone is clamped between the band ends, girdle level with the band top.
   const gapHalfAngle = tension ? Math.asin(Math.min(0.95, (dims.width * 0.42) / ro)) : 0
 
-  const band = buildBand({
+  const b = spec.band
+  const hw = b.widthMm / 2
+  const strip = (width: number, offset: number): [number, number] => [
+    Math.max(-hw, (offset - width / 2) * b.widthMm),
+    Math.min(hw, (offset + width / 2) * b.widthMm),
+  ]
+  const on = b.inlay !== 'none'
+  const {
+    main: band,
+    inlays: [inlay = null, inlay2 = null],
+    liner,
+  } = buildBandParts({
+    inlays: on ? [strip(b.inlayWidth, b.inlayOffset), ...(b.inlay2 !== 'none' ? [strip(b.inlay2Width, b.inlay2Offset)] : [])] : [],
+    linerMm: b.liner === 'none' ? undefined : b.thicknessMm * 0.35,
     innerDiameterMm: spec.innerDiameterMm,
     profile: spec.band.profile,
     widthMm: spec.band.widthMm,
@@ -651,6 +726,9 @@ export function buildRing(spec: RingSpec): RingParts {
 
   return {
     band,
+    inlay,
+    inlay2,
+    liner,
     head: parts.length ? merge(parts) : null,
     stones,
     // Narrow enough to stay on the flat middle of a comfort-fit (domed) inside.
