@@ -1,5 +1,6 @@
 // English UI text. The shape of this object is the shape every other language must match.
 import { imagegenEn } from './imagegen'
+import { reportEn } from './report'
 
 export const en = {
   app: {
@@ -23,10 +24,7 @@ export const en = {
     image: 'AI photo',
   },
   mm: '{{v}} mm',
-  summary: {
-    stone: '{{carat}} ct {{shape}} {{gem}}',
-    band: '{{width}} mm band',
-  },
+  summary: { stone: '{{carat}} ct {{shape}} {{gem}}', band: '{{width}} mm band' },
   sizeSystem: { us: 'US / CA', eu: 'EU / ISO', uk: 'UK / AU', jp: 'JP' },
   metal: {
     'yellow-gold-14k': '14k yellow gold',
@@ -393,6 +391,7 @@ export const en = {
     shareTitle: 'My Ringon ring',
     close: 'Close',
   },
+  report: reportEn,
 }
 
 /** Same keys as English, any text. */

@@ -2,6 +2,7 @@
 
 import type { Translation } from './en'
 import { imagegenHe } from './imagegen'
+import { reportHe } from './report'
 
 export const he: Translation & { templates: { imported_two: string } } = {
   app: {
@@ -393,4 +394,5 @@ export const he: Translation & { templates: { imported_two: string } } = {
     shareTitle: 'טבעת ה־Ringon שלי',
     close: 'סגירה',
   },
+  report: reportHe,
 }

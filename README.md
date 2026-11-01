@@ -55,7 +55,9 @@ served from this app (no third-party requests).
 Everything runs on your device. The camera feed, hand tracking, photos and clips never leave the
 browser unless you share them; designs and saved templates stay in this browser's storage. No
 accounts, analytics or cookies. A share link carries the design itself in the part after `#`,
-which browsers never send to a server.
+which browsers never send to a server. "Report a problem" in the try-on makes a file on your device
+(a photo of your hand, the hand tracking data, the ring design and device details); it leaves the
+device only if you send it, by download, the share sheet or a GitHub issue you attach it to.
 
 AI photo: when you click **Generate photo**, the prompt, the ring image and your hand photo go
 straight from the browser to the service you chose, and nowhere else; none of it is sent before you
@@ -76,6 +78,19 @@ Try-on accuracy is checked on real photos of hands in [`e2e/fixtures/photos/`](e
 [`truth.json`](e2e/fixtures/photos/truth.json) holds what was measured on them by hand (where real
 rings sit, finger widths, which side faces the camera). `DUMP=1` on the photos project refreshes
 the landmarks that [`src/tryon/photos.test.ts`](src/tryon/photos.test.ts) checks the pose against.
+
+A try-on bug report (`ringon-report-<date>.json`, from "Report a problem"; schema in
+[`src/tryon/report.ts`](src/tryon/report.ts)) holds the camera frame without and with the ring, the
+last ~2 s of landmarks, raw and smoothed ring poses, settings, the design, camera and device. Turn
+it into a photo fixture:
+
+```sh
+node scripts/report-to-fixture.mjs ringon-report-….json [name]   # writes e2e/fixtures/photos/<name>.jpg
+```
+
+It prints a `truth.json` entry to fill in by measuring the photo (and where the app drew the ring,
+as a starting point). Add the photo to `ATTRIBUTION.md` (only with the reporter's consent), then
+refresh the landmarks with `DUMP=1` as above.
 
 ## License
 
