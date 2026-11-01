@@ -370,7 +370,20 @@ export const he: Translation & { templates: { imported_two: string } } = {
   tryon: {
     back: 'חזרה לעיצוב',
     backLabel: '→ עיצוב',
-    loading: 'מפעיל מצלמה…',
+    backToDesigner: '→ חזרה לעיצוב',
+    phase: {
+      camera: 'פותח את המצלמה…',
+      cameraHint: 'אשרו גישה למצלמה אם הדפדפן מבקש.',
+      tracker: 'טוען זיהוי יד…',
+      starting: 'מכין את הטבעת…',
+    },
+    coach: {
+      auto: 'הרימו את היד, גב היד מול המצלמה',
+      Left: 'הרימו את יד שמאל, גב היד מול המצלמה',
+      Right: 'הרימו את יד ימין, גב היד מול המצלמה',
+    },
+    errorTitle: 'לא הצלחנו להפעיל את המדידה',
+    retry: 'נסו שוב',
     searching: 'הראו את היד, גב היד מול המצלמה',
     tracking: 'במעקב',
     error: 'המצלמה לא זמינה: {{error}}',

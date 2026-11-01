@@ -1,7 +1,7 @@
 // Live try-on: the camera feed with the ring tracked onto a finger, in real time.
 
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import * as THREE from 'three'
 import { LostContextRetry } from '../LostContextRetry'
@@ -18,6 +18,7 @@ import { loadHandTracker, type HandTracker } from './tracker'
 import { useCamera, type Facing } from './camera'
 import { snapshotReport, TrackLog, type ReportDraft } from './report'
 import { ReportSheet } from './ReportSheet'
+import { Coaching, TryOnError, TryOnLoading } from './TryOnLoading'
 
 /** One frame's landmarks, as MediaPipe returned them. */
 export interface TrackedHand {
@@ -111,6 +112,9 @@ function TrackedRing({ spec, video, landmarker, mirrored, finger, hand, flip, fi
   useLayoutEffect(() => {
     if (ringModel.current) markShadowCasters(ringModel.current)
   }, [spec])
+
+  // Gone (camera switched, view closed): the next one starts from the loading screen.
+  useEffect(() => () => onStatus('loading'), [onStatus])
 
   useEffect(() => {
     smoother.reset()
@@ -229,7 +233,9 @@ export function TryOn({ onBack }: { onBack: () => void }) {
   const [status, setStatus] = useState<Status>('loading')
   const [landmarker, setLandmarker] = useState<HandTracker | null>(null)
   const [loadError, setLoadError] = useState('')
-  const { video, error: camError } = useCamera(facing)
+  /** Bumped by "Try again": reopens the camera and reloads hand tracking. */
+  const [attempt, setAttempt] = useState(0)
+  const { video, error: camError } = useCamera(facing, attempt)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const recorder = useRecorder(canvasRef)
   const poseRef = useRef<HTMLOutputElement>(null)
@@ -259,13 +265,22 @@ export function TryOn({ onBack }: { onBack: () => void }) {
 
   useEffect(() => {
     loadHandTracker().then(setLandmarker, (e) => setLoadError(String(e?.message ?? e)))
-  }, [])
+  }, [attempt])
 
   const error = camError || loadError
+  // Ready once the camera plays, the tracker is loaded and the 3D view has drawn a frame
+  // (TrackedRing reports a status from its first frame). Until then the screen is covered.
   const shownStatus: Status = error ? 'error' : !video || !landmarker ? 'loading' : status
+  const retry = () => {
+    setLoadError('')
+    setAttempt((a) => a + 1)
+  }
 
   return (
     <div className="tryon">
+      {/* r3f suspends the whole <Canvas> while the studio light loads: keep that to the canvas, so the
+          loading screen below stays up (and says what it waits for) instead of App's fallback. */}
+      <Suspense fallback={null}>
       <LostContextRetry>
       <Canvas
         orthographic
@@ -288,66 +303,75 @@ export function TryOn({ onBack }: { onBack: () => void }) {
         )}
       </Canvas>
       </LostContextRetry>
+      </Suspense>
 
       <output ref={poseRef} data-testid="pose" hidden />
-      <div className="tryon-top">
-        <button type="button" onClick={onBack} aria-label={t('tryon.back')}>
-          {t('tryon.backLabel')}
-        </button>
-        <span className={`status ${shownStatus}`} data-testid="tracking-status" data-status={shownStatus}>
-          {shownStatus === 'loading' && t('tryon.loading')}
-          {shownStatus === 'searching' && t('tryon.searching')}
-          {shownStatus === 'tracking' && t('tryon.tracking')}
-          {shownStatus === 'error' && t('tryon.error', { error })}
-        </span>
-        <button type="button" onClick={() => setFacing((f) => (f === 'user' ? 'environment' : 'user'))} aria-label={t('tryon.switchCamera')}>
-          {t('tryon.camera')}
-        </button>
-      </div>
-
-      <button
-        type="button"
-        className="report-open"
-        onClick={() =>
-          setReport(snapshotReport({ video, canvas: canvasRef.current, log, spec, readout: poseRef.current, language: i18n.resolvedLanguage ?? i18n.language, settings: { status: shownStatus, finger, hand, flip, fit, facing, mirrored } }))
-        }
-      >
-        {t('report.open')}
-      </button>
-
-      <div className="tryon-bottom">
-        <div className="chips" role="radiogroup" aria-label={t('tryon.hand')}>
-          {HANDS.map((h) => (
-            <button key={h} type="button" role="radio" aria-checked={h === hand} className={h === hand ? 'chip on' : 'chip'} onClick={() => setHand(h)}>
-              {t(`tryon.hands.${h}`)}
+      {shownStatus === 'error' && <TryOnError error={error} onRetry={retry} onBack={onBack} />}
+      {shownStatus === 'loading' && (
+        <TryOnLoading
+          text={t(!video ? 'tryon.phase.camera' : !landmarker ? 'tryon.phase.tracker' : 'tryon.phase.starting')}
+          hint={!video ? t('tryon.phase.cameraHint') : undefined}
+          onBack={onBack}
+        />
+      )}
+      {(shownStatus === 'searching' || shownStatus === 'tracking') && (
+        <>
+          <Coaching tracking={shownStatus === 'tracking'} hand={hand} />
+          <div className="tryon-top">
+            <button type="button" onClick={onBack} aria-label={t('tryon.back')}>
+              {t('tryon.backLabel')}
             </button>
-          ))}
-        </div>
-        <div className="chips" role="radiogroup" aria-label={t('tryon.finger')}>
-          {FINGERS.map((f) => (
-            <button key={f} type="button" role="radio" aria-checked={f === finger} className={f === finger ? 'chip on' : 'chip'} onClick={() => setFinger(f)}>
-              {t(`tryon.fingers.${f}`)}
+            <span className={`status ${shownStatus}`} data-testid="tracking-status" data-status={shownStatus}>
+              {shownStatus === 'searching' ? t('tryon.searching') : t('tryon.tracking')}
+            </span>
+            <button type="button" onClick={() => setFacing((f) => (f === 'user' ? 'environment' : 'user'))} aria-label={t('tryon.switchCamera')}>
+              {t('tryon.camera')}
             </button>
-          ))}
-        </div>
-        <div className="row">
-          <label className="fit">
-            {t('tryon.fit')}
-            <input type="range" min={0.7} max={1.3} step={0.01} value={fit} onChange={(e) => setFit(Number(e.target.value))} aria-label={t('tryon.fitAria')} />
-          </label>
-          <button type="button" onClick={() => setFlip((v) => !v)} aria-pressed={flip}>
-            {t('tryon.flip')}
+          </div>
+          <button
+            type="button"
+            className="report-open"
+            onClick={() =>
+              setReport(snapshotReport({ video, canvas: canvasRef.current, log, spec, readout: poseRef.current, language: i18n.resolvedLanguage ?? i18n.language, settings: { status: shownStatus, finger, hand, flip, fit, facing, mirrored } }))
+            }
+          >
+            {t('report.open')}
           </button>
-        </div>
-        <div className="row capture">
-          <button type="button" onClick={recorder.snapshot} disabled={!video}>
-            {t('tryon.photo')}
-          </button>
-          <button type="button" className={recorder.recording ? 'record on' : 'record'} onClick={recorder.recording ? recorder.stop : recorder.start} disabled={!video || !recorder.supported}>
-            {recorder.recording ? t('tryon.stop', { seconds: recorder.seconds }) : t('tryon.record')}
-          </button>
-        </div>
-      </div>
+          <div className="tryon-bottom">
+            <div className="chips" role="radiogroup" aria-label={t('tryon.hand')}>
+              {HANDS.map((h) => (
+                <button key={h} type="button" role="radio" aria-checked={h === hand} className={h === hand ? 'chip on' : 'chip'} onClick={() => setHand(h)}>
+                  {t(`tryon.hands.${h}`)}
+                </button>
+              ))}
+            </div>
+            <div className="chips" role="radiogroup" aria-label={t('tryon.finger')}>
+              {FINGERS.map((f) => (
+                <button key={f} type="button" role="radio" aria-checked={f === finger} className={f === finger ? 'chip on' : 'chip'} onClick={() => setFinger(f)}>
+                  {t(`tryon.fingers.${f}`)}
+                </button>
+              ))}
+            </div>
+            <div className="row">
+              <label className="fit">
+                {t('tryon.fit')}
+                <input type="range" min={0.7} max={1.3} step={0.01} value={fit} onChange={(e) => setFit(Number(e.target.value))} aria-label={t('tryon.fitAria')} />
+              </label>
+              <button type="button" onClick={() => setFlip((v) => !v)} aria-pressed={flip}>
+                {t('tryon.flip')}
+              </button>
+            </div>
+            <div className="row capture">
+              <button type="button" onClick={recorder.snapshot} disabled={!video}>
+                {t('tryon.photo')}
+              </button>
+              <button type="button" className={recorder.recording ? 'record on' : 'record'} onClick={recorder.recording ? recorder.stop : recorder.start} disabled={!video || !recorder.supported}>
+                {recorder.recording ? t('tryon.stop', { seconds: recorder.seconds }) : t('tryon.record')}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
 
       {report && <ReportSheet draft={report} onClose={() => setReport(null)} />}
 

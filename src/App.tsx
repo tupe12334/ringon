@@ -6,6 +6,7 @@ import { DEFAULT_SPEC } from './ring/spec'
 import { BUILTIN_TEMPLATES } from './templates/builtin'
 import { isTryOnHash, specFromHash, specHash } from './templates/share'
 import { useStore } from './templates/store'
+import { TryOnLoading } from './tryon/TryOnLoading'
 
 // The camera view pulls in MediaPipe; load it only when the user opens it.
 const TryOn = lazy(() => import('./tryon/TryOn').then((m) => ({ default: m.TryOn })))
@@ -57,17 +58,23 @@ export default function App() {
     return () => removeEventListener('popstate', onPop)
   }, [])
 
-  if (view === 'tryon')
+  if (view === 'tryon') {
+    const back = () => {
+      if (pushed.current) return history.back()
+      setView('design')
+    }
     return (
-      <Suspense fallback={<div className="tryon loading">{t('app.loadingTryOn')}</div>}>
-        <TryOn
-          onBack={() => {
-            if (pushed.current) return history.back()
-            setView('design')
-          }}
-        />
+      <Suspense
+        fallback={
+          <div className="tryon">
+            <TryOnLoading text={t('app.loadingTryOn')} onBack={back} />
+          </div>
+        }
+      >
+        <TryOn onBack={back} />
       </Suspense>
     )
+  }
   return (
     <Customizer
       onTryOn={() => {

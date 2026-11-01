@@ -367,7 +367,20 @@ export const en = {
   tryon: {
     back: 'Back to designer',
     backLabel: '← Design',
-    loading: 'Starting camera…',
+    backToDesigner: '← Back to designer',
+    phase: {
+      camera: 'Opening the camera…',
+      cameraHint: 'Allow camera access if your browser asks.',
+      tracker: 'Loading hand tracking…',
+      starting: 'Getting the ring ready…',
+    },
+    coach: {
+      auto: 'Hold up your hand, back of the hand to the camera',
+      Left: 'Hold up your left hand, back of the hand to the camera',
+      Right: 'Hold up your right hand, back of the hand to the camera',
+    },
+    errorTitle: 'The try-on could not start',
+    retry: 'Try again',
     searching: 'Show your hand, back facing the camera',
     tracking: 'Tracking',
     error: 'Camera unavailable: {{error}}',
