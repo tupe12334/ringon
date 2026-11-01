@@ -1,4 +1,6 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Locator, type Page } from '@playwright/test'
+import { readFileSync } from 'node:fs'
+import { usePhotoCamera } from './photo-camera'
 
 // Live tracking + rendering on CI's CPU-only WebGL runs ~2x slower than locally.
 test.describe.configure({ timeout: 180_000 })
@@ -94,4 +96,88 @@ test('the chosen hand decides the palm side', async ({ page }) => {
   await expect.poll(stoneZ, { timeout: 10_000 }).toBeLessThan(-0.3)
   await page.getByRole('radio', { name: 'Auto' }).click()
   await expect.poll(stoneZ, { timeout: 10_000 }).toBeGreaterThan(0.3)
+})
+
+/** The element covers the whole viewport. */
+async function coversViewport(page: Page, el: Locator) {
+  const box = await el.boundingBox()
+  const { width, height } = page.viewportSize()!
+  expect(box).toEqual({ x: 0, y: 0, width, height })
+}
+
+test.describe('start-up', () => {
+  // The service worker would answer the model request from its cache, out of page.route's reach.
+  test.use({ serviceWorkers: 'block' })
+
+  test('an opaque full-screen loading screen hides the camera until the try-on is ready', async ({ page }) => {
+    // Hold the hand model back, so the loading screen stays up long enough to look at.
+    let release = () => {}
+    const held = new Promise<void>((r) => (release = r))
+    await page.route('**/models/hand_landmarker.task', async (route) => {
+      await held
+      await route.continue()
+    })
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Try on my hand' }).click()
+    const screen = page.getByTestId('tracking-status')
+    await expect(screen).toHaveAttribute('data-status', 'loading')
+    // The camera opens first; then the screen says what it is still waiting for.
+    await expect(page.getByRole('status')).toHaveText('Loading hand tracking…', { timeout: 30_000 })
+    await coversViewport(page, screen)
+    await expect(screen).toHaveCSS('background-color', 'rgb(0, 0, 0)')
+    await expect(page.getByRole('button', { name: 'Back to designer' })).toBeVisible()
+    // No try-on controls over a ring-less camera.
+    await expect(page.getByRole('button', { name: 'Photo' })).toHaveCount(0)
+
+    release()
+    await expect(screen).toHaveAttribute('data-status', /searching|tracking/, { timeout: 60_000 })
+    await expect(page.locator('.tryon-screen')).toHaveCount(0)
+    await expect(page.getByRole('button', { name: 'Photo' })).toBeVisible()
+  })
+})
+
+test('coaches the user while no hand is in view, and steps aside for the ring', async ({ page }) => {
+  await usePhotoCamera(page) // starts on an empty frame: no hand
+  await page.goto('/#try')
+  const status = page.getByTestId('tracking-status')
+  await expect(status).toHaveAttribute('data-status', 'searching', { timeout: 60_000 })
+  const coaching = page.getByTestId('coaching')
+  await expect(coaching).toHaveText('Hold up your hand, back of the hand to the camera')
+  await coversViewport(page, coaching)
+  await page.getByRole('radio', { name: 'Right hand' }).click()
+  await expect(coaching).toHaveText('Hold up your right hand, back of the hand to the camera')
+
+  const hand = `data:image/png;base64,${readFileSync(new URL('./fixtures/back-of-right-hand.png', import.meta.url)).toString('base64')}`
+  await page.evaluate((src) => window.showPhoto(src), hand)
+  await expect(status).toHaveAttribute('data-status', 'tracking', { timeout: 60_000 })
+  await expect(coaching).toBeHidden()
+
+  // The hand goes: the coaching comes back once it has been gone a moment.
+  await page.evaluate(() => window.showPhoto(null))
+  await expect(coaching).toBeVisible({ timeout: 30_000 })
+})
+
+test('a refused camera shows a full-screen error with retry and back', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.assign(window, { cameraAsks: 0 })
+    navigator.mediaDevices.getUserMedia = async () => {
+      Object.assign(window, { cameraAsks: (window as unknown as { cameraAsks: number }).cameraAsks + 1 })
+      throw new DOMException('Permission denied', 'NotAllowedError')
+    }
+  })
+  const asks = () => page.evaluate(() => (window as unknown as { cameraAsks: number }).cameraAsks)
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Try on my hand' }).click()
+  const screen = page.getByTestId('tracking-status')
+  await expect(screen).toHaveAttribute('data-status', 'error', { timeout: 30_000 })
+  await expect(page.getByRole('alert')).toContainText('Camera unavailable: Permission denied')
+  await coversViewport(page, screen)
+
+  const before = await asks()
+  await page.getByRole('button', { name: 'Try again' }).click()
+  await expect.poll(asks).toBe(before + 1)
+  await expect(screen).toHaveAttribute('data-status', 'error')
+
+  await page.getByRole('button', { name: 'Back to designer' }).click()
+  await expect(page.getByRole('button', { name: 'Try on my hand' })).toBeVisible()
 })

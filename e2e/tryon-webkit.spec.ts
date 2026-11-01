@@ -8,6 +8,8 @@ test('try-on starts the camera, loads hand tracking, records MP4 and takes a pho
   await page.getByRole('button', { name: /Try on/ }).click()
   // "searching" means the camera plays and MediaPipe's model and WASM have loaded.
   await expect(page.getByTestId('tracking-status')).toHaveAttribute('data-status', 'searching', { timeout: 60_000 })
+  // No hand in WebKit's test pattern: the user is told what to do, not left with plain video.
+  await expect(page.getByTestId('coaching')).toBeVisible()
 
   await page.getByRole('button', { name: /Record video/ }).click()
   await page.waitForTimeout(2000)

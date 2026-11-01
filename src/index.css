@@ -114,11 +114,33 @@ input[type='color'] { width: 56px; height: 36px; border: none; background: none;
 .icon { width: 40px; padding: 0; }
 
 /* Try-on */
-.tryon { position: fixed; inset: 0; background: #000; color: #fff; }
-.tryon.loading { display: grid; place-items: center; }
+/* The whole screen, under the iPhone notch and home bar too (controls pad themselves by the safe area). */
+.tryon { position: fixed; inset: 0; width: 100vw; height: 100dvh; overflow: hidden; background: #000; color: #fff; }
+/* Opaque start-up and error screens: the camera never shows on its own. */
+.tryon-screen {
+  position: absolute; inset: 0; z-index: 2; display: grid; place-content: center; justify-items: center; gap: 1.25rem;
+  padding: calc(env(safe-area-inset-top) + 1.5rem) calc(env(safe-area-inset-right) + 1.5rem) calc(env(safe-area-inset-bottom) + 1.5rem) calc(env(safe-area-inset-left) + 1.5rem);
+  background: #000; text-align: center;
+}
+.tryon-screen p { margin: 0; max-width: 22rem; line-height: 1.4; }
+.tryon-screen-title { font-size: 1.15rem; font-weight: 600; }
+.tryon-screen .tryon-screen-hint { margin-top: 0.4rem; color: rgb(255 255 255 / 0.7); font-size: 0.9rem; }
+.spinner { width: 44px; height: 44px; border-radius: 50%; border: 3px solid rgb(255 255 255 / 0.2); border-top-color: #fff; animation: spin 0.9s linear infinite; }
+@keyframes spin { to { transform: rotate(1turn); } }
+@media (prefers-reduced-motion: reduce) {
+  .spinner { animation: pulse 2s ease-in-out infinite alternate; border-top-color: rgb(255 255 255 / 0.2); }
+  @keyframes pulse { from { opacity: 0.4; } to { opacity: 1; } }
+}
+/* "Hold up your hand", over the video while no hand is tracked; taps go through to the controls. */
+.coaching {
+  position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 0.75rem; padding: 1.5rem;
+  background: rgb(0 0 0 / 0.45); pointer-events: none; text-align: center;
+}
+.coaching svg { width: 96px; height: 96px; opacity: 0.9; }
+.coaching p { margin: 0; max-width: 20rem; font-size: 1.1rem; font-weight: 600; line-height: 1.4; text-shadow: 0 1px 4px rgb(0 0 0 / 0.6); }
 .tryon canvas { position: absolute; inset: 0; }
 .tryon button { background: rgb(0 0 0 / 0.45); color: #fff; border-color: rgb(255 255 255 / 0.3); backdrop-filter: blur(8px); }
-.tryon .chip.on { background: #fff; color: #000; }
+.tryon .chip.on, .tryon button.primary { background: #fff; color: #000; }
 .tryon-top {
   position: absolute; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;
   padding: calc(env(safe-area-inset-top) + 0.6rem) 0.75rem 0.6rem;
