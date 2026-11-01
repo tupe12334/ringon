@@ -1,6 +1,7 @@
 // Hebrew UI text. Keys mirror en.ts; Hebrew adds a "two" plural form.
 
 import type { Translation } from './en'
+import { imagegenHe } from './imagegen'
 
 export const he: Translation & { templates: { imported_two: string } } = {
   app: {
@@ -20,6 +21,7 @@ export const he: Translation & { templates: { imported_two: string } } = {
     sides: 'אבני צד',
     accents: 'אבנים בחישוק',
     engrave: 'חריטה',
+    image: 'צילום AI',
   },
   mm: '{{v}} מ״מ',
   summary: {
@@ -363,6 +365,7 @@ export const he: Translation & { templates: { imported_two: string } } = {
     lockRotation: '🔒 נעילת סיבוב',
     lockTitle: 'הטבעת לא תסתובב כשגוררים אותה',
   },
+  imagegen: imagegenHe,
   tryon: {
     back: 'חזרה לעיצוב',
     backLabel: '→ עיצוב',

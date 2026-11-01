@@ -1,4 +1,5 @@
 // English UI text. The shape of this object is the shape every other language must match.
+import { imagegenEn } from './imagegen'
 
 export const en = {
   app: {
@@ -19,6 +20,7 @@ export const en = {
     sides: 'Side stones',
     accents: 'Band stones',
     engrave: 'Engrave',
+    image: 'AI photo',
   },
   mm: '{{v}} mm',
   summary: {
@@ -363,6 +365,7 @@ export const en = {
     lockRotation: '🔒 Lock rotation',
     lockTitle: 'Stop the ring turning when you drag it',
   },
+  imagegen: imagegenEn,
   tryon: {
     back: 'Back to designer',
     backLabel: '← Design',
