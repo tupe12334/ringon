@@ -54,7 +54,12 @@ served from this app (no third-party requests).
 
 Everything runs on your device. The camera feed, hand tracking, photos and clips never leave the
 browser unless you share them; designs and saved templates stay in this browser's storage. No
-accounts, analytics or cookies. A share link carries the design itself in the part after `#`,
+accounts or cookies. Each page load on the live site pings [hits.sh](https://hits.sh) once to count
+visits, and a browser's first visit pings a second counter to count users (a flag in this
+browser's storage remembers it was counted; no id is sent). hits.sh sees your IP address and
+nothing else. Counts are public:
+[visits](https://hits.sh/tupe12334.github.io/ringon),
+[users](https://hits.sh/tupe12334.github.io/ringon-users). A share link carries the design itself in the part after `#`,
 which browsers never send to a server. "Report a problem" in the try-on makes a file on your device
 (a photo of your hand, the hand tracking data, the ring design and device details); it leaves the
 device only if you send it, by download, the share sheet or a GitHub issue you attach it to.

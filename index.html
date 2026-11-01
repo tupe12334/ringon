@@ -27,5 +27,19 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <!-- Anonymous counters (no cookies, no signup), live site only so dev and tests do not count.
+         ringon = page loads; ringon-users = first visit per browser (a localStorage flag, no id). -->
+    <script>
+      if (location.hostname === 'tupe12334.github.io') {
+        const hit = (name) => (new Image().src = `https://hits.sh/tupe12334.github.io/${name}.svg`)
+        hit('ringon')
+        try {
+          if (!localStorage.getItem('ringon-counted')) {
+            localStorage.setItem('ringon-counted', '1')
+            hit('ringon-users')
+          }
+        } catch {}
+      }
+    </script>
   </body>
 </html>
