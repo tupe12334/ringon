@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: write
+  actions: write # keepalive below
 
 concurrency:
   group: usage-stats
@@ -44,3 +45,12 @@ jobs:
           git add stats.csv
           git commit -qm "Usage stats $(date -u +%F)"
           git push -q origin stats
+      - name: Keep the usage crons enabled
+        # GitHub disables scheduled workflows in public repos after 60 days without
+        # repository activity; re-enabling from a running job resets that clock.
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh workflow enable usage-stats.yml
+          gh workflow enable usage-report.yml
