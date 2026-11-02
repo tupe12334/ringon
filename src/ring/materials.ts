@@ -6,10 +6,11 @@ import { isWood, type BandMaterial, type CrushedStone, type Finish, type Gem, ty
 
 /**
  * Material for any band surface: metal, wood, or crushed stone in resin. `widthMm` is the band
- * width its UVs span across (v 0..1); with it, metal gets its finish's real surface maps. Without
- * it (the head, whose UVs follow each prong) metal stays a smooth surface of the same roughness.
+ * width its UVs span across (v 0..1) and `circumferenceMm` the length round it (u 0..1). With a
+ * width, metal gets its finish's real surface maps. Without one (the head, whose UVs follow each
+ * prong) metal stays a smooth surface of the same roughness.
  */
-export function metalMaterial(material: InlayMaterial, finish: Finish, widthMm?: number) {
+export function metalMaterial(material: InlayMaterial, finish: Finish, widthMm?: number, circumferenceMm = DEFAULT_CIRCUMFERENCE_MM) {
   if (material in CRUSHED_INFO) return crushedMaterial(material as CrushedStone)
   const metal = material as BandMaterial
   const info = METAL_INFO[metal]
@@ -24,12 +25,18 @@ export function metalMaterial(material: InlayMaterial, finish: Finish, widthMm?:
     anisotropy: brushed ? 0.7 : 0,
     envMapIntensity: 1.2,
   })
-  if (widthMm !== undefined) withFinishMaps(m, finish, roughness, widthMm)
+  if (widthMm !== undefined) withFinishMaps(m, finish, roughness, widthMm, circumferenceMm)
   return m
 }
 
-/** Band circumference the maps are scaled for, mm (about a US 7 band, 6 mm wide). */
-const CIRCUMFERENCE_MM = 55
+/** Band circumference when none is given, mm (about a US 7 band). */
+const DEFAULT_CIRCUMFERENCE_MM = 55
+
+/** How many times a finish's tile goes round and across a band: whole tiles round, so u = 0/1 meets. */
+export const finishMapRepeat = (finish: Finish, widthMm: number, circumferenceMm: number): [number, number] => {
+  const { tileMm } = FINISH_MAPS[finish]
+  return [Math.max(1, Math.round(circumferenceMm / tileMm[0])), widthMm / tileMm[1]]
+}
 
 /**
  * Real surface detail per finish (see public/textures/metal/ATTRIBUTION.md): a normal and a
@@ -79,13 +86,12 @@ function loadFinishMaps(finish: Finish) {
 }
 
 /** Adds the finish's maps now if loaded, else when they arrive; until then the smooth look shows. */
-function withFinishMaps(m: THREE.MeshPhysicalMaterial, finish: Finish, roughness: number, widthMm: number) {
-  const { file, tileMm, normal } = FINISH_MAPS[finish]
+function withFinishMaps(m: THREE.MeshPhysicalMaterial, finish: Finish, roughness: number, widthMm: number, circumferenceMm: number) {
+  const { file, normal } = FINISH_MAPS[finish]
   let disposed = false
   const apply = ([normalMap, roughnessMap]: THREE.Texture[]) => {
     if (disposed) return
-    // Whole tiles round the band so the seam at u = 0/1 matches.
-    const repeat = new THREE.Vector2(Math.max(1, Math.round(CIRCUMFERENCE_MM / tileMm[0])), widthMm / tileMm[1])
+    const repeat = new THREE.Vector2(...finishMapRepeat(finish, widthMm, circumferenceMm))
     m.normalMap = normalMap.clone()
     m.roughnessMap = roughnessMap.clone()
     m.normalMap.repeat.copy(repeat)

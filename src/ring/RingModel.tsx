@@ -148,13 +148,15 @@ function Engraving({ text, font, radius, width, metal }: { text: string; font: E
 export function RingModel({ spec, mode = 'raster' }: { spec: RingSpec; mode?: RenderMode }) {
   const parts = useMemo(() => buildRing(spec), [spec])
   const { inlay, inlay2, liner, widthMm } = spec.band
-  const bandMat = useMemo(() => metalMaterial(spec.band.metal, spec.band.finish, widthMm), [spec.band.metal, spec.band.finish, widthMm])
+  // The outer surface is what shows; its circumference sizes the finish maps.
+  const circ = Math.PI * (spec.innerDiameterMm + 2 * spec.band.thicknessMm)
+  const bandMat = useMemo(() => metalMaterial(spec.band.metal, spec.band.finish, widthMm, circ), [spec.band.metal, spec.band.finish, widthMm, circ])
   const headMetal = headMetalOf(spec.band)
   const headFinish = spec.band.finish === 'hammered' ? 'polished' : spec.band.finish
   const headMat = useMemo(() => metalMaterial(headMetal, headFinish), [headMetal, headFinish])
-  const inlayMat = useMemo(() => (inlay === 'none' ? null : metalMaterial(inlay, 'polished', widthMm)), [inlay, widthMm])
-  const inlay2Mat = useMemo(() => (inlay2 === 'none' ? null : metalMaterial(inlay2, 'polished', widthMm)), [inlay2, widthMm])
-  const linerMat = useMemo(() => (liner === 'none' ? null : metalMaterial(liner, 'polished', widthMm)), [liner, widthMm])
+  const inlayMat = useMemo(() => (inlay === 'none' ? null : metalMaterial(inlay, 'polished', widthMm, circ)), [inlay, widthMm, circ])
+  const inlay2Mat = useMemo(() => (inlay2 === 'none' ? null : metalMaterial(inlay2, 'polished', widthMm, circ)), [inlay2, widthMm, circ])
+  const linerMat = useMemo(() => (liner === 'none' ? null : metalMaterial(liner, 'polished', widthMm, circ)), [liner, widthMm, circ])
 
   useEffect(
     () => () => {
