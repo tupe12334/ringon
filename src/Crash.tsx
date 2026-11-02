@@ -26,7 +26,7 @@ export class Crash extends Component<{ children: ReactNode }, { error?: unknown 
     const message = stale
       ? 'Ringon was updated. Reload to get the new version.'
       : !hasWebGL()
-        ? 'This browser cannot draw 3D (WebGL 2 is off or unsupported). Try an up-to-date Chrome, Safari or Firefox.'
+        ? 'This browser cannot draw 3D (WebGL 2 is off or unsupported). Restart your browser; it may have turned off graphics after a crash. Or try an up-to-date Chrome, Safari or Firefox.'
         : 'Something went wrong.'
     return (
       <div className="crash" role="alert">
