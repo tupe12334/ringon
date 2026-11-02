@@ -199,10 +199,6 @@ test('a ?lng=he link opens in Hebrew', async ({ page }) => {
 })
 
 test.describe('without the service worker', () => {
-  // The PWA's service worker precaches every chunk and answers from its cache, which
-  // page.route never sees: the 404 below would only work until it takes control.
-  test.use({ serviceWorkers: 'block' })
-
   test('a try-on chunk gone after a redeploy asks to reload instead of a blank page', async ({ page }) => {
     await page.route(/\/assets\/TryOn-[^/]*\.js$/, (route) => route.fulfill({ status: 404 }))
     await page.getByRole('button', { name: 'Try on my hand' }).click()

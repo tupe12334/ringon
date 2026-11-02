@@ -35,6 +35,9 @@ export default defineConfig({
     // feed in headless Chromium: no tracing, and screenshots only at the end.
     trace: 'off',
     screenshot: 'only-on-failure',
+    // Once the PWA's service worker controls a page, its fetches bypass page.route: mocks miss
+    // and requests reach real services. Only pwa.spec.ts, which tests the worker, allows it.
+    serviceWorkers: 'block',
   },
   projects: [
     { name: 'phone', testIgnore: /real-hand|still-hand|photos|photoreal|tryon-webkit/, use: phone(BACK_OF_HAND_FEED) },

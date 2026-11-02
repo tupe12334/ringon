@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test'
 
+test.use({ serviceWorkers: 'allow' })
+
 test('is installable and works offline', async ({ page, context }) => {
   await page.goto('/')
 
