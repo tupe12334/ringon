@@ -106,9 +106,6 @@ async function coversViewport(page: Page, el: Locator) {
 }
 
 test.describe('start-up', () => {
-  // The service worker would answer the model request from its cache, out of page.route's reach.
-  test.use({ serviceWorkers: 'block' })
-
   test('an opaque full-screen loading screen hides the camera until the try-on is ready', async ({ page }) => {
     // Hold the hand model back, so the loading screen stays up long enough to look at.
     let release = () => {}

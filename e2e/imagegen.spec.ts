@@ -10,10 +10,6 @@ const RESULT = readFileSync(HAND).toString('base64')
 const GEMINI = 'https://generativelanguage.googleapis.com/v1beta/models/**'
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*', 'Access-Control-Allow-Methods': 'POST' }
 
-// Once the service worker controls the page, page.route no longer sees its fetches and the
-// request reaches the real service. Block it so the mock always answers.
-test.use({ serviceWorkers: 'block' })
-
 test.beforeEach(async ({ page }) => {
   await page.goto('/')
   await page.evaluate(() => localStorage.clear())
