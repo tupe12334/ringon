@@ -111,3 +111,5 @@ MIT. The bundled hand landmark model (`public/models/hand_landmarker.task`) and 
 image are from Google MediaPipe, Apache-2.0. Test photos: see
 [`e2e/fixtures/photos/ATTRIBUTION.md`](e2e/fixtures/photos/ATTRIBUTION.md). Wood textures (CC0 and
 CC BY-SA photos): see [`public/textures/wood/ATTRIBUTION.md`](public/textures/wood/ATTRIBUTION.md).
+Metal finish maps (CC0 and public-domain photos): see
+[`public/textures/metal/ATTRIBUTION.md`](public/textures/metal/ATTRIBUTION.md).

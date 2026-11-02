@@ -2,22 +2,106 @@
 
 import * as THREE from 'three'
 import { CRUSHED_INFO, FINISH_INFO, GEM_INFO, METAL_INFO, gemColor } from './catalog'
-import { isWood, type BandMaterial, type CrushedStone, type Gem, type InlayMaterial, type RingSpec, type Wood } from './spec'
+import { isWood, type BandMaterial, type CrushedStone, type Finish, type Gem, type InlayMaterial, type Wood } from './spec'
 
-/** Material for any band surface: metal, wood, or crushed stone in resin. */
-export function metalMaterial(material: InlayMaterial, finish: RingSpec['band']['finish']) {
+/**
+ * Material for any band surface: metal, wood, or crushed stone in resin. `widthMm` is the band
+ * width its UVs span across (v 0..1); with it, metal gets its finish's real surface maps. Without
+ * it (the head, whose UVs follow each prong) metal stays a smooth surface of the same roughness.
+ */
+export function metalMaterial(material: InlayMaterial, finish: Finish, widthMm?: number) {
   if (material in CRUSHED_INFO) return crushedMaterial(material as CrushedStone)
   const metal = material as BandMaterial
   const info = METAL_INFO[metal]
   if (isWood(metal)) return woodMaterial(metal, info.color, info.grain!, info.roughness + FINISH_INFO[finish].roughnessAdd, finish === 'polished')
   const brushed = finish === 'brushed' || finish === 'satin'
-  return new THREE.MeshPhysicalMaterial({
+  const roughness = Math.min(1, info.roughness + FINISH_INFO[finish].roughnessAdd)
+  // The catalog colour stays the base colour: the maps only shape the surface, never tint it.
+  const m = new THREE.MeshPhysicalMaterial({
     color: info.color,
     metalness: 1,
-    roughness: Math.min(1, info.roughness + FINISH_INFO[finish].roughnessAdd),
+    roughness,
     anisotropy: brushed ? 0.7 : 0,
     envMapIntensity: 1.2,
   })
+  if (widthMm !== undefined) withFinishMaps(m, finish, roughness, widthMm)
+  return m
+}
+
+/** Band circumference the maps are scaled for, mm (about a US 7 band, 6 mm wide). */
+const CIRCUMFERENCE_MM = 55
+
+/**
+ * Real surface detail per finish (see public/textures/metal/ATTRIBUTION.md): a normal and a
+ * roughness map made from photos of real metal, brushed lines running round the band (along u).
+ * `tileMm` is the size one tile covers on the metal; `normal` how strongly it bends the light.
+ */
+export const FINISH_MAPS: Record<Finish, { file: string; tileMm: [number, number]; normal: number }> = {
+  // Faint hairline scratches every polished piece has.
+  polished: { file: 'polished', tileMm: [9, 9], normal: 0.04 },
+  // Satin is a finer, softer brush: the brushed photo at half the size.
+  satin: { file: 'brushed', tileMm: [13.75, 3.5], normal: 0.12 },
+  brushed: { file: 'brushed', tileMm: [27.5, 7], normal: 0.2 },
+  // The dents are in the geometry (band.ts); between them a hammered ring is polished metal.
+  hammered: { file: 'polished', tileMm: [9, 9], normal: 0.04 },
+  matte: { file: 'matte', tileMm: [5, 5], normal: 0.12 },
+  sandblasted: { file: 'sandblasted', tileMm: [4, 4], normal: 0.2 },
+}
+/** The roughness maps average this value; material roughness is divided by it. */
+const ROUGHNESS_MAP_MEAN = 0.75
+
+export const finishMapUrls = (finish: Finish) =>
+  (['normal', 'roughness'] as const).map((kind) => `${import.meta.env.BASE_URL}textures/metal/${FINISH_MAPS[finish].file}-${kind}.webp`)
+
+// Shared by every material with that finish, so never disposed with a material (each material
+// uses clones, which share the uploaded image).
+const finishMaps = new Map<string, Promise<THREE.Texture[]>>()
+const loadedFinishMaps = new Map<string, THREE.Texture[]>()
+
+function loadFinishMaps(finish: Finish) {
+  const { file } = FINISH_MAPS[finish]
+  let maps = finishMaps.get(file)
+  if (!maps) {
+    const loader = new THREE.TextureLoader()
+    maps = Promise.all(finishMapUrls(finish).map((url) => loader.loadAsync(url))).then((textures) => {
+      for (const t of textures) {
+        t.wrapS = t.wrapT = THREE.RepeatWrapping
+        t.anisotropy = 8
+      }
+      loadedFinishMaps.set(file, textures)
+      return textures
+    })
+    // Offline before it was cached: forget the failure so a later design can try again.
+    maps.catch(() => finishMaps.delete(file))
+    finishMaps.set(file, maps)
+  }
+  return maps
+}
+
+/** Adds the finish's maps now if loaded, else when they arrive; until then the smooth look shows. */
+function withFinishMaps(m: THREE.MeshPhysicalMaterial, finish: Finish, roughness: number, widthMm: number) {
+  const { file, tileMm, normal } = FINISH_MAPS[finish]
+  let disposed = false
+  const apply = ([normalMap, roughnessMap]: THREE.Texture[]) => {
+    if (disposed) return
+    // Whole tiles round the band so the seam at u = 0/1 matches.
+    const repeat = new THREE.Vector2(Math.max(1, Math.round(CIRCUMFERENCE_MM / tileMm[0])), widthMm / tileMm[1])
+    m.normalMap = normalMap.clone()
+    m.roughnessMap = roughnessMap.clone()
+    m.normalMap.repeat.copy(repeat)
+    m.roughnessMap.repeat.copy(repeat)
+    m.normalScale.setScalar(normal)
+    m.roughness = Math.min(1, roughness / ROUGHNESS_MAP_MEAN)
+    m.needsUpdate = true
+  }
+  m.addEventListener('dispose', () => {
+    disposed = true
+    m.normalMap?.dispose()
+    m.roughnessMap?.dispose()
+  })
+  const loaded = loadedFinishMaps.get(file)
+  if (loaded) apply(loaded)
+  else loadFinishMaps(finish).then(apply, () => {})
 }
 
 /** Photo of each wood's face grain, grain along u (see public/textures/wood/ATTRIBUTION.md). */
