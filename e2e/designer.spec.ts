@@ -289,3 +289,20 @@ test('the 3D view survives the GPU refusing its first WebGL context', async ({ p
   await expect(page.getByTestId('render')).toHaveAttribute('data-mode', /raster|pathtrace/, { timeout: 30_000 })
   await expect(page.getByRole('alert')).toHaveCount(0)
 })
+
+test('metal finishes load their surface maps', async ({ page }) => {
+  // A wrong path only falls back to smooth metal, so check the requests themselves.
+  const mapsOk = (file: string) =>
+    Promise.all(
+      ['normal', 'roughness'].map((kind) =>
+        page.waitForResponse((r) => r.url().endsWith(`/textures/metal/${file}-${kind}.webp`) && r.ok()),
+      ),
+    )
+  const brushed = mapsOk('brushed')
+  await page.getByRole('tab', { name: 'Metal' }).click()
+  await pick(page, 'Finish', 'Brushed')
+  await brushed
+  const sandblasted = mapsOk('sandblasted')
+  await pick(page, 'Finish', 'Sandblasted')
+  await sandblasted
+})
