@@ -3,9 +3,9 @@
 Design a ring, then see it live on your hand through your phone camera. Free and open source,
 runs in the browser, installable as an app (PWA), works offline once loaded.
 
-**Open it:** https://tupe12334.github.io/ringon/ (on your phone; the camera needs HTTPS)
+**Open it:** https://ringon.app (on your phone; the camera needs HTTPS)
 
-[![Ringon: design a ring, see it live on your hand](public/og.png)](https://tupe12334.github.io/ringon/)
+[![Ringon: design a ring, see it live on your hand](public/og.png)](https://ringon.app)
 
 ## What you can do
 

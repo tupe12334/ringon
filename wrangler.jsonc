@@ -10,6 +10,8 @@
     "directory": "./dist",
     "not_found_handling": "single-page-application"
   },
+  // Each PR gets a preview URL (Workers Builds runs `npx wrangler preview`, which needs this block).
+  "previews": {},
   // custom_domain creates the DNS record and certificate for ringon.app.
   "routes": [{ "pattern": "ringon.app", "custom_domain": true }]
 }

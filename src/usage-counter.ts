@@ -4,7 +4,10 @@
 // 2026-11-01: a 15:25 UTC hit landed in the 2026-11-02 bucket), so the daily rule uses it too. Counts are read at
 // https://hits.sh/api/urns/<host>/<counter>, which does not add a hit.
 
-export const LIVE_HOST = 'tupe12334.github.io'
+// Hosts that count: the site at ringon.app and the old GitHub Pages copy (installed apps still use it).
+export const LIVE_HOSTS = ['ringon.app', 'tupe12334.github.io']
+// hits.sh key prefix; kept on the old host name so the counts continue from 2026-11-01.
+export const COUNTER_HOST = 'tupe12334.github.io'
 
 export type Store = Pick<Storage, 'getItem' | 'setItem'>
 
@@ -13,13 +16,13 @@ const hitsDay = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' })
 
 /**
  * Picks the counters to ping for this page load and records what it counted.
- * @param host page hostname; only the live host counts
+ * @param host page hostname; only the live hosts count
  * @param store browser storage, or undefined when it is blocked
  * @param now current time (its hits.sh day decides the daily count)
  * @returns counter names to ping
  */
 export function countersToPing(host: string, store: Store | undefined, now: Date): string[] {
-  if (host !== LIVE_HOST) return [] // dev and tests never count
+  if (!LIVE_HOSTS.includes(host)) return [] // dev and tests never count
   const names = ['ringon']
   if (!store) return names
   if (!store.getItem('ringon-counted')) {
@@ -44,5 +47,5 @@ export function countUsage(): void {
     store = undefined
   }
   for (const name of countersToPing(location.hostname, store, new Date()))
-    new Image().src = `https://hits.sh/${LIVE_HOST}/${name}.svg`
+    new Image().src = `https://hits.sh/${COUNTER_HOST}/${name}.svg`
 }

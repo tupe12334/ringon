@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { countersToPing, LIVE_HOST, type Store } from './usage-counter'
+import { countersToPing, LIVE_HOSTS, type Store } from './usage-counter'
 
 const memory = (): Store => {
   const m = new Map<string, string>()
@@ -11,6 +11,8 @@ const memory = (): Store => {
 // hits.sh days run in Korea time (UTC+9): its day changes at 15:00 UTC.
 const day1 = new Date('2026-11-01T14:59:00Z')
 const day2 = new Date('2026-11-01T15:01:00Z')
+
+const LIVE_HOST = 'ringon.app'
 
 describe('usage counters', () => {
   it('counts a visit, a user and a daily user on the first load', () => {
@@ -31,6 +33,11 @@ describe('usage counters', () => {
 
   it('counts only visits when storage is blocked', () => {
     expect(countersToPing(LIVE_HOST, undefined, day1)).toEqual(['ringon'])
+  })
+
+  it('counts on the old GitHub Pages host too', () => {
+    expect(LIVE_HOSTS).toContain('tupe12334.github.io')
+    expect(countersToPing('tupe12334.github.io', memory(), day1)).toEqual(['ringon', 'ringon-users', 'ringon-daily-users'])
   })
 
   it('never counts off the live site', () => {
