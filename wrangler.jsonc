@@ -1,5 +1,6 @@
 // Cloudflare Workers static assets: serves the built site (dist/) at https://ringon.app.
-// Deployed by the deploy-cloudflare job in .github/workflows/ci.yml.
+// Deployed by Cloudflare Workers Builds (GitHub integration) on each push to main:
+// build `pnpm build`, deploy `npx wrangler deploy`. No API token in GitHub.
 {
   "name": "ringon",
   // Cloudflare account "ringon" (owns the ringon.app zone).
