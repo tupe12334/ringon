@@ -91,3 +91,25 @@ jobs:
           path: dist
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  # https://ringon.app on Cloudflare (wrangler.jsonc). Same gate as the GitHub Pages deploy.
+  deploy-cloudflare:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [test, webkit]
+    runs-on: ubuntu-latest
+    environment:
+      name: cloudflare
+      url: https://ringon.app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build # served from the domain root: BASE_PATH defaults to /
+      # npx, not pnpm dlx: pnpm blocks wrangler's build scripts (ERR_PNPM_IGNORED_BUILDS).
+      - run: npx --yes wrangler@4 deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
