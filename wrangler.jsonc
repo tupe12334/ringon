@@ -1,0 +1,15 @@
+// Cloudflare Workers static assets: serves the built site (dist/) at https://ringon.app.
+// Deployed by Cloudflare Workers Builds (GitHub integration) on each push to main:
+// build `pnpm build`, deploy `npx wrangler deploy`. No API token in GitHub.
+{
+  "name": "ringon",
+  // Cloudflare account "ringon" (owns the ringon.app zone).
+  "account_id": "08ffdf94c65443be970d468c44157982",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  },
+  // custom_domain creates the DNS record and certificate for ringon.app.
+  "routes": [{ "pattern": "ringon.app", "custom_domain": true }]
+}
