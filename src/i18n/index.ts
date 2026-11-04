@@ -59,6 +59,7 @@ const LOCALES = {
   ur: () => import('./locales/ur'),
   vi: () => import('./locales/vi'),
   zh: () => import('./locales/zh'),
+  'zh-Hant': () => import('./locales/zh-Hant'),
 } as const satisfies Record<string, Loader>
 
 export type Language = 'en' | keyof typeof LOCALES
@@ -88,7 +89,18 @@ const backend: BackendModule = {
   },
 }
 
-// The page's lang and direction follow the language, so Arabic, Hebrew, Persian and Urdu lay out right to left.
+/**
+ * A browser or link code (de-AT, zh-TW, no) as one of our languages: the base language, except
+ * Traditional Chinese regions, which read zh-Hant, and Norwegian, which reads Bokmål.
+ */
+export const toUiLanguage = (code: string): string => {
+  const [base, ...rest] = code.toLowerCase().split(/[-_]/)
+  if (base === 'zh' && rest.some((p) => ['hant', 'tw', 'hk', 'mo'].includes(p))) return 'zh-Hant'
+  if (base === 'no' || base === 'nn') return 'nb'
+  return base
+}
+
+// The page's lang and direction follow the language, so right-to-left scripts (Arabic, Hebrew, …) lay out right to left.
 i18n.on('languageChanged', (lng) => {
   if (typeof document === 'undefined') return
   document.documentElement.lang = lng
@@ -103,11 +115,11 @@ i18n
     resources: { en: { translation: en } },
     partialBundledLanguages: true,
     supportedLngs: LANGUAGES,
-    nonExplicitSupportedLngs: true,
     fallbackLng: 'en',
-    load: 'languageOnly',
+    // zh-Hant is a language of its own here, so codes are not cut to their first part.
+    load: 'currentOnly',
     // `?lng=he` in a link opens Hebrew; the choice is then kept in localStorage.
-    detection: { order: ['querystring', 'localStorage', 'navigator'], caches: ['localStorage'] },
+    detection: { order: ['querystring', 'localStorage', 'navigator'], caches: ['localStorage'], convertDetectedLanguage: toUiLanguage },
     interpolation: { escapeValue: false },
   })
 

@@ -1,6 +1,7 @@
 // Small form controls built on native inputs.
 
 import { type CSSProperties, type ReactNode } from 'react'
+import { num } from '../i18n/number'
 
 export function Field({ label, children, hint, icon }: { label: string; children: ReactNode; hint?: string; icon?: ReactNode }) {
   return (
@@ -24,7 +25,7 @@ export function Slider({
   max,
   step,
   icon,
-  format = (v) => v.toFixed(1),
+  format = (v) => num(v, 1),
   onChange,
 }: {
   label: string

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { summary } from '../customizer/summary'
 import { DEFAULT_SPEC } from '../ring/spec'
 import { BUILTIN_TEMPLATES } from '../templates/builtin'
-import i18n, { LANGUAGES, loadTranslation } from '.'
+import i18n, { LANGUAGES, loadTranslation, toUiLanguage } from '.'
 import { en, isBuiltinName } from './en'
 
 const PLURAL = /_(zero|one|two|few|many|other)$/
@@ -66,5 +66,20 @@ describe('switching language', () => {
 
   it.each(['ar', 'fa', 'he', 'ur'] as const)('lays out %s right to left', (lng) => {
     expect(i18n.dir(lng)).toBe('rtl')
+  })
+})
+
+describe('browser language codes', () => {
+  it.each([
+    ['de-AT', 'de'],
+    ['pt_BR', 'pt'],
+    ['zh-CN', 'zh'],
+    ['zh-TW', 'zh-Hant'],
+    ['zh-Hant-HK', 'zh-Hant'],
+    ['no', 'nb'],
+    ['nn-NO', 'nb'],
+  ])('reads %s as %s', (code, lng) => {
+    expect(toUiLanguage(code)).toBe(lng)
+    expect(LANGUAGES).toContain(lng)
   })
 })
