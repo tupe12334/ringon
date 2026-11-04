@@ -6,6 +6,8 @@ export const en = {
     loadingTryOn: 'Loading try-on…',
     /** Label of the language picker; each option shows its language's own name. */
     language: 'Language',
+    /** Label of the picker's top group: the browser's languages and English. */
+    suggested: 'Suggestions',
   },
   theme: { change: 'Theme: {{name}}. Tap to change.', emerald: 'Emerald', noir: 'Noir', light: 'Light' },
   tabs: {

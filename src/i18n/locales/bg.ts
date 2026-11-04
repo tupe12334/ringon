@@ -7,6 +7,7 @@ const bg: Translation = {
     tryOn: 'Пробване на ръката ми',
     loadingTryOn: 'Зареждане на пробването…',
     language: 'Език',
+    suggested: 'Предложения',
   },
   theme: { change: 'Тема: {{name}}. Докоснете за смяна.', emerald: 'Изумруд', noir: 'Ноар', light: 'Светла' },
   tabs: {

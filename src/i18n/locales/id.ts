@@ -7,6 +7,7 @@ const id: Translation = {
     tryOn: 'Coba di tangan saya',
     loadingTryOn: 'Memuat percobaan…',
     language: 'Bahasa',
+    suggested: 'Saran',
   },
   theme: { change: 'Tema: {{name}}. Ketuk untuk mengganti.', emerald: 'Zamrud', noir: 'Hitam', light: 'Terang' },
   tabs: {

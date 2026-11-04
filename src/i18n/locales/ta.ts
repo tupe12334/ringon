@@ -8,6 +8,7 @@ const ta: Translation = {
     loadingTryOn: 'முயற்சி ஏற்றப்படுகிறது…',
     /** Label of the language picker; each option shows its language's own name. */
     language: 'மொழி',
+    suggested: 'பரிந்துரைகள்',
   },
   theme: { change: 'தீம்: {{name}}. மாற்றத் தட்டவும்.', emerald: 'மரகதம்', noir: 'நுவார்', light: 'வெளிர்' },
   tabs: {

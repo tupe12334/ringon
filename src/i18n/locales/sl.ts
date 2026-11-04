@@ -7,6 +7,7 @@ const sl: Translation = {
     tryOn: 'Preizkusi na roki',
     loadingTryOn: 'Nalaganje preizkusa…',
     language: 'Jezik',
+    suggested: 'Predlogi',
   },
   theme: { change: 'Tema: {{name}}. Tapnite za zamenjavo.', emerald: 'Smaragd', noir: 'Črna', light: 'Svetla' },
   tabs: {

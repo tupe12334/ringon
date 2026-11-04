@@ -7,6 +7,7 @@ const hi: Translation = {
     tryOn: 'मेरे हाथ पर आज़माएँ',
     loadingTryOn: 'आज़माइश लोड हो रही है…',
     language: 'भाषा',
+    suggested: 'सुझाव',
   },
   theme: { change: 'थीम: {{name}}. बदलने के लिए टैप करें।', emerald: 'पन्ना', noir: 'नुआर', light: 'हल्की' },
   tabs: {

@@ -7,6 +7,7 @@ const sv: Translation = {
     tryOn: 'Prova på min hand',
     loadingTryOn: 'Laddar provning…',
     language: 'Språk',
+    suggested: 'Förslag',
   },
   theme: { change: 'Färgtema: {{name}}. Tryck för att byta.', emerald: 'Smaragd', noir: 'Mörk', light: 'Ljus' },
   tabs: {

@@ -7,6 +7,7 @@ const af: Translation = {
     tryOn: 'Probeer op my hand',
     loadingTryOn: 'Laai pas-aanmaking…',
     language: 'Taal',
+    suggested: 'Voorstelle',
   },
   theme: { change: 'Kleurtema: {{name}}. Tik om te wissel.', emerald: 'Smarag', noir: 'Swart', light: 'Lig' },
   tabs: {

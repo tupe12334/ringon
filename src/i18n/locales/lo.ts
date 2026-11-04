@@ -7,6 +7,7 @@ const lo: Translation = {
     tryOn: 'ລອງໃສ່ມືຂອງຂ້ອຍ',
     loadingTryOn: 'ກຳລັງໂຫຼດການລອງໃສ່…',
     language: 'ພາສາ',
+    suggested: 'ຄຳແນະນຳ',
   },
   theme: { change: 'ຮູບແບບສີ: {{name}}. ແຕະເພື່ອປ່ຽນ.', emerald: 'ມໍລະກົດ', noir: 'ດຳ', light: 'ແຈ້ງ' },
   tabs: {

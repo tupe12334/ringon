@@ -7,6 +7,7 @@ const ja: Translation = {
     tryOn: '自分の手で試す',
     loadingTryOn: '試着を読み込んでいます…',
     language: '言語',
+    suggested: 'おすすめ',
   },
   theme: { change: 'テーマ: {{name}}。タップで切り替え。', emerald: 'エメラルド', noir: 'ノワール', light: 'ライト' },
   tabs: {

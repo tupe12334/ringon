@@ -7,6 +7,7 @@ const gl: Translation = {
     tryOn: 'Probar na miña man',
     loadingTryOn: 'Cargando a proba…',
     language: 'Idioma',
+    suggested: 'Suxestións',
   },
   theme: { change: 'Tema de cor: {{name}}. Toca para cambiar.', emerald: 'Esmeralda', noir: 'Negro', light: 'Claro' },
   tabs: {

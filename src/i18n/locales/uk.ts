@@ -7,6 +7,7 @@ const uk: Translation = {
     tryOn: 'Приміряти на руку',
     loadingTryOn: 'Завантаження примірки…',
     language: 'Мова',
+    suggested: 'Рекомендовані',
   },
   theme: { change: 'Тема: {{name}}. Торкніться, щоб змінити.', emerald: 'Смарагд', noir: 'Нуар', light: 'Світла' },
   tabs: {

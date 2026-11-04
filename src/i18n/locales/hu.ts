@@ -7,6 +7,7 @@ const hu: Translation = {
     tryOn: 'Próba a kezemen',
     loadingTryOn: 'Próba betöltése…',
     language: 'Nyelv',
+    suggested: 'Javaslatok',
   },
   theme: { change: 'Téma: {{name}}. Koppintson a váltáshoz.', emerald: 'Smaragd', noir: 'Sötét', light: 'Világos' },
   tabs: {

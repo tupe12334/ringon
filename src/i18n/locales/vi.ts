@@ -7,6 +7,7 @@ const vi: Translation = {
     tryOn: 'Thử trên tay tôi',
     loadingTryOn: 'Đang tải thử đeo…',
     language: 'Ngôn ngữ',
+    suggested: 'Gợi ý',
   },
   theme: { change: 'Giao diện: {{name}}. Chạm để đổi.', emerald: 'Ngọc lục bảo', noir: 'Đen', light: 'Sáng' },
   tabs: {

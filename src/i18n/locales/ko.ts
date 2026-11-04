@@ -7,6 +7,7 @@ const ko: Translation = {
     tryOn: '내 손에 착용해 보기',
     loadingTryOn: '착용 미리보기 불러오는 중…',
     language: '언어',
+    suggested: '추천',
   },
   theme: { change: '테마: {{name}}. 탭하여 변경하세요.', emerald: '에메랄드', noir: '누아르', light: '라이트' },
   tabs: {

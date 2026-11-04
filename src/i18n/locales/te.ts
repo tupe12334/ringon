@@ -8,6 +8,7 @@ const te: Translation = {
     loadingTryOn: 'ట్రై-ఆన్ లోడ్ అవుతోంది…',
     /** Label of the language picker; each option shows its language's own name. */
     language: 'భాష',
+    suggested: 'సూచనలు',
   },
   theme: { change: 'థీమ్: {{name}}. మార్చడానికి నొక్కండి.', emerald: 'పచ్చ', noir: 'న్వార్', light: 'లేత' },
   tabs: {

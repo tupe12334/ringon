@@ -7,6 +7,7 @@ const hy: Translation = {
     tryOn: 'Փորձել իմ ձեռքին',
     loadingTryOn: 'Փորձարկումը բեռնվում է…',
     language: 'Լեզու',
+    suggested: 'Առաջարկներ',
   },
   theme: { change: 'Գունային թեմա՝ {{name}}։ Հպեք՝ փոխելու համար։', emerald: 'Զմրուխտ', noir: 'Նուար', light: 'Բաց' },
   tabs: {

@@ -7,6 +7,7 @@ const si: Translation = {
     tryOn: 'මගේ අතේ උත්සාහ කරන්න',
     loadingTryOn: 'උත්සාහය පූරණය වෙමින්…',
     language: 'භාෂාව',
+    suggested: 'යෝජනා',
   },
   theme: { change: 'වර්ණ තේමාව: {{name}}. මාරු කිරීමට තට්ටු කරන්න.', emerald: 'මරකත', noir: 'කළු', light: 'ලා' },
   tabs: {

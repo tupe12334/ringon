@@ -8,6 +8,7 @@ const kk: Translation = {
     loadingTryOn: 'Өлшеп көру жүктелуде…',
     /** Label of the language picker; each option shows its language's own name. */
     language: 'Тіл',
+    suggested: 'Ұсыныстар',
   },
   theme: { change: 'Түс тақырыбы: {{name}}. Ауыстыру үшін түртіңіз.', emerald: 'Зүмірет', noir: 'Нуар', light: 'Ашық' },
   tabs: {

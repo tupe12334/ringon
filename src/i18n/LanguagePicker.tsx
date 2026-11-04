@@ -48,11 +48,13 @@ export function LanguagePicker() {
           else apply(lng)
         }}
       >
-        {suggested.map(({ lng, label }) => (
-          <option key={`top-${lng}`} value={lng}>
-            {label}
-          </option>
-        ))}
+        <optgroup label={t('app.suggested')}>
+          {suggested.map(({ lng, label }) => (
+            <option key={`top-${lng}`} value={lng}>
+              {label}
+            </option>
+          ))}
+        </optgroup>
         {/* A divider where the browser draws one in a select; ignored elsewhere. */}
         <hr />
         {all.map(({ lng, label }) => (

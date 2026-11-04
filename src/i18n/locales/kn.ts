@@ -7,6 +7,7 @@ const kn: Translation = {
     tryOn: 'ನನ್ನ ಕೈಯಲ್ಲಿ ಪ್ರಯತ್ನಿಸಿ',
     loadingTryOn: 'ಪ್ರಯತ್ನ ಲೋಡ್ ಆಗುತ್ತಿದೆ…',
     language: 'ಭಾಷೆ',
+    suggested: 'ಸಲಹೆಗಳು',
   },
   theme: { change: 'ಥೀಮ್: {{name}}. ಬದಲಾಯಿಸಲು ಟ್ಯಾಪ್ ಮಾಡಿ.', emerald: 'ಪಚ್ಚೆ', noir: 'ನ್ವಾರ್', light: 'ತಿಳಿ' },
   tabs: {

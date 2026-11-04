@@ -7,6 +7,7 @@ const ne: Translation = {
     tryOn: 'मेरो हातमा प्रयास गर्नुहोस्',
     loadingTryOn: 'प्रयास लोड हुँदैछ…',
     language: 'भाषा',
+    suggested: 'सुझावहरू',
   },
   theme: { change: 'रङ थिम: {{name}}। बदल्न ट्याप गर्नुहोस्।', emerald: 'पन्ना', noir: 'नोआर', light: 'उज्यालो' },
   tabs: {

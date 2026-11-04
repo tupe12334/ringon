@@ -7,6 +7,7 @@ const fil: Translation = {
     tryOn: 'Subukan sa aking kamay',
     loadingTryOn: 'Nilo-load ang pagsubok…',
     language: 'Wika',
+    suggested: 'Mga mungkahi',
   },
   theme: { change: 'Tema: {{name}}. I-tap para palitan.', emerald: 'Esmeralda', noir: 'Itim', light: 'Maliwanag' },
   tabs: {

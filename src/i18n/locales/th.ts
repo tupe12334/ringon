@@ -7,6 +7,7 @@ const th: Translation = {
     tryOn: 'ลองสวมที่มือของฉัน',
     loadingTryOn: 'กำลังโหลดการลองสวม…',
     language: 'ภาษา',
+    suggested: 'แนะนำ',
   },
   theme: { change: 'ธีม: {{name}} แตะเพื่อเปลี่ยน', emerald: 'มรกต', noir: 'นัวร์', light: 'สว่าง' },
   tabs: {

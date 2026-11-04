@@ -7,6 +7,7 @@ const pl: Translation = {
     tryOn: 'Przymierz na mojej dłoni',
     loadingTryOn: 'Wczytywanie przymierzania…',
     language: 'Język',
+    suggested: 'Sugestie',
   },
   theme: { change: 'Motyw: {{name}}. Dotknij, aby zmienić.', emerald: 'Szmaragd', noir: 'Czarny', light: 'Jasny' },
   tabs: {

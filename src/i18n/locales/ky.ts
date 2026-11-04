@@ -8,6 +8,7 @@ const ky: Translation = {
     loadingTryOn: 'Кийип көрүү жүктөлүүдө…',
     /** Label of the language picker; each option shows its language's own name. */
     language: 'Тил',
+    suggested: 'Сунуштар',
   },
   theme: { change: 'Түс темасы: {{name}}. Алмаштыруу үчүн басыңыз.', emerald: 'Зымырыт', noir: 'Нуар', light: 'Ачык' },
   tabs: {

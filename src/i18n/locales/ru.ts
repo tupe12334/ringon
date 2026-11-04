@@ -7,6 +7,7 @@ const ru: Translation = {
     tryOn: 'Примерить на руке',
     loadingTryOn: 'Загрузка примерки…',
     language: 'Язык',
+    suggested: 'Рекомендуемые',
   },
   theme: { change: 'Тема: {{name}}. Нажмите, чтобы сменить.', emerald: 'Изумруд', noir: 'Нуар', light: 'Светлая' },
   tabs: {

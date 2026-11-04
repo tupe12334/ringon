@@ -7,6 +7,7 @@ const zh: Translation = {
     tryOn: '在我的手上试戴',
     loadingTryOn: '正在加载试戴…',
     language: '语言',
+    suggested: '推荐',
   },
   theme: { change: '主题：{{name}}。点按切换。', emerald: '祖母绿', noir: '暗夜', light: '浅色' },
   tabs: {
