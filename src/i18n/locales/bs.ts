@@ -8,7 +8,7 @@ const bs: Translation = {
     loadingTryOn: 'Učitavanje probe…',
     language: 'Jezik',
   },
-  theme: { change: 'Tema boja: {{name}}. Dodirnite za promjenu.', emerald: 'Smaragd', noir: 'Noir', light: 'Svijetla' },
+  theme: { change: 'Tema boja: {{name}}. Dodirnite za promjenu.', emerald: 'Smaragd', noir: 'Crna', light: 'Svijetla' },
   tabs: {
     aria: 'Dijelovi dizajna',
     templates: 'Šabloni',
@@ -120,7 +120,7 @@ const bs: Translation = {
     'prong-6': '6 kraka',
     bezel: 'Okvir',
     'half-bezel': 'Polu-okvir',
-    tension: 'Tension',
+    tension: 'Napeta',
   },
   prongTip: { round: 'Okrugli', claw: 'Kandža', 'v-tip': 'V vrh' },
   accent: {
@@ -130,7 +130,7 @@ const bs: Translation = {
     eternity: 'Puna vječnost',
     'half-eternity': 'Polovina vječnosti',
   },
-  font: { serif: 'Serif', sans: 'Sans', script: 'Rukopis' },
+  font: { serif: 'Serif', sans: 'Bez serifa', script: 'Rukopis' },
 
   size: {
     system: 'Sistem veličina',
@@ -268,7 +268,7 @@ const bs: Translation = {
     coverage: 'Pokrivenost',
     coverageValue: '{{pct}}% niz svaku stranu',
     rows: 'Redovi',
-    auto: 'auto',
+    auto: 'automatski',
     tooManyRows: '{{rows}} · samo {{max}} staje na ovaj prsten',
     gem: 'Kamen na prstenu',
   },
@@ -373,7 +373,7 @@ const bs: Translation = {
   },
   imagegen: {
     shot: 'Fotografija',
-    shots: { 'close-up': 'Na ruci, izbliza', lifestyle: 'Lifestyle', product: 'Sam prsten' },
+    shots: { 'close-up': 'Na ruci, izbliza', lifestyle: 'Životni stil', product: 'Sam prsten' },
     hand: 'Ruka',
     hands: { left: 'Lijeva ruka', right: 'Desna ruka' },
     finger: 'Prst',
@@ -429,7 +429,7 @@ const bs: Translation = {
     camera: '⟲ Kamera',
     finger: 'Prst',
     hand: 'Ruka',
-    hands: { auto: 'Auto', Left: 'Lijeva ruka', Right: 'Desna ruka' },
+    hands: { auto: 'Automatski', Left: 'Lijeva ruka', Right: 'Desna ruka' },
     fingers: { thumb: 'Palac', index: 'Kažiprst', middle: 'Srednji', ring: 'Prstenjak', pinky: 'Mali' },
     fit: 'Pristajanje',
     fitAria: 'Pristajanje prstena',

@@ -8,7 +8,7 @@ const nl: Translation = {
     loadingTryOn: 'Pasfunctie laden…',
     language: 'Taal',
   },
-  theme: { change: 'Kleurthema: {{name}}. Tik om te wisselen.', emerald: 'Smaragd', noir: 'Noir', light: 'Licht' },
+  theme: { change: 'Kleurthema: {{name}}. Tik om te wisselen.', emerald: 'Smaragd', noir: 'Zwart', light: 'Licht' },
   tabs: {
     aria: 'Ontwerponderdelen',
     templates: 'Sjablonen',
@@ -152,7 +152,7 @@ const nl: Translation = {
   metalPanel: {
     band: 'Materiaal ring',
     finish: 'Afwerking',
-    inlay: 'Inlay',
+    inlay: 'Inleg',
     inlayWidth: 'Breedte inlay',
     inlayOffset: 'Positie inlay',
     inlay2: 'Tweede inlay',
@@ -268,7 +268,7 @@ const nl: Translation = {
     coverage: 'Bedekking',
     coverageValue: '{{pct}}% aan elke kant',
     rows: 'Rijen',
-    auto: 'auto',
+    auto: 'automatisch',
     tooManyRows: '{{rows}} · slechts {{max}} passen in deze ring',
     gem: 'Edelsteen ringstenen',
   },

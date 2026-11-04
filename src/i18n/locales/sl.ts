@@ -8,7 +8,7 @@ const sl: Translation = {
     loadingTryOn: 'Nalaganje preizkusa…',
     language: 'Jezik',
   },
-  theme: { change: 'Tema: {{name}}. Tapnite za zamenjavo.', emerald: 'Smaragd', noir: 'Noir', light: 'Svetla' },
+  theme: { change: 'Tema: {{name}}. Tapnite za zamenjavo.', emerald: 'Smaragd', noir: 'Črna', light: 'Svetla' },
   tabs: {
     aria: 'Deli oblikovanja',
     templates: 'Predloge',
@@ -78,7 +78,7 @@ const sl: Translation = {
   profile: {
     flat: 'Raven',
     'd-shape': 'Oblika D',
-    court: 'Court',
+    court: 'Kupolast',
     'half-round': 'Polokrog',
     'knife-edge': 'Oster rob',
     square: 'Kvadraten / Euro',
@@ -133,7 +133,7 @@ const sl: Translation = {
     eternity: 'Polni eternity',
     'half-eternity': 'Polovični eternity',
   },
-  font: { serif: 'Serif', sans: 'Sans', script: 'Pisava' },
+  font: { serif: 'Serif', sans: 'Brez serifov', script: 'Pisava' },
 
   size: {
     system: 'Sistem velikosti',
@@ -375,7 +375,7 @@ const sl: Translation = {
   },
   imagegen: {
     shot: 'Fotografija',
-    shots: { 'close-up': 'Na roki, od blizu', lifestyle: 'Lifestyle', product: 'Sam prstan' },
+    shots: { 'close-up': 'Na roki, od blizu', lifestyle: 'Življenjski slog', product: 'Sam prstan' },
     hand: 'Roka',
     hands: { left: 'Leva roka', right: 'Desna roka' },
     finger: 'Prst',

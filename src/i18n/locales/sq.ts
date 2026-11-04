@@ -8,7 +8,7 @@ const sq: Translation = {
     loadingTryOn: 'Duke ngarkuar provën…',
     language: 'Gjuha',
   },
-  theme: { change: 'Tema e ngjyrave: {{name}}. Prek për ta ndryshuar.', emerald: 'Smerald', noir: 'Noir', light: 'E çelët' },
+  theme: { change: 'Tema e ngjyrave: {{name}}. Prek për ta ndryshuar.', emerald: 'Smerald', noir: 'E zezë', light: 'E çelët' },
   tabs: {
     aria: 'Seksionet e dizajnit',
     templates: 'Shabllone',
@@ -268,7 +268,7 @@ const sq: Translation = {
     coverage: 'Mbulimi',
     coverageValue: '{{pct}}% poshtë çdo ane',
     rows: 'Rreshtat',
-    auto: 'auto',
+    auto: 'Automatike',
     tooManyRows: '{{rows}} · vetëm {{max}} futen në këtë unazë',
     gem: 'Guri i unazës',
   },

@@ -75,7 +75,7 @@ const fr: Translation = {
   profile: {
     flat: 'Plat',
     'd-shape': 'Forme en D',
-    court: 'Court',
+    court: 'Bombé',
     'half-round': 'Demi-rond',
     'knife-edge': 'Arête vive',
     square: 'Carré / Euro',
@@ -130,7 +130,7 @@ const fr: Translation = {
     eternity: 'Éternité complète',
     'half-eternity': 'Demi-éternité',
   },
-  font: { serif: 'Avec empattements', sans: 'Sans empattement', script: 'Script' },
+  font: { serif: 'Avec empattements', sans: 'Sans empattement', script: 'Cursive' },
 
   size: {
     system: 'Système de taille',
@@ -404,7 +404,7 @@ const fr: Translation = {
   },
   tryon: {
     back: 'Retour au design',
-    backLabel: '← Design',
+    backLabel: '← Création',
     backToDesigner: '← Retour au design',
     phase: {
       camera: 'Ouverture de la caméra…',

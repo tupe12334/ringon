@@ -8,7 +8,7 @@ const tr: Translation = {
     loadingTryOn: 'Deneme yükleniyor…',
     language: 'Dil',
   },
-  theme: { change: 'Tema: {{name}}. Değiştirmek için dokunun.', emerald: 'Zümrüt', noir: 'Noir', light: 'Açık' },
+  theme: { change: 'Tema: {{name}}. Değiştirmek için dokunun.', emerald: 'Zümrüt', noir: 'Siyah', light: 'Açık' },
   tabs: {
     aria: 'Tasarım bölümleri',
     templates: 'Şablonlar',
@@ -78,7 +78,7 @@ const tr: Translation = {
   profile: {
     flat: 'Düz',
     'd-shape': 'D şekli',
-    court: 'Court',
+    court: 'Kubbeli',
     'half-round': 'Yarım yuvarlak',
     'knife-edge': 'Bıçak kenar',
     square: 'Kare / Euro',
@@ -103,7 +103,7 @@ const tr: Translation = {
   },
   shape: {
     round: 'Yuvarlak briliant',
-    princess: 'Princess',
+    princess: 'Prenses',
     oval: 'Oval',
     cushion: 'Yastık',
     emerald: 'Zümrüt kesim',
@@ -121,7 +121,7 @@ const tr: Translation = {
   setting: {
     'prong-4': '4 pençe',
     'prong-6': '6 pençe',
-    bezel: 'Bezel',
+    bezel: 'Çerçeve',
     'half-bezel': 'Yarım bezel',
     tension: 'Tansiyon',
   },
@@ -133,7 +133,7 @@ const tr: Translation = {
     eternity: 'Tam eternity',
     'half-eternity': 'Yarım eternity',
   },
-  font: { serif: 'Serif', sans: 'Sans', script: 'El yazısı' },
+  font: { serif: 'Serif', sans: 'Serifsiz', script: 'El yazısı' },
 
   size: {
     system: 'Beden sistemi',
@@ -319,7 +319,7 @@ const tr: Translation = {
     'Emerald three stone': 'Zümrüt üç taş',
     'Pear trilogy': 'Armut üçlüsü',
     'Green pear trio': 'Yeşil armut üçlüsü',
-    'Vintage bezel': 'Vintage bezel',
+    'Vintage bezel': 'Vintage çerçeve',
     'Pear sapphire': 'Armut safir',
     'Modern tension': 'Modern tansiyon',
     'Comfort-fit wedding band': 'Rahat geçişli nikah halkası',
@@ -342,10 +342,10 @@ const tr: Translation = {
     'East-west half bezel oval': 'Doğu-batı yarım bezel oval',
     'Chunky bathtub bezel': 'Kalın küvet bezel',
     'Low set bezel': 'Alçak yuvalı bezel',
-    'Milgrain bezel oval': 'Milgrain bezel oval',
+    'Milgrain bezel oval': 'Milgrain çerçeveli oval',
     'Two-tone bezel emerald': 'İki renkli bezel zümrüt',
     'Tiny bezel tomboy': 'Küçük bezel tomboy',
-    'Bezel eternity': 'Bezel eternity',
+    'Bezel eternity': 'Çerçeveli eternity',
     'Emerald bezel eternity': 'Zümrüt bezel eternity',
     'Bezel stations': 'Bezel istasyonlar',
     'Hidden halo oval': 'Gizli hale oval',

@@ -9,7 +9,7 @@ const az: Translation = {
     /** Label of the language picker; each option shows its language's own name. */
     language: 'Dil',
   },
-  theme: { change: 'Rəng mövzusu: {{name}}. Dəyişmək üçün toxunun.', emerald: 'Zümrüd', noir: 'Noir', light: 'Açıq' },
+  theme: { change: 'Rəng mövzusu: {{name}}. Dəyişmək üçün toxunun.', emerald: 'Zümrüd', noir: 'Qara', light: 'Açıq' },
   tabs: {
     aria: 'Dizayn bölmələri',
     templates: 'Şablonlar',
@@ -67,7 +67,7 @@ const az: Translation = {
   },
   finish: {
     polished: 'Yüksək parıltı',
-    satin: 'Satin',
+    satin: 'Saten',
     brushed: 'Fırçalanmış',
     hammered: 'Döyülmüş',
     matte: 'Mat',
@@ -318,7 +318,7 @@ const az: Translation = {
     'Emerald three stone': 'Zümrüd üç daşlı',
     'Pear trilogy': 'Armud trilogiyası',
     'Green pear trio': 'Yaşıl armud triosu',
-    'Vintage bezel': 'Vintage bezel',
+    'Vintage bezel': 'Vintaj bezel',
     'Pear sapphire': 'Armud safiri',
     'Modern tension': 'Müasir gərginlik',
     'Comfort-fit wedding band': 'Rahat oturuşlu nikah halqası',

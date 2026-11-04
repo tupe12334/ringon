@@ -8,7 +8,7 @@ const ms: Translation = {
     loadingTryOn: 'Memuatkan cubaan…',
     language: 'Bahasa',
   },
-  theme: { change: 'Tema: {{name}}. Ketik untuk menukar.', emerald: 'Zamrud', noir: 'Noir', light: 'Cerah' },
+  theme: { change: 'Tema: {{name}}. Ketik untuk menukar.', emerald: 'Zamrud', noir: 'Gelap', light: 'Cerah' },
   tabs: {
     aria: 'Bahagian reka bentuk',
     templates: 'Templat',
@@ -130,7 +130,7 @@ const ms: Translation = {
     eternity: 'Eternity penuh',
     'half-eternity': 'Separuh eternity',
   },
-  font: { serif: 'Serif', sans: 'Sans', script: 'Tulisan tangan' },
+  font: { serif: 'Dengan serif', sans: 'Tanpa serif', script: 'Tulisan tangan' },
 
   size: {
     system: 'Sistem saiz',

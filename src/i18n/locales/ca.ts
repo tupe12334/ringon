@@ -8,7 +8,7 @@ const ca: Translation = {
     loadingTryOn: 'Carregant la prova…',
     language: 'Idioma',
   },
-  theme: { change: 'Tema: {{name}}. Toca per canviar-lo.', emerald: 'Maragda', noir: 'Noir', light: 'Clar' },
+  theme: { change: 'Tema: {{name}}. Toca per canviar-lo.', emerald: 'Maragda', noir: 'Negre', light: 'Clar' },
   tabs: {
     aria: 'Seccions del disseny',
     templates: 'Plantilles',
@@ -75,7 +75,7 @@ const ca: Translation = {
   profile: {
     flat: 'Pla',
     'd-shape': 'Forma de D',
-    court: 'Court',
+    court: 'Corbat',
     'half-round': 'Mig rodó',
     'knife-edge': 'Vora de ganivet',
     square: 'Quadrat / Euro',
@@ -268,7 +268,7 @@ const ca: Translation = {
     coverage: 'Cobertura',
     coverageValue: '{{pct}}% baixant per cada costat',
     rows: 'Files',
-    auto: 'auto',
+    auto: 'automàtic',
     tooManyRows: '{{rows}} · només hi caben {{max}} en aquest anell',
     gem: 'Gema de l’anell',
   },
