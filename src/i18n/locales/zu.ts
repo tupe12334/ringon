@@ -118,8 +118,8 @@ const zu: Translation = {
   setting: {
     'prong-4': 'Amaprong ama-4',
     'prong-6': 'Amaprong ama-6',
-    bezel: 'Bezel',
-    'half-bezel': 'Half bezel',
+    bezel: 'I-bezel',
+    'half-bezel': 'I-half bezel',
     tension: 'Ukucindezela',
   },
   prongTip: { round: 'Okuzungezile', claw: 'Isikhwama', 'v-tip': 'Ithiphu le-V' },
@@ -130,7 +130,7 @@ const zu: Translation = {
     eternity: 'Ukuphelela kwe-eternity',
     'half-eternity': 'Ingxenye ye-eternity',
   },
-  font: { serif: 'Serif', sans: 'Sans', script: 'Script' },
+  font: { serif: 'Serif', sans: 'Sans', script: 'Ibhalwe ngesandla' },
 
   size: {
     system: 'Uhlelo losayizi',
@@ -169,7 +169,7 @@ const zu: Translation = {
   stone: {
     centre: 'Itshe eliphakathi',
     shape: 'Ukwakheka',
-    carat: 'Carat',
+    carat: 'Ikharathi',
     caratValue: '{{carat}} ct · {{length}}×{{width}} mm',
     orientation: 'Ukuqondisa',
     northSouth: 'nyakatho–eningizimu',

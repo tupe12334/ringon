@@ -8,7 +8,7 @@ const ro: Translation = {
     loadingTryOn: 'Se încarcă proba…',
     language: 'Limbă',
   },
-  theme: { change: 'Temă: {{name}}. Atinge pentru a schimba.', emerald: 'Smarald', noir: 'Noir', light: 'Luminoasă' },
+  theme: { change: 'Temă: {{name}}. Atinge pentru a schimba.', emerald: 'Smarald', noir: 'Întunecată', light: 'Luminoasă' },
   tabs: {
     aria: 'Secțiunile designului',
     templates: 'Șabloane',
@@ -268,7 +268,7 @@ const ro: Translation = {
     coverage: 'Acoperire',
     coverageValue: '{{pct}}% pe fiecare latură',
     rows: 'Rânduri',
-    auto: 'auto',
+    auto: 'automat',
     tooManyRows: '{{rows}} · încap doar {{max}} pe acest inel',
     gem: 'Piatra de pe inel',
   },

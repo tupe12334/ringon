@@ -8,7 +8,7 @@ const af: Translation = {
     loadingTryOn: 'Laai pas-aanmaking…',
     language: 'Taal',
   },
-  theme: { change: 'Kleurtema: {{name}}. Tik om te wissel.', emerald: 'Smarag', noir: 'Noir', light: 'Lig' },
+  theme: { change: 'Kleurtema: {{name}}. Tik om te wissel.', emerald: 'Smarag', noir: 'Swart', light: 'Lig' },
   tabs: {
     aria: 'Ontwerpafdelings',
     templates: 'Sjablone',
@@ -36,7 +36,7 @@ const af: Translation = {
     platinum: 'Platinum',
     palladium: 'Palladium',
     'sterling-silver': 'Sterlingsilwer',
-    titanium: 'Titanium',
+    titanium: 'Titaan',
     tungsten: 'Tungsten-karbied',
     'black-rhodium': 'Swart rhodium',
     'black-titanium': 'Swart titanium',

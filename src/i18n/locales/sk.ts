@@ -8,7 +8,7 @@ const sk: Translation = {
     loadingTryOn: 'Načítava sa skúšanie…',
     language: 'Jazyk',
   },
-  theme: { change: 'Motív: {{name}}. Ťuknutím zmeníte.', emerald: 'Smaragd', noir: 'Noir', light: 'Svetlý' },
+  theme: { change: 'Motív: {{name}}. Ťuknutím zmeníte.', emerald: 'Smaragd', noir: 'Tmavá', light: 'Svetlý' },
   tabs: {
     aria: 'Časti návrhu',
     templates: 'Šablóny',
@@ -271,7 +271,7 @@ const sk: Translation = {
     coverage: 'Pokrytie',
     coverageValue: '{{pct}} % po každej strane',
     rows: 'Rady',
-    auto: 'auto',
+    auto: 'automaticky',
     tooManyRows: '{{rows}} · na túto obruč sa zmestí len {{max}}',
     gem: 'Kameň v obruči',
   },

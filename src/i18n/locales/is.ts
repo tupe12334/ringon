@@ -8,7 +8,7 @@ const is: Translation = {
     loadingTryOn: 'Hleð mátun…',
     language: 'Tungumál',
   },
-  theme: { change: 'Litaþema: {{name}}. Ýttu til að skipta.', emerald: 'Smaragður', noir: 'Noir', light: 'Ljóst' },
+  theme: { change: 'Litaþema: {{name}}. Ýttu til að skipta.', emerald: 'Smaragður', noir: 'Dökkt', light: 'Ljóst' },
   tabs: {
     aria: 'Hlutar hönnunar',
     templates: 'Sniðmát',
@@ -90,7 +90,7 @@ const is: Translation = {
     ruby: 'Rúbínn',
     emerald: 'Smaragður',
     'green-sapphire': 'Grænn safír',
-    peridot: 'Peridot',
+    peridot: 'Perídót',
     tsavorite: 'Tsavorít',
     amethyst: 'Ametist',
     aquamarine: 'Akvamarín',

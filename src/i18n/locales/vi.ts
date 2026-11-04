@@ -8,7 +8,7 @@ const vi: Translation = {
     loadingTryOn: 'Đang tải thử đeo…',
     language: 'Ngôn ngữ',
   },
-  theme: { change: 'Giao diện: {{name}}. Chạm để đổi.', emerald: 'Ngọc lục bảo', noir: 'Noir', light: 'Sáng' },
+  theme: { change: 'Giao diện: {{name}}. Chạm để đổi.', emerald: 'Ngọc lục bảo', noir: 'Đen', light: 'Sáng' },
   tabs: {
     aria: 'Các phần thiết kế',
     templates: 'Mẫu',
@@ -130,7 +130,7 @@ const vi: Translation = {
     eternity: 'Eternity đầy đủ',
     'half-eternity': 'Nửa eternity',
   },
-  font: { serif: 'Serif', sans: 'Sans', script: 'Chữ viết tay' },
+  font: { serif: 'Có chân', sans: 'Không chân', script: 'Chữ viết tay' },
 
   size: {
     system: 'Hệ cỡ',

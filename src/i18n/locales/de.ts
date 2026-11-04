@@ -8,7 +8,7 @@ const de: Translation = {
     loadingTryOn: 'Anprobe wird geladen…',
     language: 'Sprache',
   },
-  theme: { change: 'Farbschema: {{name}}. Tippen zum Wechseln.', emerald: 'Smaragd', noir: 'Noir', light: 'Hell' },
+  theme: { change: 'Farbschema: {{name}}. Tippen zum Wechseln.', emerald: 'Smaragd', noir: 'Schwarz', light: 'Hell' },
   tabs: {
     aria: 'Design-Bereiche',
     templates: 'Vorlagen',
@@ -130,7 +130,7 @@ const de: Translation = {
     eternity: 'Vollmemoire',
     'half-eternity': 'Halbmemoire',
   },
-  font: { serif: 'Serif', sans: 'Sans', script: 'Schreibschrift' },
+  font: { serif: 'Serif', sans: 'Serifenlos', script: 'Schreibschrift' },
 
   size: {
     system: 'Größensystem',
@@ -268,7 +268,7 @@ const de: Translation = {
     coverage: 'Besatz',
     coverageValue: '{{pct}}% an jeder Seite hinab',
     rows: 'Reihen',
-    auto: 'auto',
+    auto: 'Automatisch',
     tooManyRows: '{{rows}} · nur {{max}} passen auf diese Schiene',
     gem: 'Edelstein der Schienensteine',
   },
@@ -428,7 +428,7 @@ const de: Translation = {
     camera: '⟲ Kamera',
     finger: 'Finger',
     hand: 'Hand',
-    hands: { auto: 'Auto', Left: 'Linke Hand', Right: 'Rechte Hand' },
+    hands: { auto: 'Automatisch', Left: 'Linke Hand', Right: 'Rechte Hand' },
     fingers: { thumb: 'Daumen', index: 'Zeigefinger', middle: 'Mittelfinger', ring: 'Ringfinger', pinky: 'Kleiner Finger' },
     fit: 'Sitz',
     fitAria: 'Sitz des Rings',

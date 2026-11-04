@@ -8,7 +8,7 @@ const cs: Translation = {
     loadingTryOn: 'Načítám zkoušení…',
     language: 'Jazyk',
   },
-  theme: { change: 'Motiv: {{name}}. Klepnutím změníte.', emerald: 'Smaragd', noir: 'Noir', light: 'Světlý' },
+  theme: { change: 'Motiv: {{name}}. Klepnutím změníte.', emerald: 'Smaragd', noir: 'Černý', light: 'Světlý' },
   tabs: {
     aria: 'Části návrhu',
     templates: 'Šablony',
@@ -133,7 +133,7 @@ const cs: Translation = {
     eternity: 'Celý eternity',
     'half-eternity': 'Půl eternity',
   },
-  font: { serif: 'Serif', sans: 'Sans', script: 'Psací' },
+  font: { serif: 'Patkové', sans: 'Bezpatkové', script: 'Psací' },
 
   size: {
     system: 'Systém velikostí',
@@ -271,7 +271,7 @@ const cs: Translation = {
     coverage: 'Pokrytí',
     coverageValue: '{{pct}} % po každé straně',
     rows: 'Řady',
-    auto: 'auto',
+    auto: 'automaticky',
     tooManyRows: '{{rows}} · na tuto obruč se vejde jen {{max}}',
     gem: 'Kámen v obruči',
   },
@@ -375,7 +375,7 @@ const cs: Translation = {
   },
   imagegen: {
     shot: 'Fotografie',
-    shots: { 'close-up': 'Na ruce, zblízka', lifestyle: 'Lifestyle', product: 'Prsten samotný' },
+    shots: { 'close-up': 'Na ruce, zblízka', lifestyle: 'V prostředí', product: 'Prsten samotný' },
     hand: 'Ruka',
     hands: { left: 'Levá ruka', right: 'Pravá ruka' },
     finger: 'Prst',

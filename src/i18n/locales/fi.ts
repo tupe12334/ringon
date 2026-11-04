@@ -8,7 +8,7 @@ const fi: Translation = {
     loadingTryOn: 'Ladataan sovitusta…',
     language: 'Kieli',
   },
-  theme: { change: 'Väriteema: {{name}}. Vaihda napauttamalla.', emerald: 'Smaragdi', noir: 'Noir', light: 'Vaalea' },
+  theme: { change: 'Väriteema: {{name}}. Vaihda napauttamalla.', emerald: 'Smaragdi', noir: 'Tumma', light: 'Vaalea' },
   tabs: {
     aria: 'Suunnittelun osat',
     templates: 'Mallit',
@@ -130,7 +130,7 @@ const fi: Translation = {
     eternity: 'Täysi eternity',
     'half-eternity': 'Puolikas eternity',
   },
-  font: { serif: 'Serif', sans: 'Sans', script: 'Käsiala' },
+  font: { serif: 'Antiikva', sans: 'Groteski', script: 'Käsiala' },
 
   size: {
     system: 'Kokojärjestelmä',
@@ -268,7 +268,7 @@ const fi: Translation = {
     coverage: 'Peitto',
     coverageValue: '{{pct}}% kummallakin sivulla',
     rows: 'Rivit',
-    auto: 'auto',
+    auto: 'Automaattinen',
     tooManyRows: '{{rows}} · tähän vanteeseen mahtuu vain {{max}}',
     gem: 'Vannekivien jalokivi',
   },

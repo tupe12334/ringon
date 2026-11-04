@@ -8,7 +8,7 @@ const gl: Translation = {
     loadingTryOn: 'Cargando a proba…',
     language: 'Idioma',
   },
-  theme: { change: 'Tema de cor: {{name}}. Toca para cambiar.', emerald: 'Esmeralda', noir: 'Noir', light: 'Claro' },
+  theme: { change: 'Tema de cor: {{name}}. Toca para cambiar.', emerald: 'Esmeralda', noir: 'Negro', light: 'Claro' },
   tabs: {
     aria: 'Seccións do deseño',
     templates: 'Modelos',
@@ -189,7 +189,7 @@ const gl: Translation = {
     edge: 'Bordo do bisel',
     plain: 'Liso',
     rounded: 'Redondeado',
-    milgrain: 'Milgrain',
+    milgrain: 'Perlado',
   },
   settingPanel: {
     needStone: 'Activa unha pedra central para escoller o seu engaste.',
@@ -268,7 +268,7 @@ const gl: Translation = {
     coverage: 'Cobertura',
     coverageValue: '{{pct}}% cara abaixo de cada lado',
     rows: 'Filas',
-    auto: 'auto',
+    auto: 'Automático',
     tooManyRows: '{{rows}} · só caben {{max}} neste aro',
     gem: 'Gema das pedras do aro',
   },
