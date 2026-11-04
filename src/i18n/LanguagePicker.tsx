@@ -1,11 +1,12 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { LANGUAGES, type Language } from '.'
+import { isLanguage, LANGUAGES } from '.'
 import { languageOptions } from './languageOptions'
 
 export function LanguagePicker() {
   const { t, i18n } = useTranslation()
-  const current = (i18n.resolvedLanguage ?? 'en') as Language
+  const resolved = i18n.resolvedLanguage ?? 'en'
+  const current = isLanguage(resolved) ? resolved : 'en'
   const { suggested, all } = useMemo(() => languageOptions(LANGUAGES, current, navigator.languages ?? []), [current])
   return (
     <select className="language" aria-label={t('app.language')} value={current} onChange={(e) => i18n.changeLanguage(e.target.value)}>
