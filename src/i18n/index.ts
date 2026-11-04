@@ -10,6 +10,14 @@ type Loader = () => Promise<{ default: Translation }>
 
 /** Every UI language but English, by BCP 47 code. A new language is one line here plus its file. */
 const LOCALES = {
+  hi: () => import('./locales/hi'),
+  bn: () => import('./locales/bn'),
+  mr: () => import('./locales/mr'),
+  gu: () => import('./locales/gu'),
+  ta: () => import('./locales/ta'),
+  te: () => import('./locales/te'),
+  kn: () => import('./locales/kn'),
+  ml: () => import('./locales/ml'),
   ar: () => import('./locales/ar'),
   de: () => import('./locales/de'),
   es: () => import('./locales/es'),
