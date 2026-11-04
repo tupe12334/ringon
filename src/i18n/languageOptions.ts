@@ -2,7 +2,8 @@ import { toUiLanguage, type Language } from '.'
 
 export type LanguageOption = { lng: Language; label: string }
 
-const capitalize = (s: string, lng: string) => s.charAt(0).toLocaleUpperCase(lng) + s.slice(1)
+// Georgian has capital letters (Mtavruli) but never capitalizes names, so its names stay as they are.
+const capitalize = (s: string, lng: string) => (lng === 'ka' ? s : s.charAt(0).toLocaleUpperCase(lng) + s.slice(1))
 
 /** A language's name as written in `inLng`, e.g. ("de", "en") → "German"; from the browser's own data. */
 const nameIn = (lng: Language, inLng: string) => capitalize(new Intl.DisplayNames([inLng], { type: 'language' }).of(lng) ?? lng, inLng)
