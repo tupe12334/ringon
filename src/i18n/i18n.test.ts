@@ -64,8 +64,10 @@ describe('switching language', () => {
     await i18n.changeLanguage('en')
   })
 
-  it.each(['ar', 'fa', 'he', 'ur'] as const)('lays out %s right to left', (lng) => {
-    expect(i18n.dir(lng)).toBe('rtl')
+  it.each(LANGUAGES)('lays out %s in its script direction', (lng) => {
+    // The runtime's own locale data says which way each script runs.
+    const locale = new Intl.Locale(lng) as Intl.Locale & { getTextInfo?: () => { direction: string }; textInfo?: { direction: string } }
+    expect(i18n.dir(lng)).toBe((locale.getTextInfo?.() ?? locale.textInfo)?.direction ?? 'ltr')
   })
 })
 
