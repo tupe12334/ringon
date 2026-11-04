@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Svg } from '../customizer/icons'
 import { isLanguage, LANGUAGES } from '.'
@@ -17,10 +17,37 @@ export function LanguagePicker() {
   const resolved = i18n.resolvedLanguage ?? 'en'
   const current = isLanguage(resolved) ? resolved : 'en'
   const { suggested, all } = useMemo(() => languageOptions(LANGUAGES, current, navigator.languages ?? []), [current])
+  // Typing "Ger" on a focused select steps through Galician first. Switching the whole UI at each letter would
+  // re-sort the list under the typist, so a keyboard pick waits for typing to stop; a click or tap applies at once.
+  const [picked, setPicked] = useState<string>()
+  const lastKey = useRef(0)
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
+  useEffect(() => () => clearTimeout(timer.current), [])
+  const apply = (lng: string | undefined) => {
+    clearTimeout(timer.current)
+    if (!lng || lng === current) return setPicked(undefined)
+    void i18n.changeLanguage(lng).finally(() => setPicked(undefined))
+  }
   return (
     <span className="language-pick">
       {globeIcon}
-      <select className="language" aria-label={t('app.language')} value={current} onChange={(e) => i18n.changeLanguage(e.target.value)}>
+      <select
+        className="language"
+        aria-label={t('app.language')}
+        value={picked ?? current}
+        onKeyDown={(e) => {
+          lastKey.current = performance.now()
+          if (e.key === 'Enter') apply(picked)
+        }}
+        onBlur={() => apply(picked)}
+        onChange={(e) => {
+          const lng = e.target.value
+          setPicked(lng)
+          clearTimeout(timer.current)
+          if (performance.now() - lastKey.current < 100) timer.current = setTimeout(() => apply(lng), 800)
+          else apply(lng)
+        }}
+      >
         {suggested.map(({ lng, label }) => (
           <option key={`top-${lng}`} value={lng}>
             {label}
