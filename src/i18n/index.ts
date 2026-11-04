@@ -50,6 +50,10 @@ const LOCALES = {
   uk: () => import('./locales/uk'),
   bg: () => import('./locales/bg'),
   ru: () => import('./locales/ru'),
+  el: () => import('./locales/el'),
+  et: () => import('./locales/et'),
+  lv: () => import('./locales/lv'),
+  lt: () => import('./locales/lt'),
 } as const satisfies Record<string, Loader>
 
 export type Language = 'en' | keyof typeof LOCALES
