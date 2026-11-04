@@ -200,6 +200,15 @@ test('loads another language on demand and offers every language by its own name
   await expect(page.getByRole('combobox', { name: 'Sprache' })).toBeVisible()
 })
 
+test.describe('a browser set to Taiwan Chinese', () => {
+  test.use({ locale: 'zh-TW' })
+
+  test('opens in Traditional Chinese', async ({ page }) => {
+    await expect(page.locator('html')).toHaveAttribute('lang', 'zh-Hant')
+    await expect(page.locator('select.language')).toHaveValue('zh-Hant')
+  })
+})
+
 test('a ?lng=he link opens in Hebrew', async ({ page }) => {
   await page.goto('/?lng=he')
   await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
