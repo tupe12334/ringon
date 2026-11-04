@@ -173,7 +173,7 @@ test('opens every real-ring example', async ({ page }) => {
 
 test('switches to Hebrew, right to left, and remembers it', async ({ page }) => {
   const summary = page.getByTestId('summary')
-  await page.getByRole('button', { name: 'Switch to Hebrew' }).click()
+  await page.getByRole('combobox', { name: 'Language' }).selectOption('he')
   await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
   await expect(page.locator('html')).toHaveAttribute('lang', 'he')
   await expect(summary).toContainText('זהב צהוב 18K')
@@ -185,9 +185,18 @@ test('switches to Hebrew, right to left, and remembers it', async ({ page }) => 
 
   await page.reload()
   await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
-  await page.getByRole('button', { name: 'החלפה לאנגלית' }).click()
+  await page.getByRole('combobox', { name: 'שפה' }).selectOption('en')
   await expect(page.locator('html')).toHaveAttribute('dir', 'ltr')
   await expect(summary).toContainText('Platinum')
+})
+
+test('loads another language on demand and offers every language by its own name', async ({ page }) => {
+  const picker = page.getByRole('combobox', { name: 'Language' })
+  await expect(picker.getByRole('option', { name: 'Deutsch' })).toHaveCount(1)
+  await expect(picker.getByRole('option', { name: 'Русский' })).toHaveCount(1)
+  await picker.selectOption('de')
+  await expect(page.locator('html')).toHaveAttribute('lang', 'de')
+  await expect(page.getByRole('combobox', { name: 'Sprache' })).toBeVisible()
 })
 
 test('a ?lng=he link opens in Hebrew', async ({ page }) => {

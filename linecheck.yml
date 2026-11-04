@@ -11,6 +11,15 @@ rules:
     warn: 400
     error: 460
     error_message: "Grandfathered file grew — split by responsibility instead of adding more"
+  # Translation tables: flat strings, one language per file, so the whole language is reviewed in one place.
+  - pattern: "src/i18n/en.ts"
+    warn: 550
+    error: 600
+    error_message: "Move a section of the UI text to its own key group file"
+  - pattern: "src/i18n/locales/*.ts"
+    warn: 550
+    error: 600
+    error_message: "Keep the same shape as en.ts; if en.ts was split, split this file the same way"
   - pattern: "**/*.ts"
     warn: 200
     warn_message: "Getting long — consider splitting into smaller modules"
