@@ -8,6 +8,7 @@ const my: Translation = {
     loadingTryOn: 'စမ်းကြည့်မှုကို ဖွင့်နေသည်…',
     language: 'ဘာသာစကား',
   },
+  theme: { change: 'အရောင်ပုံစံ- {{name}}။ ပြောင်းရန် တို့ပါ။', emerald: 'မြ', noir: 'အမည်း', light: 'အလင်း' },
   tabs: {
     aria: 'ဒီဇိုင်းအပိုင်းများ',
     templates: 'နမူနာများ',

@@ -8,6 +8,7 @@ const lo: Translation = {
     loadingTryOn: 'ກຳລັງໂຫຼດການລອງໃສ່…',
     language: 'ພາສາ',
   },
+  theme: { change: 'ຮູບແບບສີ: {{name}}. ແຕະເພື່ອປ່ຽນ.', emerald: 'ມໍລະກົດ', noir: 'ດຳ', light: 'ແຈ້ງ' },
   tabs: {
     aria: 'ພາກສ່ວນການອອກແບບ',
     templates: 'ແມ່ແບບ',
