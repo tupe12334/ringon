@@ -7,6 +7,7 @@ const ln: Translation = {
     tryOn: 'Meka na loboko na ngai',
     loadingTryOn: 'Ezali kobimisa meka…',
     language: 'Lokota',
+    suggested: 'Makanisi',
   },
   theme: { change: 'Lolaka: {{name}}. Pesa mpo na kobongola.', emerald: 'Émeraude', noir: 'Mwindu', light: 'Pole' },
   tabs: {

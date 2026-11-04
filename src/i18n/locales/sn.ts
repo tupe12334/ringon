@@ -7,6 +7,7 @@ const sn: Translation = {
     tryOn: 'Edza paruoko rwangu',
     loadingTryOn: 'Kurodha kuedza…',
     language: 'Mutauro',
+    suggested: 'Mazano',
   },
   theme: { change: 'Ruvara: {{name}}. Peta kuti uchinje.', emerald: 'Emerodhi', noir: 'Nuwari', light: 'Chiedza' },
   tabs: {

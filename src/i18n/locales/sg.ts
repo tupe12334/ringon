@@ -7,6 +7,7 @@ const sg: Translation = {
     tryOn: 'Mä ngu ti mbi na maboko ti mbi',
     loadingTryOn: 'Ayeke mä ngu…',
     language: 'Yâ',
+    suggested: 'Awango',
   },
   theme: { change: 'Lenga: {{name}}. Tï na ngu ti hïnga.', emerald: 'Émeraude', noir: 'Noir', light: 'Ndö' },
   tabs: {

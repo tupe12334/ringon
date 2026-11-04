@@ -7,6 +7,7 @@ const lb: Translation = {
     tryOn: 'Op meng Hand probéieren',
     loadingTryOn: 'Probéieren gëtt gelueden…',
     language: 'Sprooch',
+    suggested: 'Virschléi',
   },
   theme: { change: 'Thema: {{name}}. Tippen fir z’änneren.', emerald: 'Smaragd', noir: 'Donkel', light: 'Hell' },
   tabs: {

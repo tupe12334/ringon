@@ -12,9 +12,17 @@ const nameIn = (lng: Language, inLng: string) => capitalize(new Intl.DisplayName
  * Georgian would read "Georgian" to a Georgian reader. The test checks them against Node's full CLDR.
  */
 export const NATIVE_NAMES: Partial<Record<Language, string>> = {
-  sq: 'shqip', hy: 'հայերեն', as: 'অসমীয়া', eu: 'euskara', be: 'беларуская', my: 'မြန်မာ', gl: 'galego',
-  ka: 'ქართული', is: 'íslenska', km: 'ខ្មែរ', ky: 'кыргызча', lo: 'ລາວ', mk: 'македонски', mn: 'монгол',
-  ne: 'नेपाली', or: 'ଓଡ଼ିଆ', si: 'සිංහල', cy: 'Cymraeg', zu: 'isiZulu',
+  as: 'অসমীয়া', ast: 'asturianu', be: 'беларуская', bm: 'bamanakan', bo: 'བོད་སྐད་', br: 'brezhoneg', ce: 'нохчийн',
+  ceb: 'Cebuano', chr: 'ᏣᎳᎩ', ckb: 'کوردیی ناوەندی', cv: 'чӑваш чӗлхи', cy: 'Cymraeg', dz: 'རྫོང་ཁ', ee: 'eʋegbe',
+  eo: 'Esperanto', eu: 'euskara', ff: 'Pulaar', fo: 'føroyskt', fy: 'Frysk', ga: 'Gaeilge', gd: 'Gàidhlig',
+  gl: 'galego', gv: 'Gaelg', ha: 'Hausa', haw: 'ʻŌlelo Hawaiʻi', hy: 'հայերեն', ia: 'interlingua', ie: 'Interlingue',
+  ig: 'Igbo', ii: 'ꆈꌠꉙ', is: 'íslenska', jv: 'Jawa', ka: 'ქართული', kl: 'kalaallisut', km: 'ខ្មែរ', ks: 'کٲشُر',
+  ku: 'kurdî (kurmancî)', kw: 'kernewek', ky: 'кыргызча', lb: 'Lëtzebuergesch', lg: 'Luganda', ln: 'lingála',
+  lo: 'ລາວ', mg: 'Malagasy', mk: 'македонски', mn: 'монгол', mt: 'Malti', my: 'မြန်မာ', nd: 'isiNdebele',
+  ne: 'नेपाली', om: 'Oromoo', or: 'ଓଡ଼ିଆ', os: 'ирон', ps: 'پښتو', rm: 'rumantsch', sat: 'ᱥᱟᱱᱛᱟᱲᱤ', sc: 'sardu',
+  se: 'davvisámegiella', sg: 'Sängö', si: 'සිංහල', sn: 'chiShona', so: 'Soomaali', sq: 'shqip', st: 'Sesotho',
+  su: 'Basa Sunda', ti: 'ትግርኛ', tk: 'türkmen dili', tn: 'Setswana', to: 'lea fakatonga', ug: 'ئۇيغۇرچە', wo: 'Wolof',
+  xh: 'IsiXhosa', yi: 'ייִדיש', yo: 'Èdè Yorùbá', yue: '粵語', zu: 'isiZulu',
 }
 
 /** A language's name in its own script: the browser's data when it has that language, else the table. */

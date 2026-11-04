@@ -7,6 +7,7 @@ const fy: Translation = {
     tryOn: 'Probearje op myn hân',
     loadingTryOn: 'Probearling laden…',
     language: 'Taal',
+    suggested: 'Suggestjes',
   },
   theme: { change: 'Tema: {{name}}. Tik om te wizigjen.', emerald: 'Smaragd', noir: 'Swart', light: 'Ljocht' },
   tabs: {

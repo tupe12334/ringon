@@ -7,6 +7,7 @@ const gd: Translation = {
     tryOn: 'Feuch air mo làimh',
     loadingTryOn: 'A’ luchdachadh feuchainn…',
     language: 'Cànan',
+    suggested: 'Molaidhean',
   },
   theme: { change: 'Ùrlar: {{name}}. Thoir briogadh airson atharrachadh.', emerald: 'Smaragd', noir: 'Dubh', light: 'Soilleir' },
   tabs: {

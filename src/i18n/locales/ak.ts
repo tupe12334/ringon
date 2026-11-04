@@ -7,6 +7,7 @@ const ak: Translation = {
     tryOn: 'Sɔ no wɔ me nsa so',
     loadingTryOn: 'Ɛrekɔ so sɔ…',
     language: 'Kasa',
+    suggested: 'Nyansakyerɛ',
   },
   theme: { change: 'Tebea: {{name}}. Tɔ so sesa.', emerald: 'Emerald', noir: 'Tuntum', light: 'Hann' },
   tabs: {

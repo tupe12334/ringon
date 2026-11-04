@@ -7,6 +7,7 @@ const st: Translation = {
     tryOn: 'Leka seatleng sa ka',
     loadingTryOn: 'Ho laetsa ho leka…',
     language: 'Puo',
+    suggested: 'Ditlhahiso',
   },
   theme: { change: 'Mebala: {{name}}. Tobetsa ho fetola.', emerald: 'Emerald', noir: 'Ntsho', light: 'Khanya' },
   tabs: {

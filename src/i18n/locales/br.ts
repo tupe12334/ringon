@@ -7,6 +7,7 @@ const br: Translation = {
     tryOn: 'Klask war ma dorn',
     loadingTryOn: 'O kargañ ar c’hlask…',
     language: 'Yezh',
+    suggested: 'Kinnigoù',
   },
   theme: { change: 'Tem: {{name}}. Pouezit evit cheñch.', emerald: 'Emeraud', noir: 'Du', light: 'Sklaer' },
   tabs: {

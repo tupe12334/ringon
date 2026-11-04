@@ -7,6 +7,7 @@ const nd: Translation = {
     tryOn: 'Zama esandleni lami',
     loadingTryOn: 'Iyalayisha ukuzama…',
     language: 'Ulimi',
+    suggested: 'Iziphakamiso',
   },
   theme: { change: 'Ithimba lemibala: {{name}}. Cofa ukuze ushintshe.', emerald: 'Imarodi', noir: 'Mnyama', light: 'Ukukhanya' },
   tabs: {

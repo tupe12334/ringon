@@ -7,6 +7,7 @@ const rm: Translation = {
     tryOn: 'Empruvar sin mia mauna',
     loadingTryOn: 'Chargiar l’empruvament…',
     language: 'Lingua',
+    suggested: 'Propostas',
   },
   theme: { change: 'Tema: {{name}}. Tutgar per midar.', emerald: 'Smaragd', noir: 'Nair', light: 'Cler' },
   tabs: {

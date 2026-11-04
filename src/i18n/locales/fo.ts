@@ -7,6 +7,7 @@ const fo: Translation = {
     tryOn: 'Royn á hondina mína',
     loadingTryOn: 'Innlesur royndina…',
     language: 'Mál',
+    suggested: 'Uppskot',
   },
   theme: { change: 'Litatema: {{name}}. Trýst fyri at broyta.', emerald: 'Smaragd', noir: 'Svart', light: 'Ljóst' },
   tabs: {

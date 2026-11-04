@@ -7,6 +7,7 @@ const wo: Translation = {
     tryOn: 'Jëfandikoo ci sama loxo',
     loadingTryOn: 'Di yëngal jëfandikoo…',
     language: 'Làkk',
+    suggested: 'Ndigal',
   },
   theme: { change: 'Xaaj: {{name}}. Tëj ngir soppi.', emerald: 'Émeraude', noir: 'Noir', light: 'Leer' },
   tabs: {

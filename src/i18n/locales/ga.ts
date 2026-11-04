@@ -7,6 +7,7 @@ const ga: Translation = {
     tryOn: 'Bain triail as ar mo lámh',
     loadingTryOn: 'Ag lódáil na triala…',
     language: 'Teanga',
+    suggested: 'Moltaí',
   },
   theme: { change: 'Téama: {{name}}. Tapáil chun athrú.', emerald: 'Smaragd', noir: 'Dubh', light: 'Solas' },
   tabs: {
