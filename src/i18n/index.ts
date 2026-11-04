@@ -11,6 +11,11 @@ type Loader = () => Promise<{ default: Translation }>
 /** Every UI language but English, by BCP 47 code. A new language is one line here plus its file. */
 const LOCALES = {
   am: () => import('./locales/am'),
+  af: () => import('./locales/af'),
+  is: () => import('./locales/is'),
+  cy: () => import('./locales/cy'),
+  eu: () => import('./locales/eu'),
+  gl: () => import('./locales/gl'),
   ar: () => import('./locales/ar'),
   bg: () => import('./locales/bg'),
   bn: () => import('./locales/bn'),
@@ -18,6 +23,11 @@ const LOCALES = {
   cs: () => import('./locales/cs'),
   da: () => import('./locales/da'),
   de: () => import('./locales/de'),
+  sq: () => import('./locales/sq'),
+  mk: () => import('./locales/mk'),
+  bs: () => import('./locales/bs'),
+  be: () => import('./locales/be'),
+  hy: () => import('./locales/hy'),
   el: () => import('./locales/el'),
   es: () => import('./locales/es'),
   et: () => import('./locales/et'),
@@ -58,6 +68,11 @@ const LOCALES = {
   sw: () => import('./locales/sw'),
   ta: () => import('./locales/ta'),
   te: () => import('./locales/te'),
+  ne: () => import('./locales/ne'),
+  pa: () => import('./locales/pa'),
+  as: () => import('./locales/as'),
+  or: () => import('./locales/or'),
+  zu: () => import('./locales/zu'),
   th: () => import('./locales/th'),
   tr: () => import('./locales/tr'),
   uk: () => import('./locales/uk'),
@@ -102,7 +117,8 @@ export const toUiLanguage = (code: string): string => {
   const [base, ...rest] = code.toLowerCase().split(/[-_]/)
   if (base === 'zh' && rest.some((p) => ['hant', 'tw', 'hk', 'mo'].includes(p))) return 'zh-Hant'
   if (base === 'no' || base === 'nn') return 'nb'
-  return base
+  // Old codes some browsers still send.
+  return { tl: 'fil', iw: 'he', in: 'id' }[base] ?? base
 }
 
 // The page's lang and direction follow the language, so right-to-left scripts (Arabic, Hebrew, …) lay out right to left.

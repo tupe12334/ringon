@@ -78,6 +78,7 @@ describe('browser language codes', () => {
     ['zh-Hant-HK', 'zh-Hant'],
     ['no', 'nb'],
     ['nn-NO', 'nb'],
+    ['iw', 'he'],
   ])('reads %s as %s', (code, lng) => {
     expect(toUiLanguage(code)).toBe(lng)
     expect(LANGUAGES).toContain(lng)
