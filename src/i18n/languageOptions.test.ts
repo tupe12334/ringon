@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { LANGUAGES } from '.'
-import { languageOptions } from './languageOptions'
+import { languageOptions, NATIVE_NAMES } from './languageOptions'
 
 describe('languageOptions', () => {
   it('puts the browser languages, then English, on top, skipping unsupported ones', () => {
@@ -28,5 +28,9 @@ describe('languageOptions', () => {
     const order = languageOptions(LANGUAGES, 'en', []).all.map((o) => o.lng)
     const pick = ['ar', 'zh', 'de', 'el']
     expect(order.filter((l) => pick.includes(l))).toEqual(['ar', 'zh', 'de', 'el'])
+  })
+
+  it('keeps each fallback native name equal to CLDR', () => {
+    for (const [lng, name] of Object.entries(NATIVE_NAMES)) expect(name, lng).toBe(new Intl.DisplayNames([lng], { type: 'language' }).of(lng))
   })
 })

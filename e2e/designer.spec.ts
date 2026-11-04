@@ -209,6 +209,18 @@ test.describe('a browser set to Taiwan Chinese', () => {
   })
 })
 
+test('typing a language name switches once, to that language', async ({ page }) => {
+  await page.evaluate(() => {
+    const seen: string[] = []
+    Object.assign(window, { seenLangs: seen })
+    new MutationObserver(() => seen.push(document.documentElement.lang)).observe(document.documentElement, { attributeFilter: ['lang'] })
+  })
+  await page.getByRole('combobox', { name: 'Language' }).focus()
+  await page.keyboard.type('Ger', { delay: 50 })
+  await expect(page.locator('html')).toHaveAttribute('lang', 'de')
+  expect(await page.evaluate(() => (window as unknown as { seenLangs: string[] }).seenLangs)).toEqual(['de'])
+})
+
 test('a ?lng=he link opens in Hebrew', async ({ page }) => {
   await page.goto('/?lng=he')
   await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
