@@ -33,4 +33,9 @@ describe('languageOptions', () => {
   it('keeps each fallback native name equal to CLDR', () => {
     for (const [lng, name] of Object.entries(NATIVE_NAMES)) expect(name, lng).toBe(new Intl.DisplayNames([lng], { type: 'language' }).of(lng))
   })
+
+  it('leaves Georgian names lowercase, as Georgian writes them', () => {
+    const { suggested } = languageOptions(LANGUAGES, 'ka', ['ka'])
+    expect(suggested[0].label).toBe('ქართული')
+  })
 })
