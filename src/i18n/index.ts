@@ -98,6 +98,7 @@ const LOCALES = {
   nd: () => import('./locales/nd'),
   ne: () => import('./locales/ne'),
   nl: () => import('./locales/nl'),
+  nn: () => import('./locales/nn'),
   om: () => import('./locales/om'),
   or: () => import('./locales/or'),
   os: () => import('./locales/os'),
@@ -177,12 +178,12 @@ const backend: BackendModule = {
 
 /**
  * A browser or link code (de-AT, zh-TW, no) as one of our languages: the base language, except
- * Traditional Chinese regions, which read zh-Hant, and Norwegian, which reads Bokmål.
+ * Traditional Chinese regions, which read zh-Hant, and plain Norwegian (no), which reads Bokmål.
  */
 export const toUiLanguage = (code: string): string => {
   const [base, ...rest] = code.toLowerCase().split(/[-_]/)
   if (base === 'zh' && rest.some((p) => ['hant', 'tw', 'hk', 'mo'].includes(p))) return 'zh-Hant'
-  if (base === 'no' || base === 'nn') return 'nb'
+  if (base === 'no') return 'nb'
   // Old codes some browsers still send.
   return { tl: 'fil', iw: 'he', in: 'id' }[base] ?? base
 }
