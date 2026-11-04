@@ -9,7 +9,7 @@ const kk: Translation = {
     /** Label of the language picker; each option shows its language's own name. */
     language: 'Тіл',
   },
-  theme: { change: 'Тақырып: {{name}}. Өзгерту үшін түртіңіз.', emerald: 'Зүмірет', noir: 'Қара', light: 'Ашық' },
+  theme: { change: 'Түс тақырыбы: {{name}}. Ауыстыру үшін түртіңіз.', emerald: 'Зүмірет', noir: 'Нуар', light: 'Ашық' },
   tabs: {
     aria: 'Дизайн бөлімдері',
     templates: 'Үлгілер',
