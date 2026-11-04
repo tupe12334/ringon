@@ -130,7 +130,7 @@ const be: Translation = {
     eternity: 'Поўная вечнасць',
     'half-eternity': 'Палова вечнасці',
   },
-  font: { serif: 'Serif', sans: 'Sans', script: 'Рукапісны' },
+  font: { serif: 'З засечкамі', sans: 'Без засечак', script: 'Рукапісны' },
 
   size: {
     system: 'Сістэма памераў',
@@ -189,7 +189,7 @@ const be: Translation = {
     edge: 'Мяжа аправы',
     plain: 'Гладкая',
     rounded: 'Закругленая',
-    milgrain: 'Milgrain',
+    milgrain: 'Мілгрэйн',
   },
   settingPanel: {
     needStone: 'Уключыце цэнтральны камень, каб выбраць аправу.',
@@ -199,7 +199,7 @@ const be: Translation = {
     low: 'нізкая',
     medium: 'сярэдняя',
     high: 'высокая',
-    halo: 'Halo',
+    halo: 'Гало',
     haloStyle: 'Стыль halo',
     haloClassic: 'Класічны (вакол каменя)',
     haloHidden: 'Схаваны (пад камянём)',

@@ -130,7 +130,7 @@ const si: Translation = {
     eternity: 'සම්පූර්ණ ඉටර්නිටි',
     'half-eternity': 'අර්ධ ඉටර්නිටි',
   },
-  font: { serif: 'Serif', sans: 'Sans', script: 'අත් අකුරු' },
+  font: { serif: 'සෙරිෆ්', sans: 'සෑන්ස්', script: 'අත් අකුරු' },
 
   size: {
     system: 'ප්‍රමාණ ක්‍රමය',
@@ -382,7 +382,7 @@ const si: Translation = {
     remove: 'ඉවත් කරන්න',
     notes: 'අමතර උපදෙස්',
     notesPlaceholder: 'උදා: මෘදු දහවල් ආලෝකය, රතු නියපොතු පොළිෂ්',
-    prompt: 'Prompt',
+    prompt: 'ප්‍රොම්ප්ට්',
     copy: 'Prompt පිටපත් කරන්න',
     copied: 'පිටපත් කරන ලදී',
     generateTitle: 'ඔබේ සැබෑ API යතුරින් උත්පාදනය',

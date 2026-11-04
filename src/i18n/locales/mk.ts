@@ -130,7 +130,7 @@ const mk: Translation = {
     eternity: 'Полна вечност',
     'half-eternity': 'Половина вечност',
   },
-  font: { serif: 'Serif', sans: 'Sans', script: 'Ракописен' },
+  font: { serif: 'Со серифи', sans: 'Без серифи', script: 'Ракописен' },
 
   size: {
     system: 'Систем на големини',

@@ -130,7 +130,7 @@ const hy: Translation = {
     eternity: 'Ամբողջական հավիտենություն',
     'half-eternity': 'Կես հավիտենություն',
   },
-  font: { serif: 'Serif', sans: 'Sans', script: 'Գրաձև' },
+  font: { serif: 'Սերիֆ', sans: 'Անսերիֆ', script: 'Գրաձև' },
 
   size: {
     system: 'Չափերի համակարգ',
@@ -189,7 +189,7 @@ const hy: Translation = {
     edge: 'Շրջանակի ծայր',
     plain: 'Հարթ',
     rounded: 'Կլորացված',
-    milgrain: 'Milgrain',
+    milgrain: 'Ուլունքավոր',
   },
   settingPanel: {
     needStone: 'Միացրեք կենտրոնական քարը՝ դրվածքը ընտրելու համար։',
@@ -199,7 +199,7 @@ const hy: Translation = {
     low: 'ցածր',
     medium: 'միջին',
     high: 'բարձր',
-    halo: 'Halo',
+    halo: 'Հալո',
     haloStyle: 'Halo ոճ',
     haloClassic: 'Դասական (քարի շուրջ)',
     haloHidden: 'Թաքնված (քարի տակ)',
