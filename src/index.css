@@ -156,6 +156,10 @@ input.ruler:focus-visible { outline-offset: 4px; border-radius: 6px; }
 .topbar .row { gap: 0.4rem; min-width: 0; flex-shrink: 1; }
 .topbar h1 { flex: none; }
 .topbar select.language { width: auto; max-width: 7.5rem; min-height: 40px; border-radius: 999px; padding-inline: 0.7rem; font-size: 0.85rem; }
+/* The globe sits inside the pill, so the picker reads as "language" in any script. */
+.language-pick { position: relative; display: inline-flex; align-items: center; min-width: 0; }
+.language-pick .ico { position: absolute; inset-inline-start: 0.6rem; width: 16px; height: 16px; color: var(--accent); pointer-events: none; }
+.topbar .language-pick select.language { padding-inline-start: 1.85rem; }
 .theme-btn { display: inline-flex; align-items: center; gap: 0.35rem; padding-inline: 0.75rem; font-size: 0.85rem; font-weight: 600; white-space: nowrap; }
 .theme-btn .ico { width: 16px; height: 16px; color: var(--accent); }
 /* Phones: the theme button shows its icon only (its aria-label still names the theme). */
