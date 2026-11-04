@@ -88,8 +88,9 @@ const LOCALES = {
 } as const satisfies Record<string, Loader>
 
 export type Language = 'en' | keyof typeof LOCALES
-export const LANGUAGES = ['en', ...Object.keys(LOCALES)] as Language[]
-const isLanguage = (lng: string): lng is Language => (LANGUAGES as string[]).includes(lng)
+const isLocale = (code: string): code is keyof typeof LOCALES => Object.hasOwn(LOCALES, code)
+export const isLanguage = (lng: string): lng is Language => lng === 'en' || isLocale(lng)
+export const LANGUAGES: Language[] = ['en', ...Object.keys(LOCALES).filter(isLocale)]
 
 /** Loads one language's text; tests use it to check every file. */
 export const loadTranslation = async (lng: Language): Promise<Translation> => (lng === 'en' ? en : (await LOCALES[lng]()).default)
