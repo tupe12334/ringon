@@ -12,6 +12,11 @@ type Loader = () => Promise<{ default: Translation }>
 const LOCALES = {
   ar: () => import('./locales/ar'),
   de: () => import('./locales/de'),
+  nl: () => import('./locales/nl'),
+  sv: () => import('./locales/sv'),
+  da: () => import('./locales/da'),
+  nb: () => import('./locales/nb'),
+  fi: () => import('./locales/fi'),
   es: () => import('./locales/es'),
   he: () => import('./locales/he'),
   pl: () => import('./locales/pl'),
