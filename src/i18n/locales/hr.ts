@@ -8,6 +8,7 @@ const hr: Translation = {
     loadingTryOn: 'Učitavanje isprobavanja…',
     language: 'Jezik',
   },
+  theme: { change: 'Tema: {{name}}. Dodirnite za promjenu.', emerald: 'Smaragd', noir: 'Noir', light: 'Svijetla' },
   tabs: {
     aria: 'Dijelovi dizajna',
     templates: 'Predlošci',

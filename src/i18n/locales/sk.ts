@@ -8,6 +8,7 @@ const sk: Translation = {
     loadingTryOn: 'Načítava sa skúšanie…',
     language: 'Jazyk',
   },
+  theme: { change: 'Motív: {{name}}. Ťuknutím zmeníte.', emerald: 'Smaragd', noir: 'Noir', light: 'Svetlý' },
   tabs: {
     aria: 'Časti návrhu',
     templates: 'Šablóny',

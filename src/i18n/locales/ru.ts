@@ -8,6 +8,7 @@ const ru: Translation = {
     loadingTryOn: 'Загрузка примерки…',
     language: 'Язык',
   },
+  theme: { change: 'Тема: {{name}}. Нажмите, чтобы сменить.', emerald: 'Изумруд', noir: 'Нуар', light: 'Светлая' },
   tabs: {
     aria: 'Разделы дизайна',
     templates: 'Шаблоны',

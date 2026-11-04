@@ -8,6 +8,7 @@ const sl: Translation = {
     loadingTryOn: 'Nalaganje preizkusa…',
     language: 'Jezik',
   },
+  theme: { change: 'Tema: {{name}}. Tapnite za zamenjavo.', emerald: 'Smaragd', noir: 'Noir', light: 'Svetla' },
   tabs: {
     aria: 'Deli oblikovanja',
     templates: 'Predloge',

@@ -8,6 +8,7 @@ const hi: Translation = {
     loadingTryOn: 'आज़माइश लोड हो रही है…',
     language: 'भाषा',
   },
+  theme: { change: 'थीम: {{name}}. बदलने के लिए टैप करें।', emerald: 'पन्ना', noir: 'नुआर', light: 'हल्की' },
   tabs: {
     aria: 'डिज़ाइन खंड',
     templates: 'टेम्पलेट',

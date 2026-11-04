@@ -8,6 +8,7 @@ const ur: Translation = {
     loadingTryOn: 'آزمائش لوڈ ہو رہی ہے…',
     language: 'زبان',
   },
+  theme: { change: 'تھیم: {{name}}۔ بدلنے کے لیے ٹیپ کریں۔', emerald: 'زمرد', noir: 'نوار', light: 'ہلکی' },
   tabs: {
     aria: 'ڈیزائن کے حصے',
     templates: 'ٹیمپلیٹس',

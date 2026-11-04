@@ -8,6 +8,7 @@ const kn: Translation = {
     loadingTryOn: 'ಪ್ರಯತ್ನ ಲೋಡ್ ಆಗುತ್ತಿದೆ…',
     language: 'ಭಾಷೆ',
   },
+  theme: { change: 'ಥೀಮ್: {{name}}. ಬದಲಾಯಿಸಲು ಟ್ಯಾಪ್ ಮಾಡಿ.', emerald: 'ಪಚ್ಚೆ', noir: 'ನ್ವಾರ್', light: 'ತಿಳಿ' },
   tabs: {
     aria: 'ವಿನ್ಯಾಸದ ವಿಭಾಗಗಳು',
     templates: 'ಟೆಂಪ್ಲೇಟ್‌ಗಳು',

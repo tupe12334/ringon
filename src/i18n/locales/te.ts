@@ -9,6 +9,7 @@ const te: Translation = {
     /** Label of the language picker; each option shows its language's own name. */
     language: 'భాష',
   },
+  theme: { change: 'థీమ్: {{name}}. మార్చడానికి నొక్కండి.', emerald: 'పచ్చ', noir: 'న్వార్', light: 'లేత' },
   tabs: {
     aria: 'డిజైన్ విభాగాలు',
     templates: 'టెంప్లేట్లు',

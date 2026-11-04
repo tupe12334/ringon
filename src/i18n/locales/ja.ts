@@ -8,6 +8,7 @@ const ja: Translation = {
     loadingTryOn: '試着を読み込んでいます…',
     language: '言語',
   },
+  theme: { change: 'テーマ: {{name}}。タップで切り替え。', emerald: 'エメラルド', noir: 'ノワール', light: 'ライト' },
   tabs: {
     aria: 'デザインの項目',
     templates: 'テンプレート',

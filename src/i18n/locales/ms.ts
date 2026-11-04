@@ -8,6 +8,7 @@ const ms: Translation = {
     loadingTryOn: 'Memuatkan cubaan…',
     language: 'Bahasa',
   },
+  theme: { change: 'Tema: {{name}}. Ketik untuk menukar.', emerald: 'Zamrud', noir: 'Noir', light: 'Cerah' },
   tabs: {
     aria: 'Bahagian reka bentuk',
     templates: 'Templat',

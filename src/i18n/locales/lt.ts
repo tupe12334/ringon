@@ -8,6 +8,7 @@ const lt: Translation = {
     loadingTryOn: 'Įkeliamas bandymas…',
     language: 'Kalba',
   },
+  theme: { change: 'Tema: {{name}}. Bakstelėkite, kad pakeistumėte.', emerald: 'Smaragdas', noir: 'Noir', light: 'Šviesi' },
   tabs: {
     aria: 'Dizaino skyriai',
     templates: 'Šablonai',

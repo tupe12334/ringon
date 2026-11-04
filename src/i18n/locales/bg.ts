@@ -8,6 +8,7 @@ const bg: Translation = {
     loadingTryOn: 'Зареждане на пробването…',
     language: 'Език',
   },
+  theme: { change: 'Тема: {{name}}. Докоснете за смяна.', emerald: 'Изумруд', noir: 'Ноар', light: 'Светла' },
   tabs: {
     aria: 'Раздели на дизайна',
     templates: 'Шаблони',

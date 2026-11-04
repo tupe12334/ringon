@@ -8,6 +8,7 @@ const cs: Translation = {
     loadingTryOn: 'Načítám zkoušení…',
     language: 'Jazyk',
   },
+  theme: { change: 'Motiv: {{name}}. Klepnutím změníte.', emerald: 'Smaragd', noir: 'Noir', light: 'Světlý' },
   tabs: {
     aria: 'Části návrhu',
     templates: 'Šablony',

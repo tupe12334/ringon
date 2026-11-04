@@ -1,6 +1,6 @@
 // Small form controls built on native inputs.
 
-import { type ReactNode } from 'react'
+import { type CSSProperties, type ReactNode } from 'react'
 
 export function Field({ label, children, hint, icon }: { label: string; children: ReactNode; hint?: string; icon?: ReactNode }) {
   return (
@@ -40,6 +40,8 @@ export function Slider({
     <Field label={label} hint={format(value)} icon={icon}>
       <input
         type="range"
+        className="ruler"
+        style={{ '--ticks': rulerTicks(min, max, step) } as CSSProperties}
         aria-label={label}
         min={min}
         max={max}
@@ -47,8 +49,20 @@ export function Slider({
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
       />
+      <div className="ruler-ends" aria-hidden="true">
+        <span>{format(min)}</span>
+        <span>{format(max)}</span>
+      </div>
     </Field>
   )
+}
+
+/** Tick marks on a ruler: one per step, or per few steps so there are at most 40. */
+export function rulerTicks(min: number, max: number, step: number) {
+  const steps = Math.max(1, Math.round((max - min) / step))
+  let every = Math.ceil(steps / 40)
+  while (steps % every) every++
+  return steps / every
 }
 
 /** A row of toggle chips. With `icons` each option becomes a picture tile, so long lists

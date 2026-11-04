@@ -8,6 +8,7 @@ const uk: Translation = {
     loadingTryOn: 'Завантаження примірки…',
     language: 'Мова',
   },
+  theme: { change: 'Тема: {{name}}. Торкніться, щоб змінити.', emerald: 'Смарагд', noir: 'Нуар', light: 'Світла' },
   tabs: {
     aria: 'Розділи дизайну',
     templates: 'Шаблони',

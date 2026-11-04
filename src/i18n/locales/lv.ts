@@ -8,6 +8,7 @@ const lv: Translation = {
     loadingTryOn: 'Ielādē izmēģinājumu…',
     language: 'Valoda',
   },
+  theme: { change: 'Motīvs: {{name}}. Pieskarieties, lai mainītu.', emerald: 'Smaragds', noir: 'Noir', light: 'Gaišs' },
   tabs: {
     aria: 'Dizaina sadaļas',
     templates: 'Veidnes',

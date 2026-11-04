@@ -8,6 +8,7 @@ const sw: Translation = {
     loadingTryOn: 'Inapakia majaribio…',
     language: 'Lugha',
   },
+  theme: { change: 'Mandhari: {{name}}. Gusa ili kubadilisha.', emerald: 'Zumaridi', noir: 'Noir', light: 'Angavu' },
   tabs: {
     aria: 'Sehemu za muundo',
     templates: 'Violezo',

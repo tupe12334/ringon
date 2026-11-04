@@ -9,6 +9,7 @@ const gu: Translation = {
     /** Label of the language picker; each option shows its language's own name. */
     language: 'ભાષા',
   },
+  theme: { change: 'થીમ: {{name}}. બદલવા માટે ટેપ કરો.', emerald: 'નીલમણિ', noir: 'નોઆર', light: 'આછી' },
   tabs: {
     aria: 'ડિઝાઇન વિભાગો',
     templates: 'ટેમ્પ્લેટ',

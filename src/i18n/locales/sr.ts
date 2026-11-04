@@ -8,6 +8,7 @@ const sr: Translation = {
     loadingTryOn: 'Учитавање пробе…',
     language: 'Језик',
   },
+  theme: { change: 'Тема: {{name}}. Додирните за промену.', emerald: 'Смарагд', noir: 'Ноар', light: 'Светла' },
   tabs: {
     aria: 'Делови дизајна',
     templates: 'Шаблони',

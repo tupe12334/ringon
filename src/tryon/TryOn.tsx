@@ -1,9 +1,10 @@
 // Live try-on: the camera feed with the ring tracked onto a finger, in real time.
 
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, type CSSProperties, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import * as THREE from 'three'
+import { rulerTicks } from '../customizer/controls'
 import { LostContextRetry } from '../LostContextRetry'
 import { RingModel, StudioEnvironment } from '../ring/RingModel'
 import { CAMERA_LIGHTING } from './cameraExposure'
@@ -352,20 +353,24 @@ export function TryOn({ onBack }: { onBack: () => void }) {
                 </button>
               ))}
             </div>
-            <div className="row">
-              <label className="fit">
-                {t('tryon.fit')}
-                <input type="range" min={0.7} max={1.3} step={0.01} value={fit} onChange={(e) => setFit(Number(e.target.value))} aria-label={t('tryon.fitAria')} />
-              </label>
-              <button type="button" onClick={() => setFlip((v) => !v)} aria-pressed={flip}>
+            <label className="fit">
+              {t('tryon.fit')}
+              <input type="range" className="ruler" style={{ '--ticks': rulerTicks(0.7, 1.3, 0.01) } as CSSProperties} min={0.7} max={1.3} step={0.01} value={fit} onChange={(e) => setFit(Number(e.target.value))} aria-label={t('tryon.fitAria')} />
+            </label>
+            {/* The dock: flip and record on the sides, the round shutter (a photo) in the centre. */}
+            <div className="dock capture">
+              <button type="button" className="dock-btn" onClick={() => setFlip((v) => !v)} aria-pressed={flip}>
                 {t('tryon.flip')}
               </button>
-            </div>
-            <div className="row capture">
-              <button type="button" onClick={recorder.snapshot} disabled={!video}>
-                {t('tryon.photo')}
-              </button>
-              <button type="button" className={recorder.recording ? 'record on' : 'record'} onClick={recorder.recording ? recorder.stop : recorder.start} disabled={!video || !recorder.supported}>
+              <div className="shutter-wrap">
+                <button type="button" className="shutter" onClick={recorder.snapshot} disabled={!video} aria-label={t('tryon.photo')}>
+                  <i aria-hidden="true" />
+                </button>
+                <span className="shutter-label" aria-hidden="true">
+                  {t('tryon.photo')}
+                </span>
+              </div>
+              <button type="button" className={recorder.recording ? 'dock-btn record on' : 'dock-btn record'} onClick={recorder.recording ? recorder.stop : recorder.start} disabled={!video || !recorder.supported}>
                 {recorder.recording ? t('tryon.stop', { seconds: recorder.seconds }) : t('tryon.record')}
               </button>
             </div>

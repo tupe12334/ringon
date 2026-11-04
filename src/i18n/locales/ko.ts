@@ -8,6 +8,7 @@ const ko: Translation = {
     loadingTryOn: '착용 미리보기 불러오는 중…',
     language: '언어',
   },
+  theme: { change: '테마: {{name}}. 탭하여 변경하세요.', emerald: '에메랄드', noir: '누아르', light: '라이트' },
   tabs: {
     aria: '디자인 항목',
     templates: '템플릿',

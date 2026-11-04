@@ -8,6 +8,7 @@ const id: Translation = {
     loadingTryOn: 'Memuat percobaan…',
     language: 'Bahasa',
   },
+  theme: { change: 'Tema: {{name}}. Ketuk untuk mengganti.', emerald: 'Zamrud', noir: 'Noir', light: 'Terang' },
   tabs: {
     aria: 'Bagian desain',
     templates: 'Templat',

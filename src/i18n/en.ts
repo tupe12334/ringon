@@ -7,6 +7,7 @@ export const en = {
     /** Label of the language picker; each option shows its language's own name. */
     language: 'Language',
   },
+  theme: { change: 'Theme: {{name}}. Tap to change.', emerald: 'Emerald', noir: 'Noir', light: 'Light' },
   tabs: {
     aria: 'Design sections',
     templates: 'Templates',

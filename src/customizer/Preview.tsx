@@ -16,7 +16,6 @@ import { isPausedForSlowness, isPhotorealOn, markTooSlow, SampleTimer, togglePho
 import type { RingSpec } from '../ring/spec'
 import { useStore } from '../templates/store'
 
-const BACKGROUND = '#f3f1ee'
 /** How long the view must be still before path tracing starts, ms. */
 const SETTLE_MS = 600
 /** Samples per pixel to stop at: converged enough, then the GPU rests. */
@@ -203,7 +202,7 @@ function PathTracer({
   return null
 }
 
-export function Preview({ spec }: { spec: RingSpec }) {
+export function Preview({ spec, background }: { spec: RingSpec; background: string }) {
   const { t } = useTranslation()
   const storedPhotoreal = useStore((s) => s.photoreal)
   const setPhotoreal = useStore((s) => s.setPhotoreal)
@@ -232,7 +231,7 @@ export function Preview({ spec }: { spec: RingSpec }) {
     <>
       <LostContextRetry>
       <Canvas dpr={[1, 2]} camera={{ fov: 35, position: [0, 32, 52], near: 1, far: 1000 }} gl={{ antialias: true, preserveDrawingBuffer: true, toneMapping: THREE.NeutralToneMapping }}>
-        <color attach="background" args={[BACKGROUND]} />
+        <color attach="background" args={[background]} />
         <StudioEnvironment />
         <Bounds fit clip observe margin={1.25}>
           <group rotation={[-Math.PI / 2, 0, 0]}>
@@ -243,7 +242,7 @@ export function Preview({ spec }: { spec: RingSpec }) {
           // A real surface for real shadows and caustics.
           <mesh rotation-x={-Math.PI / 2} position-y={floorY} name="floor">
             <circleGeometry args={[400, 64]} />
-            <meshStandardMaterial color={BACKGROUND} roughness={0.95} />
+            <meshStandardMaterial color={background} roughness={0.95} />
           </mesh>
         ) : (
           <ContactShadows position={[0, floorY, 0]} opacity={0.35} scale={60} blur={2.5} far={20} resolution={256} />

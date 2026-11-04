@@ -8,6 +8,7 @@ const fa: Translation = {
     loadingTryOn: 'در حال بارگذاری امتحان…',
     language: 'زبان',
   },
+  theme: { change: 'پوسته: {{name}}. برای تغییر لمس کنید.', emerald: 'زمردی', noir: 'نوآر', light: 'روشن' },
   tabs: {
     aria: 'بخش‌های طراحی',
     templates: 'الگوها',

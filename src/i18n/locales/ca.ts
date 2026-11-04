@@ -8,6 +8,7 @@ const ca: Translation = {
     loadingTryOn: 'Carregant la prova…',
     language: 'Idioma',
   },
+  theme: { change: 'Tema: {{name}}. Toca per canviar-lo.', emerald: 'Maragda', noir: 'Noir', light: 'Clar' },
   tabs: {
     aria: 'Seccions del disseny',
     templates: 'Plantilles',
