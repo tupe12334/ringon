@@ -7,6 +7,7 @@ const su: Translation = {
     tryOn: 'Coba dina leungeun abdi',
     loadingTryOn: 'Keur ngamuat coba…',
     language: 'Basa',
+    suggested: 'Saran',
   },
   theme: { change: 'Téma: {{name}}. Pencét pikeun ngaganti.', emerald: 'Zamrud', noir: 'Hideung', light: 'Caang' },
   tabs: {

@@ -7,6 +7,7 @@ const haw: Translation = {
     tryOn: 'Hoʻāo ma koʻu lima',
     loadingTryOn: 'Ke hoʻouka nei i ka hoʻāo…',
     language: 'ʻŌlelo',
+    suggested: 'Suggestions',
   },
   theme: { change: 'Kumuhana: {{name}}. Kaomi e hoʻololi.', emerald: 'Emeralda', noir: 'ʻEleʻele', light: 'Mālamalama' },
   tabs: {

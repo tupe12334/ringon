@@ -7,6 +7,7 @@ const yue: Translation = {
     tryOn: '喺我隻手上試戴',
     loadingTryOn: '載入試戴中…',
     language: '語言',
+    suggested: '建議',
   },
   theme: { change: '主題：{{name}}。撳一下就轉。', emerald: '翡翠綠', noir: '黑', light: '淺色' },
   tabs: {

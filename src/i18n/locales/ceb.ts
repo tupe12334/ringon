@@ -7,6 +7,7 @@ const ceb: Translation = {
     tryOn: 'Sulayi sa akong kamot',
     loadingTryOn: 'Nagkarga sa pagsulay…',
     language: 'Pinulongan',
+    suggested: 'Mga sugyot',
   },
   theme: { change: 'Tema: {{name}}. I-tap aron usbon.', emerald: 'Esmeralda', noir: 'Itom', light: 'Suga' },
   tabs: {

@@ -7,6 +7,7 @@ const chr: Translation = {
     tryOn: 'ᎠᏎ ᏗᎵᏍᏗ ᎦᏚᎲ',
     loadingTryOn: 'ᎦᏚᎲ ᏗᎵᏍᏗ ᏗᏆᏓᏅᏛ…',
     language: 'ᏣᏂᏏ',
+    suggested: 'Suggestions',
   },
   theme: { change: 'ᏗᏓᏅᏙᏗ: {{name}}. ᎠᏓᏁᎸ ᏗᏆᏚᎸ ᎢᏳᏃ ᏙᏓᏆᏘᏍᏗ.', emerald: 'ᏆᎷᏒᎳᏓ', noir: 'ᎾᏍᏊ', light: 'ᎤᏓᏅ' },
   tabs: {

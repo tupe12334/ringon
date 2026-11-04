@@ -7,6 +7,7 @@ const jv: Translation = {
     tryOn: 'Coba ing tanganku',
     loadingTryOn: 'Lagi mbukak coba…',
     language: 'Basa',
+    suggested: 'Saran',
   },
   theme: { change: 'Tema: {{name}}. Pencet kanggo ganti.', emerald: 'Zamrud', noir: 'Ireng', light: 'Padhang' },
   tabs: {
