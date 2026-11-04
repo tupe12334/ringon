@@ -7,10 +7,11 @@ import { DEFAULT_SPEC } from './ring/spec'
 import { BUILTIN_TEMPLATES } from './templates/builtin'
 import { isTryOnHash, specFromHash, specHash } from './templates/share'
 import { useStore } from './templates/store'
+import { importTryOn } from './tryon/preload'
 import { TryOnLoading } from './tryon/TryOnLoading'
 
-// The camera view pulls in MediaPipe; load it only when the user opens it.
-const TryOn = lazy(() => import('./tryon/TryOn').then((m) => ({ default: m.TryOn })))
+// The camera view pulls in MediaPipe: keep it out of the first load (tryon/preload.ts fetches it later).
+const TryOn = lazy(() => importTryOn().then((m) => ({ default: m.TryOn })))
 
 type View = 'design' | 'tryon'
 

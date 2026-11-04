@@ -4,6 +4,7 @@ import { LanguagePicker } from '../i18n/LanguagePicker'
 import { useStore } from '../templates/store'
 import { TemplatesPanel } from '../templates/TemplatesPanel'
 import { useTheme, PREVIEW_BACKGROUND } from '../theme'
+import { preloadTryOn } from '../tryon/preload'
 import { handIcon, tabIcons, themeIcons } from './icons'
 import { Preview } from './Preview'
 import { summary } from './summary'
@@ -68,7 +69,15 @@ export function Customizer({ onTryOn }: { onTryOn: () => void }) {
       </section>
 
       <div className="tryon-bar">
-        <button type="button" className="primary tryon-btn" onClick={onTryOn}>
+        <button
+          type="button"
+          className="primary tryon-btn"
+          onClick={onTryOn}
+          // A hover, touch or focus comes just before a tap: start the downloads now.
+          onPointerEnter={preloadTryOn}
+          onPointerDown={preloadTryOn}
+          onFocus={preloadTryOn}
+        >
           {handIcon}
           {t('app.tryOn')}
         </button>
