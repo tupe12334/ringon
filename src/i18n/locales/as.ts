@@ -8,6 +8,7 @@ const as: Translation = {
     loadingTryOn: 'চেষ্টা লোড হৈ আছে…',
     language: 'ভাষা',
   },
+  theme: { change: 'ৰং থিম: {{name}}। সলনি কৰিবলৈ টিপক।', emerald: 'পান্না', noir: 'নোৱাৰ', light: 'পোহৰ' },
   tabs: {
     aria: 'ডিজাইনৰ অংশ',
     templates: 'টেমপ্লেট',

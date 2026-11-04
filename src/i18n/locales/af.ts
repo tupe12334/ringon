@@ -8,6 +8,7 @@ const af: Translation = {
     loadingTryOn: 'Laai pas-aanmaking…',
     language: 'Taal',
   },
+  theme: { change: 'Kleurtema: {{name}}. Tik om te wissel.', emerald: 'Smarag', noir: 'Noir', light: 'Lig' },
   tabs: {
     aria: 'Ontwerpafdelings',
     templates: 'Sjablone',

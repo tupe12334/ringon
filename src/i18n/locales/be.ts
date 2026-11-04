@@ -8,6 +8,7 @@ const be: Translation = {
     loadingTryOn: 'Загрузка прымеркі…',
     language: 'Мова',
   },
+  theme: { change: 'Колеравая тэма: {{name}}. Націсніце, каб змяніць.', emerald: 'Смарагд', noir: 'Нуар', light: 'Светлая' },
   tabs: {
     aria: 'Раздзелы дызайну',
     templates: 'Шаблоны',

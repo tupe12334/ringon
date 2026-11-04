@@ -8,6 +8,7 @@ const cy: Translation = {
     loadingTryOn: 'Yn llwytho rhoi cynnig arni…',
     language: 'Iaith',
   },
+  theme: { change: 'Thema lliw: {{name}}. Tapiwch i newid.', emerald: 'Emrallt', noir: 'Noir', light: 'Golau' },
   tabs: {
     aria: 'Adrannau dylunio',
     templates: 'Templedi',

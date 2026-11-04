@@ -8,6 +8,7 @@ const is: Translation = {
     loadingTryOn: 'Hleð mátun…',
     language: 'Tungumál',
   },
+  theme: { change: 'Litaþema: {{name}}. Ýttu til að skipta.', emerald: 'Smaragður', noir: 'Noir', light: 'Ljóst' },
   tabs: {
     aria: 'Hlutar hönnunar',
     templates: 'Sniðmát',

@@ -8,6 +8,7 @@ const or: Translation = {
     loadingTryOn: 'ଚେଷ୍ଟା ଲୋଡ୍ ହେଉଛି…',
     language: 'ଭାଷା',
   },
+  theme: { change: 'ରଙ୍ଗ ଥିମ୍: {{name}}। ବଦଳାଇବାକୁ ଟ୍ୟାପ୍ କରନ୍ତୁ।', emerald: 'ପାନ୍ନା', noir: 'ନୋଆର୍', light: 'ହାଲୁକା' },
   tabs: {
     aria: 'ଡିଜାଇନ୍ ବିଭାଗ',
     templates: 'ଟେମ୍ପ୍ଲେଟ୍',

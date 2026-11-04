@@ -8,6 +8,7 @@ const eu: Translation = {
     loadingTryOn: 'Probaren zamara…',
     language: 'Hizkuntza',
   },
+  theme: { change: 'Kolore-gaia: {{name}}. Sakatu aldatzeko.', emerald: 'Esmeralda', noir: 'Noir', light: 'Argia' },
   tabs: {
     aria: 'Diseinu-atalak',
     templates: 'Txantiloiak',

@@ -8,6 +8,7 @@ const mk: Translation = {
     loadingTryOn: 'Се вчитува пробата…',
     language: 'Јазик',
   },
+  theme: { change: 'Тема на бои: {{name}}. Допрете за промена.', emerald: 'Смарагд', noir: 'Ноар', light: 'Светла' },
   tabs: {
     aria: 'Делови на дизајнот',
     templates: 'Шаблони',
