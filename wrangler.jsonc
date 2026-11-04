@@ -1,4 +1,5 @@
-// Cloudflare Workers static assets: serves the built site (dist/) at https://ringon.app.
+// Cloudflare Workers static assets: serves the built site (dist/) at https://ringon.app;
+// worker/index.ts also takes analytics events at POST /e into D1.
 // Deployed by Cloudflare Workers Builds (GitHub integration) on each push to main:
 // build `pnpm build`, deploy `npx wrangler deploy`. No API token in GitHub.
 {
@@ -6,10 +7,16 @@
   // Cloudflare account "ringon" (owns the ringon.app zone).
   "account_id": "08ffdf94c65443be970d468c44157982",
   "compatibility_date": "2026-11-01",
+  "main": "worker/index.ts",
   "assets": {
     "directory": "./dist",
-    "not_found_handling": "single-page-application"
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    // Only /e runs the Worker; every other request is served straight from the assets.
+    "run_worker_first": ["/e"]
   },
+  // Schema: migrations/. Read: D1 console in the dashboard, or `wrangler d1 execute ringon-events --remote`.
+  "d1_databases": [{ "binding": "DB", "database_name": "ringon-events", "database_id": "71846ea1-2ecc-487a-bcc1-ebf443ce45f2" }],
   // Each PR gets a preview URL (Workers Builds runs `npx wrangler preview`, which needs this block).
   "previews": {},
   // custom_domain creates the DNS record and certificate for ringon.app.

@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Customizer } from './customizer/Customizer'
+import { track } from './analytics'
 import i18n from './i18n'
 import { DEFAULT_SPEC } from './ring/spec'
 import { BUILTIN_TEMPLATES } from './templates/builtin'
@@ -46,6 +47,10 @@ export default function App() {
   useEffect(() => {
     history.replaceState(history.state, '', specHash(spec, view === 'tryon'))
   }, [spec, view])
+
+  useEffect(() => {
+    if (view === 'tryon') track('tryon_open')
+  }, [view])
 
   // The phone's back button leaves the camera view.
   useEffect(() => {
