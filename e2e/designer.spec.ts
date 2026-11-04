@@ -193,10 +193,10 @@ test('switches to Hebrew, right to left, and remembers it', async ({ page }) => 
 test('loads another language on demand and offers every language by its own name', async ({ page }) => {
   const picker = page.getByRole('combobox', { name: 'Language' })
   await expect(picker.getByRole('option', { name: 'Deutsch' })).toHaveCount(1)
-  await expect(picker.getByRole('option', { name: '日本語' })).toHaveCount(1)
-  await picker.selectOption('ja')
-  await expect(page.locator('html')).toHaveAttribute('lang', 'ja')
-  await expect(page.getByRole('combobox', { name: '言語' })).toBeVisible()
+  await expect(picker.getByRole('option', { name: 'Русский' })).toHaveCount(1)
+  await picker.selectOption('de')
+  await expect(page.locator('html')).toHaveAttribute('lang', 'de')
+  await expect(page.getByRole('combobox', { name: 'Sprache' })).toBeVisible()
 })
 
 test('a ?lng=he link opens in Hebrew', async ({ page }) => {
