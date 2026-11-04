@@ -102,7 +102,8 @@ export const toUiLanguage = (code: string): string => {
   const [base, ...rest] = code.toLowerCase().split(/[-_]/)
   if (base === 'zh' && rest.some((p) => ['hant', 'tw', 'hk', 'mo'].includes(p))) return 'zh-Hant'
   if (base === 'no' || base === 'nn') return 'nb'
-  return base
+  // Old codes some browsers still send.
+  return { tl: 'fil', iw: 'he', in: 'id' }[base] ?? base
 }
 
 // The page's lang and direction follow the language, so right-to-left scripts (Arabic, Hebrew, …) lay out right to left.

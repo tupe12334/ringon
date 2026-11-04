@@ -1,9 +1,6 @@
-import type { Language } from '.'
+import { toUiLanguage, type Language } from '.'
 
 export type LanguageOption = { lng: Language; label: string }
-
-/** Browser codes that name a language we ship under another code. */
-const ALIASES: Record<string, string> = { no: 'nb', tl: 'fil', iw: 'he', in: 'id' }
 
 const capitalize = (s: string, lng: string) => s.charAt(0).toLocaleUpperCase(lng) + s.slice(1)
 
@@ -23,12 +20,7 @@ export function languageOptions(languages: readonly Language[], current: Languag
     return { lng, label: native === local ? native : `${local} (${native})` }
   }
   const supported = new Set<string>(languages)
-  // A plain split: `new Intl.Locale` throws on a malformed tag such as "en_US".
-  const base = (tag: string) => {
-    const lng = tag.split(/[-_]/)[0].toLowerCase()
-    return ALIASES[lng] ?? lng
-  }
-  const suggested = [...new Set([...preferred.map(base), 'en'])].filter((lng): lng is Language => supported.has(lng))
+  const suggested = [...new Set([...preferred.map(toUiLanguage), 'en'])].filter((lng): lng is Language => supported.has(lng))
   const collator = new Intl.Collator(current)
   // The top languages are not repeated below, so a screen reader names each language once.
   const all = languages

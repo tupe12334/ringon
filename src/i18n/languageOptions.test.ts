@@ -4,8 +4,8 @@ import { languageOptions } from './languageOptions'
 
 describe('languageOptions', () => {
   it('puts the browser languages, then English, on top, skipping unsupported ones', () => {
-    const { suggested } = languageOptions(LANGUAGES, 'en', ['de-AT', 'xx', 'de', 'he-IL', 'en_US', 'no', ''])
-    expect(suggested.map((o) => o.lng)).toEqual(['de', 'he', 'en', 'nb'])
+    const { suggested } = languageOptions(LANGUAGES, 'en', ['de-AT', 'xx', 'de', 'iw-IL', 'en_US', 'no', 'zh-TW', ''])
+    expect(suggested.map((o) => o.lng)).toEqual(['de', 'he', 'en', 'nb', 'zh-Hant'])
   })
 
   it('labels each language by its own name and the current language name', () => {
