@@ -174,7 +174,7 @@ test('opens every real-ring example', async ({ page }) => {
 test('switches to Hebrew, right to left, and remembers it', async ({ page }) => {
   const summary = page.getByTestId('summary')
   await page.getByRole('combobox', { name: 'Language' }).selectOption('he')
-  await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
+  await expect(page.locator('html')).toHaveAttribute('dir', 'rtl', { timeout: 15_000 })
   await expect(page.locator('html')).toHaveAttribute('lang', 'he')
   await expect(page.getByRole('textbox', { name: 'שם התבנית' })).toHaveValue(/[\u0590-\u05FF]/)
   await expect(summary).toContainText('זהב צהוב 18K')
@@ -196,7 +196,8 @@ test('loads another language on demand and offers every language by its own name
   await expect(picker.getByRole('option', { name: 'Deutsch' })).toHaveCount(1)
   await expect(picker.getByRole('option', { name: 'Русский' })).toHaveCount(1)
   await picker.selectOption('de')
-  await expect(page.locator('html')).toHaveAttribute('lang', 'de')
+  // Loading a language chunk while software WebGL and the try-on preload hold the CPU can pass 5 s on CI.
+  await expect(page.locator('html')).toHaveAttribute('lang', 'de', { timeout: 15_000 })
   await expect(page.getByRole('combobox', { name: 'Sprache' })).toBeVisible()
 })
 
@@ -217,7 +218,7 @@ test('typing a language name switches once, to that language', async ({ page }) 
   })
   await page.getByRole('combobox', { name: 'Language' }).focus()
   await page.keyboard.type('Ger', { delay: 50 })
-  await expect(page.locator('html')).toHaveAttribute('lang', 'de')
+  await expect(page.locator('html')).toHaveAttribute('lang', 'de', { timeout: 15_000 })
   expect(await page.evaluate(() => (window as unknown as { seenLangs: string[] }).seenLangs)).toEqual(['de'])
 })
 
