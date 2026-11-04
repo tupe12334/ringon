@@ -7,6 +7,7 @@ const dz: Translation = {
     tryOn: 'ང་གི་ལག་པ་ལ་བརྟག་པ།',
     loadingTryOn: 'བརྟག་པ་ཕབ་ལེན་བྱེད་བཞིན་ཡོད…',
     language: 'སྐད་ཡིག',
+    suggested: 'Suggestions',
   },
   theme: { change: 'བརྗེ་སྒྱུར: {{name}}། བསྒྱུར་ཆོག་པ་ལ་མནན།', emerald: 'མ་ར་ཀྱ་ཏ', noir: 'ནག་པོ', light: 'འོད་གསལ' },
   tabs: {

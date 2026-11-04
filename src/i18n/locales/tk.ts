@@ -7,6 +7,7 @@ const tk: Translation = {
     tryOn: 'Elimde synap görmek',
     loadingTryOn: 'Synag ýüklenýär…',
     language: 'Dil',
+    suggested: 'Teklipler',
   },
   theme: { change: 'Reňk tema: {{name}}. Üýtgetmek üçin basyň.', emerald: 'Zümrüt', noir: 'Gara', light: 'Ýagty' },
   tabs: {

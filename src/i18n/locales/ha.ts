@@ -7,6 +7,7 @@ const ha: Translation = {
     tryOn: 'Gwada a hannuna',
     loadingTryOn: 'Ana loda gwajin…',
     language: 'Harshe',
+    suggested: 'Shawarwari',
   },
   theme: { change: 'Jigo: {{name}}. Danna don canzawa.', emerald: 'Zumurudu', noir: 'Duhu', light: 'Haske' },
   tabs: {

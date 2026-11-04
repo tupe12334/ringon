@@ -7,6 +7,7 @@ const ks: Translation = {
     tryOn: 'مٮ٘ریِ ہَتھ پٮ٘ٹھ آزماو',
     loadingTryOn: 'آزماو لوڈ گیٛژھ چھُ…',
     language: 'زَبان',
+    suggested: 'Suggestions',
   },
   theme: { change: 'رنٛگ: {{name}}۔ بَدلاوٕن کیٚلِیے ٹیپ کَریو۔', emerald: 'زُمرُد', noir: 'کاٹھ', light: 'روشن' },
   tabs: {

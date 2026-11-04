@@ -7,6 +7,7 @@ const ug: Translation = {
     tryOn: 'قولۇمدا سىناش',
     loadingTryOn: 'سىناش يۈكلىنىۋاتىدۇ…',
     language: 'تىل',
+    suggested: 'تەۋسىيەلەر',
   },
   theme: { change: 'رەڭ: {{name}}. ئۆزگەртىش ئۈچۈن چېكىڭ.', emerald: 'زۈمرەت', noir: 'قارا', light: 'يورۇق' },
   tabs: {

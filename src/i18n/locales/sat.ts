@@ -7,6 +7,7 @@ const sat: Translation = {
     tryOn: 'ᱤᱧ ᱚᱞ ᱚᱥᱟᱜ ᱨᱮ ᱧᱮᱛᱟᱜ',
     loadingTryOn: 'ᱧᱮᱛᱟᱜ ᱠᱷᱩᱞᱟ ᱟᱨᱦᱤᱧ…',
     language: 'ᱯᱟᱱᱤ',
+    suggested: 'Suggestions',
   },
   theme: { change: 'ᱨᱚᱝ: {{name}}। ᱵᱚᱫᱞᱟᱣ ᱞᱮᱣ ᱨᱮ ᱵᱟᱱᱷᱟᱣ।', emerald: 'ᱟᱢᱨᱤᱞᱴ', noir: 'ᱠᱟᱞᱟ', light: 'ᱯᱟᱦᱟᱨ' },
   tabs: {

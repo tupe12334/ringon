@@ -7,6 +7,7 @@ const ti: Translation = {
     tryOn: 'ኣብ ኢደይ ፈትን',
     loadingTryOn: 'ፈተነ ይጽዕን ኣሎ…',
     language: 'ቋንቋ',
+    suggested: 'Suggestions',
   },
   theme: { change: 'ቀለም: {{name}}። ንምቕያር ጠውቕ።', emerald: 'ኤመራልድ', noir: 'ጸሊም', light: 'ብሩህ' },
   tabs: {

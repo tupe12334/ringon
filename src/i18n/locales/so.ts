@@ -7,6 +7,7 @@ const so: Translation = {
     tryOn: 'Ku isku day gacantayda',
     loadingTryOn: 'Isku-dayga way soo raraysaa…',
     language: 'Luqadda',
+    suggested: 'Soo jeedin',
   },
   theme: { change: 'Midabka: {{name}}. Taabo si aad u beddesho.', emerald: 'Zumurrud', noir: 'Madow', light: 'Iftiin' },
   tabs: {

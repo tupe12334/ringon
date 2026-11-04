@@ -7,6 +7,7 @@ const mt: Translation = {
     tryOn: 'Ipprova fuq idi',
     loadingTryOn: 'Qed titgħabba l-prova…',
     language: 'Lingwa',
+    suggested: 'Suġġerimenti',
   },
   theme: { change: 'Tema: {{name}}. Ikklikkja biex tibdel.', emerald: 'Smeraldu', noir: 'Iswed', light: 'Ċar' },
   tabs: {

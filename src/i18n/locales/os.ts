@@ -7,6 +7,7 @@ const os: Translation = {
     tryOn: 'Мæ дæстыл бацæттæ кæнын',
     loadingTryOn: 'Бацæттæ кæнын фæндагыл…',
     language: 'Æвзаг',
+    suggested: 'Suggestions',
   },
   theme: { change: 'Тема: {{name}}. Фæивын – кликк кæн.', emerald: 'Изумруд', noir: 'Нуар', light: 'Светлая' },
   tabs: {

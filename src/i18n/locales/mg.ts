@@ -7,6 +7,7 @@ const mg: Translation = {
     tryOn: 'Andramo amin\'ny tanako',
     loadingTryOn: 'Mampiditra ny andrana…',
     language: 'Fiteny',
+    suggested: 'Soso-kevitra',
   },
   theme: { change: 'Loko: {{name}}. Tsindrio hanova.', emerald: 'Emeraldy', noir: 'Mainty', light: 'Mazava' },
   tabs: {

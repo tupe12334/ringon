@@ -7,6 +7,7 @@ const xh: Translation = {
     tryOn: 'Zama kwisandla sam',
     loadingTryOn: 'Ilayisha uvavanyo…',
     language: 'Ulwimi',
+    suggested: 'Iingcebiso',
   },
   theme: { change: 'Umbala: {{name}}. Cofa ukutshintsha.', emerald: 'Imeraldi', noir: 'Mnyama', light: 'Ukukhanya' },
   tabs: {

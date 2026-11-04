@@ -7,6 +7,7 @@ const ckb: Translation = {
     tryOn: 'لەسەر دەستی خۆم تاقی بکەوە',
     loadingTryOn: 'تاقیکردنەوە بار دەکرێت…',
     language: 'زمان',
+    suggested: 'پێشنیارەکان',
   },
   theme: { change: 'ڕەنگ: {{name}}. بۆ گۆڕین تەپ بکە.', emerald: 'زومورد', noir: 'ڕەش', light: 'ڕووناک' },
   tabs: {

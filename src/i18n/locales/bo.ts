@@ -7,6 +7,7 @@ const bo: Translation = {
     tryOn: 'ངའི་ལག་པར་བགོས་བལྟ།',
     loadingTryOn: 'བགོས་བལྟ་ཕབ་ལེན་བྱེད་བཞིན་པ…',
     language: 'སྐད་ཡིག',
+    suggested: 'བསམ་འཆར།',
   },
   theme: { change: 'གྲིབ་མདོག: {{name}}། བསྒྱུར་བར་མནན།', emerald: 'མ་ར་ཀ་ཏ', noir: 'ནག་པོ', light: 'འོད་གསལ' },
   tabs: {
