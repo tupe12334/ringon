@@ -56,7 +56,8 @@ export default defineConfig({
         // Install-sheet screenshots are only for the browser's install UI.
         globIgnores: ['screenshots/**'],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
-        // The hand-tracking model and runtime are large: cache them on first use.
+        // The hand-tracking model and runtime are large: cache them on first use (src/tryon/tracker.ts
+        // also prefetches them into this cache).
         runtimeCaching: [
           {
             urlPattern: /\/(mediapipe|models)\//,

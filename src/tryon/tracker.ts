@@ -88,10 +88,40 @@ class Tracker implements HandTracker {
   }
 }
 
+/** The service worker serves these files from this cache (runtimeCaching in vite.config.ts). */
+const CACHE = 'ringon-hand-tracking'
+
+async function prefetch(url: string): Promise<void> {
+  const cache = 'caches' in globalThis ? await caches.open(CACHE) : null
+  if (await cache?.match(url)) return
+  const res = await fetch(url, { priority: 'low' })
+  if (!res.ok) throw new Error(`${url}: ${res.status}`)
+  // Into the service worker's cache too: Chrome's HTTP cache can skip a file this big (11 MB WASM).
+  await (cache ? cache.put(url, res) : res.blob())
+}
+
+let prefetching: Promise<unknown> | null = null
+
+/**
+ * Download the WASM runtime and the model at low priority, without starting them: building a
+ * landmarker stalls the page (GPU setup) for seconds, a download doesn't.
+ */
+export function prefetchHandTracking(): Promise<unknown> {
+  prefetching ??= FilesetResolver.forVisionTasks(`${base}mediapipe`).then((f) =>
+    Promise.all([f.wasmLoaderPath, f.wasmBinaryPath, `${base}models/hand_landmarker.task`].map(prefetch)),
+  )
+  prefetching.catch(() => (prefetching = null))
+  return prefetching
+}
+
 let loading: Promise<HandTracker> | null = null
 
 export function loadHandTracker(): Promise<HandTracker> {
-  loading ??= createLandmarker().then((full) => new Tracker(full))
+  // A download already under way finishes first, so the landmarker reads it from the cache.
+  loading ??= Promise.resolve(prefetching)
+    .catch(() => {})
+    .then(createLandmarker)
+    .then((full) => new Tracker(full))
   loading.catch(() => (loading = null))
   return loading
 }

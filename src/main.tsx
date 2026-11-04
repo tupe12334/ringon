@@ -6,9 +6,11 @@ import App from './App.tsx'
 import { Crash } from './Crash.tsx'
 import { initAnalytics } from './analytics'
 import { countUsage } from './usage-counter'
+import { preloadWhenIdle } from './tryon/preload'
 
 initAnalytics()
 countUsage()
+preloadWhenIdle()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
