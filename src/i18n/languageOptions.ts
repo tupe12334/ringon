@@ -12,7 +12,7 @@ const nameIn = (lng: Language, inLng: string) => capitalize(new Intl.DisplayName
 
 /**
  * The picker's two parts. The top is the browser's languages, then English, so most people find theirs on top.
- * Below is every language, sorted by its name in the current language. Each label leads with that name, so the
+ * Below is every other language, sorted by its name in the current language. Each label leads with that name, so the
  * order reads right and typing "G" finds German, then adds the native name when it differs ("German (Deutsch)"),
  * so a reader stuck in an unknown script can still find theirs.
  */
@@ -30,6 +30,10 @@ export function languageOptions(languages: readonly Language[], current: Languag
   }
   const suggested = [...new Set([...preferred.map(base), 'en'])].filter((lng): lng is Language => supported.has(lng))
   const collator = new Intl.Collator(current)
-  const all = languages.map(option).sort((a, b) => collator.compare(a.label, b.label))
+  // The top languages are not repeated below, so a screen reader names each language once.
+  const all = languages
+    .filter((lng) => !suggested.includes(lng))
+    .map(option)
+    .sort((a, b) => collator.compare(a.label, b.label))
   return { suggested: suggested.map(option), all }
 }

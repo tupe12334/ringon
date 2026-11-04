@@ -9,20 +9,24 @@ describe('languageOptions', () => {
   })
 
   it('labels each language by its own name and the current language name', () => {
-    const { all } = languageOptions(LANGUAGES, 'en', [])
-    expect(all.find((o) => o.lng === 'de')?.label).toBe('German (Deutsch)')
-    expect(all.find((o) => o.lng === 'en')?.label).toBe('English')
-    expect(all).toHaveLength(LANGUAGES.length)
+    const { suggested, all } = languageOptions(LANGUAGES, 'en', ['de'])
+    expect(suggested.map((o) => o.label)).toEqual(['German (Deutsch)', 'English'])
+    expect(all.find((o) => o.lng === 'fr')?.label).toBe('French (Français)')
+  })
+
+  it('lists every language exactly once', () => {
+    const { suggested, all } = languageOptions(LANGUAGES, 'en', ['de', 'he'])
+    expect([...suggested, ...all].map((o) => o.lng).sort()).toEqual([...LANGUAGES].sort())
   })
 
   it('names each language in the current one, with its native name', () => {
-    const { all } = languageOptions(LANGUAGES, 'th', [])
-    expect(all.find((o) => o.lng === 'en')?.label).toBe('อังกฤษ (English)')
+    const { suggested } = languageOptions(LANGUAGES, 'th', [])
+    expect(suggested.find((o) => o.lng === 'en')?.label).toBe('อังกฤษ (English)')
   })
 
   it('sorts by the name in the current language', () => {
     const order = languageOptions(LANGUAGES, 'en', []).all.map((o) => o.lng)
-    const pick = ['ar', 'zh', 'en', 'de', 'el']
-    expect(order.filter((l) => pick.includes(l))).toEqual(['ar', 'zh', 'en', 'de', 'el'])
+    const pick = ['ar', 'zh', 'de', 'el']
+    expect(order.filter((l) => pick.includes(l))).toEqual(['ar', 'zh', 'de', 'el'])
   })
 })
