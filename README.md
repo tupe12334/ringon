@@ -54,7 +54,20 @@ served from this app (no third-party requests).
 
 Everything runs on your device. The camera feed, hand tracking, photos and clips never leave the
 browser unless you share them; designs and saved templates stay in this browser's storage. No
-accounts or cookies. Each page load on the live site pings [hits.sh](https://hits.sh) once to count
+accounts or cookies.
+
+Usage analytics: the live site sends a few events (page opened, try-on opened, photo or clip taken,
+link or media shared, app installed) to its own server (`POST /e`, [`worker/`](worker/), stored in
+Cloudflare D1). Each event carries a random id kept in this browser's storage, a random id per tab,
+the referring site's name, `utm_` tags, language, time zone, screen size, and whether the app is
+installed. The server adds the country, region and city Cloudflare derives from your IP address, the
+network owner (ASN) and your browser's user agent; it does not store the IP address. Links made by
+**Share**, and the address bar, carry your random id as `?from=`, so we can count how many people a
+shared link brings; the app reads and then replaces it when the link is opened. No camera data,
+photos, designs or names are sent. Nothing is sent when your browser sends Global Privacy Control
+or Do Not Track. Schema: [`migrations/`](migrations/).
+
+Each page load on the live site pings [hits.sh](https://hits.sh) once to count
 visits. A browser's first visit pings a second counter to count users, and its first visit
 each day pings a third to count daily users (flags in this browser's storage remember what was
 counted; no id is sent). hits.sh sees your IP address and

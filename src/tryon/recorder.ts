@@ -1,6 +1,7 @@
 // Records the try-on canvas (camera image + ring) as a video clip, or grabs a photo.
 
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react'
+import { track } from '../analytics'
 import i18n from '../i18n'
 
 export interface Capture {
@@ -27,6 +28,7 @@ export function useRecorder(canvasRef: RefObject<HTMLCanvasElement | null>) {
   const supported = typeof MediaRecorder !== 'undefined' && typeof HTMLCanvasElement.prototype.captureStream === 'function'
 
   const show = useCallback((c: Capture) => {
+    track('capture', { kind: c.kind })
     setResult((prev) => {
       if (prev) URL.revokeObjectURL(prev.url)
       return c
@@ -92,6 +94,7 @@ export function useRecorder(canvasRef: RefObject<HTMLCanvasElement | null>) {
     if (navigator.canShare?.({ files: [file] })) {
       try {
         await navigator.share({ files: [file], title: i18n.t('tryon.shareTitle') })
+        track('share_media', { kind: result.kind, via: 'native' })
         return
       } catch (e) {
         if (e instanceof DOMException && e.name === 'AbortError') return // user closed the share sheet
@@ -101,6 +104,7 @@ export function useRecorder(canvasRef: RefObject<HTMLCanvasElement | null>) {
     a.href = result.url
     a.download = file.name
     a.click()
+    track('share_media', { kind: result.kind, via: 'download' })
   }, [result])
 
   const dismiss = useCallback(() => {

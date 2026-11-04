@@ -1,0 +1,91 @@
+// First-party analytics: events go to POST https://ringon.app/e (worker/index.ts), stored in D1.
+// A random id in this browser's storage tells returning users apart; share links carry the
+// sharer's id as ?from=, so we can count who brought whom. Nothing is sent when the browser asks
+// not to be tracked (Global Privacy Control or Do Not Track). See README "Privacy".
+import { LIVE_HOSTS } from './usage-counter'
+
+const ENDPOINT = 'https://ringon.app/e'
+const ID = /^[0-9a-f-]{36}$/
+
+let uid = ''
+let sid = ''
+let from: string | null = null
+
+const optedOut = () =>
+  (navigator as Navigator & { globalPrivacyControl?: boolean }).globalPrivacyControl === true || navigator.doNotTrack === '1'
+
+function storedId(store: () => Storage, key: string): string {
+  try {
+    const s = store()
+    const v = s.getItem(key)
+    if (v && ID.test(v)) return v
+    const id = crypto.randomUUID()
+    s.setItem(key, id)
+    return id
+  } catch {
+    return crypto.randomUUID() // storage blocked: one id per page load
+  }
+}
+
+/**
+ * Reads the sharer's id from the query string and puts ours in its place, so a link copied from
+ * the address bar or made by "Share" credits this user.
+ * @param search location.search
+ * @param own this user's id, or null to only strip the incoming one
+ */
+export function swapFrom(search: string, own: string | null): { from: string | null; search: string } {
+  const q = new URLSearchParams(search)
+  const got = q.get('from')
+  q.delete('from')
+  if (own) q.set('from', own)
+  const s = q.toString()
+  return { from: got && ID.test(got) && got !== own ? got : null, search: s ? `?${s}` : '' }
+}
+
+/** Sends one event; a no-op off the live site or when the user opted out. */
+export function track(event: string, props?: Record<string, unknown>): void {
+  if (!uid) return
+  const body = JSON.stringify({ event, uid, sid, from, props, host: location.hostname, referrer: refHost() })
+  try {
+    navigator.sendBeacon(ENDPOINT, body) // text/plain: no CORS preflight from the old GitHub Pages host
+  } catch {
+    // analytics must never break the app
+  }
+}
+
+function refHost(): string | null {
+  try {
+    const h = new URL(document.referrer).hostname
+    return h && h !== location.hostname ? h : null
+  } catch {
+    return null
+  }
+}
+
+/** Call once at startup, before the app writes the design into the address bar. */
+export function initAnalytics(): void {
+  const live = LIVE_HOSTS.includes(location.hostname) && !optedOut()
+  if (live) {
+    uid = storedId(() => localStorage, 'ringon-id')
+    sid = storedId(() => sessionStorage, 'ringon-session')
+  }
+  const swapped = swapFrom(location.search, live ? uid : null)
+  from = swapped.from
+  history.replaceState(history.state, '', `${location.pathname}${swapped.search}${location.hash}`)
+  if (!live) return
+  const q = new URLSearchParams(location.search)
+  track('page_view', {
+    path: location.pathname,
+    shared: /[#&][rd]=/.test(location.hash),
+    tryon: /^#try(&|$)/.test(location.hash),
+    utm_source: q.get('utm_source'),
+    utm_medium: q.get('utm_medium'),
+    utm_campaign: q.get('utm_campaign'),
+    standalone: matchMedia('(display-mode: standalone)').matches,
+    lang: navigator.language,
+    tz: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    screen: `${screen.width}x${screen.height}@${devicePixelRatio}`,
+    touch: navigator.maxTouchPoints > 0,
+  })
+  addEventListener('appinstalled', () => track('install'))
+}

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { ringTo3mf } from '../ring/export3mf'
 import { DesignIcon } from '../customizer/icons'
 import { BUILTIN_TEMPLATES } from './builtin'
+import { track } from '../analytics'
 import { parseImport, shareUrl } from './share'
 import { useStore } from './store'
 
@@ -30,9 +31,12 @@ export function TemplatesPanel() {
   const share = async () => {
     const url = shareUrl(spec)
     try {
-      if (navigator.share) await navigator.share({ title: t('templates.shareTitle', { name: spec.name }), url })
-      else {
+      if (navigator.share) {
+        await navigator.share({ title: t('templates.shareTitle', { name: spec.name }), url })
+        track('share_link', { via: 'native' })
+      } else {
         await navigator.clipboard.writeText(url)
+        track('share_link', { via: 'clipboard' })
         setMessage(t('templates.linkCopied'))
       }
     } catch {
