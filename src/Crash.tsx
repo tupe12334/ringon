@@ -1,4 +1,5 @@
 import { Component, type ReactNode } from 'react'
+import i18n from './i18n'
 import { DEFAULT_SPEC } from './ring/spec'
 import { useStore } from './templates/store'
 
@@ -24,16 +25,16 @@ export class Crash extends Component<{ children: ReactNode }, { error?: unknown 
     // A lazy chunk from the previous deploy is gone: a reload fetches the new version.
     const stale = /dynamically imported module|Importing a module script failed|Failed to fetch/i.test(String(error))
     const message = stale
-      ? 'Ringon was updated. Reload to get the new version.'
+      ? i18n.t('crash.updated')
       : !hasWebGL()
-        ? 'This browser cannot draw 3D (WebGL 2 is off or unsupported). Restart your browser; it may have turned off graphics after a crash. Or try an up-to-date Chrome, Safari or Firefox.'
-        : 'Something went wrong.'
+        ? i18n.t('crash.noWebgl')
+        : i18n.t('crash.failed')
     return (
       <div className="crash" role="alert">
         <h1>Ringon</h1>
         <p>{message}</p>
         <div className="crash-actions">
-          <button className="primary" onClick={() => location.reload()}>Reload</button>
+          <button className="primary" onClick={() => location.reload()}>{i18n.t('crash.reload')}</button>
           {!stale && (
             <button
               onClick={() => {
@@ -42,7 +43,7 @@ export class Crash extends Component<{ children: ReactNode }, { error?: unknown 
                 location.replace(location.pathname)
               }}
             >
-              Start a new design
+              {i18n.t('crash.startOver')}
             </button>
           )}
         </div>

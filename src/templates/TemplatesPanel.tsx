@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ringTo3mf } from '../ring/export3mf'
 import { DesignIcon } from '../customizer/icons'
+import { isBuiltinName } from '../i18n/en'
 import { BUILTIN_TEMPLATES } from './builtin'
 import { parseImport, shareUrl } from './share'
 import { useStore } from './store'
@@ -22,7 +23,7 @@ export function TemplatesPanel() {
   const remove = useStore((s) => s.deleteTemplate)
   const addTemplates = useStore((s) => s.addTemplates)
   const { t } = useTranslation()
-  const builtinName = (name: string) => t(`builtin.${name}`, { defaultValue: name })
+  const builtinName = (name: string) => (isBuiltinName(name) ? t(`builtin.${name}`) : name)
   const [name, setName] = useState(() => builtinName(spec.name))
   const [message, setMessage] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)

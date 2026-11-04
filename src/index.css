@@ -61,6 +61,7 @@ input[type='color'] { width: 56px; height: 36px; border: none; background: none;
   display: flex; align-items: center; justify-content: space-between; gap: 1rem;
   padding: calc(env(safe-area-inset-top) + 0.6rem) 1rem 0.6rem;
 }
+.topbar select.language { width: auto; max-width: 11rem; }
 .preview { position: relative; flex: 0 0 42vh; min-height: 240px; }
 .preview canvas { touch-action: none; }
 .summary {

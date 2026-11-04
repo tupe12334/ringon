@@ -6,7 +6,7 @@ import { BAND_MATERIALS, FINISHES, INLAY_MATERIALS, LIMITS, METALS, type InlayMa
 import { useStore } from '../templates/store'
 import { Chips, Slider } from './controls'
 import { accentIcons, fieldIcons as fi, finishIcons, matchIcon, metalIcons } from './icons'
-import { labels, useMm } from './panels'
+import { useMm } from './panels'
 
 /** Width and position of an inlay strip, both as shares of the band width. */
 function StripSliders({ width, offset, onWidth, onOffset }: { width: number; offset: number; onWidth: (v: number) => void; onOffset: (v: number) => void }) {
@@ -33,7 +33,7 @@ export function MetalPanel() {
   const band = useStore((s) => s.spec.band)
   const update = useStore((s) => s.update)
   const { t } = useTranslation()
-  const metalLabels = labels(t, 'metal')
+  const metalLabels = t('metal', { returnObjects: true })
   const optional = <T extends InlayMaterial>(label: string, value: 'none' | T, options: readonly T[], onChange: (v: 'none' | T) => void) => (
     <Chips
       label={label}
@@ -69,7 +69,7 @@ export function MetalPanel() {
         </>
       )}
       {optional(t('metalPanel.liner'), band.liner, BAND_MATERIALS, (v) => update((d) => void (d.band.liner = v)))}
-      <Chips label={t('metalPanel.finish')} value={band.finish} options={FINISHES} labels={labels(t, 'finish')} icons={finishIcons} onChange={(v) => update((d) => void (d.band.finish = v))} />
+      <Chips label={t('metalPanel.finish')} value={band.finish} options={FINISHES} labels={t('finish', { returnObjects: true })} icons={finishIcons} onChange={(v) => update((d) => void (d.band.finish = v))} />
       <Chips
         label={t('metalPanel.head')}
         icon={fi.headMetal}

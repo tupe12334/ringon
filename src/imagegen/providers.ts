@@ -2,6 +2,8 @@
 // Each sends the prompt plus reference images (the ring, optionally the hand) and returns one
 // image. Requests go straight from this browser to the service; Ringon has no server.
 
+import i18n from '../i18n'
+
 export const PROVIDERS = ['openai', 'gemini', 'openrouter', 'fal'] as const
 export type ProviderId = (typeof PROVIDERS)[number]
 
@@ -44,7 +46,7 @@ async function json(res: Response): Promise<any> {
   return body
 }
 
-const noImage = (detail?: string) => new Error(`The service answered without an image${detail ? `: ${detail}` : ''}.`)
+const noImage = (detail?: string) => new Error(detail ? i18n.t('imagegen.noImageDetail', { detail }) : i18n.t('imagegen.noImage'))
 
 export const PROVIDER_INFO: Record<ProviderId, Provider> = {
   openai: {

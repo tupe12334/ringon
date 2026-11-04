@@ -1,6 +1,6 @@
 import { useState, type ComponentType } from 'react'
 import { useTranslation } from 'react-i18next'
-import i18n from '../i18n'
+import { LanguagePicker } from '../i18n/LanguagePicker'
 import { useStore } from '../templates/store'
 import { TemplatesPanel } from '../templates/TemplatesPanel'
 import { tabIcons } from './icons'
@@ -37,14 +37,7 @@ export function Customizer({ onTryOn }: { onTryOn: () => void }) {
       <header className="topbar">
         <h1>Ringon</h1>
         <div className="row">
-          <button
-            type="button"
-            lang={i18n.resolvedLanguage === 'he' ? 'en' : 'he'}
-            aria-label={t('app.switchLanguage')}
-            onClick={() => i18n.changeLanguage(i18n.resolvedLanguage === 'he' ? 'en' : 'he')}
-          >
-            {t('app.otherLanguage')}
-          </button>
+          <LanguagePicker />
           <button type="button" className="primary tryon-btn" onClick={onTryOn}>
             {t('app.tryOn')}
           </button>

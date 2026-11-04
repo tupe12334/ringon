@@ -1,15 +1,11 @@
 // English UI text. The shape of this object is the shape every other language must match.
-import { imagegenEn } from './imagegen'
-import { reportEn } from './report'
-import { tryonEn } from './tryon'
 
 export const en = {
   app: {
     tryOn: 'Try on my hand',
     loadingTryOn: 'Loading try-on…',
-    /** The switcher shows the language it switches to, in that language. */
-    otherLanguage: 'עברית',
-    switchLanguage: 'Switch to Hebrew',
+    /** Label of the language picker; each option shows its language's own name. */
+    language: 'Language',
   },
   tabs: {
     aria: 'Design sections',
@@ -302,6 +298,14 @@ export const en = {
     classics: 'Start from a classic',
     beforeLink: '{{name}} (before opening a link)',
   },
+  crash: {
+    updated: 'Ringon was updated. Reload to get the new version.',
+    noWebgl:
+      'This browser cannot draw 3D (WebGL 2 is off or unsupported). Restart your browser; it may have turned off graphics after a crash. Or try an up-to-date Chrome, Safari or Firefox.',
+    failed: 'Something went wrong.',
+    reload: 'Reload',
+    startOver: 'Start a new design',
+  },
   /** Built-in template names, keyed by their name in the template data. */
   builtin: {
     /** The default design's name (DEFAULT_SPEC). */
@@ -355,7 +359,7 @@ export const en = {
     'Zebrawood bentwood': 'Zebrawood bentwood',
     'Rosewood diamond solitaire': 'Rosewood diamond solitaire',
     'Aspen moissanite solitaire': 'Aspen moissanite solitaire',
-  } as Record<string, string>,
+  },
   preview: {
     photorealTitle: 'Path-traced lighting when the view is still',
     photorealOn: '✦ Photoreal on',
@@ -364,11 +368,131 @@ export const en = {
     lockRotation: '🔒 Lock rotation',
     lockTitle: 'Stop the ring turning when you drag it',
   },
-  imagegen: imagegenEn,
-  tryon: tryonEn,
-  report: reportEn,
-}
+  imagegen: {
+    shot: 'Photo',
+    shots: { 'close-up': 'On a hand, close up', lifestyle: 'Lifestyle', product: 'Ring alone' },
+    hand: 'Hand',
+    hands: { left: 'Left hand', right: 'Right hand' },
+    finger: 'Finger',
+    handPhoto: 'Your hand photo (optional)',
+    ringPhoto: 'Ring image (optional)',
+    ringPhotoNote: 'Without a ring image, the current 3D view is sent. Turn the ring to the angle you want first.',
+    remove: 'Remove',
+    notes: 'Extra instructions',
+    notesPlaceholder: 'e.g. soft daylight, red nail polish',
+    prompt: 'Prompt',
+    copy: 'Copy prompt',
+    copied: 'Copied',
+    generateTitle: 'Generate with your own API key',
+    service: 'Service',
+    model: 'Model',
+    modelDefault: 'empty = {{model}}',
+    key: '{{service}} API key',
+    getKey: 'Get a {{service}} key',
+    remember: 'Remember the key in this browser',
+    privacy: 'Clicking Generate sends the prompt, the ring image and your hand photo straight from this browser to {{service}}, billed to your key. Ringon has no server and never sees them.',
+    generate: 'Generate photo',
+    generating: 'Generating…',
+    failed: 'Failed: {{error}}',
+    noRender: 'Could not capture the 3D view. Add a ring image instead.',
+    noImage: 'The service answered without an image.',
+    noImageDetail: 'The service answered without an image: {{detail}}',
+    resultAlt: 'Generated photo of the ring',
+    download: 'Download',
+  },
+  tryon: {
+    back: 'Back to designer',
+    backLabel: '← Design',
+    backToDesigner: '← Back to designer',
+    phase: {
+      camera: 'Opening the camera…',
+      cameraHint: 'Allow camera access if your browser asks.',
+      tracker: 'Loading hand tracking…',
+      starting: 'Getting the ring ready…',
+    },
+    coach: {
+      auto: 'Hold up your hand, back of the hand to the camera',
+      Left: 'Hold up your left hand, back of the hand to the camera',
+      Right: 'Hold up your right hand, back of the hand to the camera',
+    },
+    errorTitle: 'The try-on could not start',
+    retry: 'Try again',
+    searching: 'Show your hand, back facing the camera',
+    tracking: 'Tracking',
+    error: 'Camera unavailable: {{error}}',
+    noCamera: 'This browser cannot open the camera (it needs HTTPS).',
+    cameraStuck: 'The camera did not start. Close other apps using it, then try again.',
+    switchCamera: 'Switch camera',
+    camera: '⟲ Camera',
+    finger: 'Finger',
+    hand: 'Hand',
+    hands: { auto: 'Auto', Left: 'Left hand', Right: 'Right hand' },
+    fingers: { thumb: 'Thumb', index: 'Index', middle: 'Middle', ring: 'Ring', pinky: 'Pinky' },
+    fit: 'Fit',
+    fitAria: 'Ring fit',
+    flip: 'Flip side',
+    photo: 'Photo',
+    stop: '■ Stop {{seconds}}s',
+    record: '● Record video',
+    capture: 'Your capture',
+    onHand: '{{name}} on your hand',
+    saveShare: 'Save / share',
+    shareTitle: 'My Ringon ring',
+    close: 'Close',
+  },
+  report: {
+    open: 'Report a problem',
+    title: 'Report a problem',
+    preview: 'The moment you reported',
+    what: 'What looks wrong?',
+    categories: {
+      position: 'Ring in the wrong place',
+      size: 'Wrong size',
+      angle: 'Wrong angle',
+      jitter: 'Jitters',
+      occlusion: 'Hidden or shown wrongly',
+      lighting: 'Colours or lighting look wrong',
+      other: 'Other',
+    },
+    comment: 'Comment',
+    commentHint: 'Anything else? (optional)',
+    contains: 'The file holds:',
+    contents: {
+      photo: 'A photo of your hand from the camera, with and without the ring',
+      tracking: 'Where the app found your hand in the last 2 seconds',
+      settings: 'The ring design and your try-on settings',
+      device: 'Camera, browser and device details (no names or accounts)',
+    },
+    private: 'The file is made on this device. It leaves it only if you send it.',
+    pick: 'Pick what looks wrong to make the file.',
+    download: 'Download report',
+    share: 'Share report',
+    issue: 'Open a GitHub issue (attach the downloaded file)',
+  },
+} as const
 
-/** Same keys as English, any text. */
-type Strings<T> = { [K in keyof T]: T[K] extends string ? string : Strings<T[K]> }
+/** CLDR plural categories; i18next picks `key_<category>` with Intl.PluralRules. */
+type PluralCategory = Intl.LDMLPluralRule
+type Placeholders<S extends string> = S extends `${string}{{${infer V}}}${infer Rest}` ? V | Placeholders<Rest> : never
+type Intersect<U> = (U extends unknown ? (x: U) => void : never) extends (x: infer I) => void ? I : never
+/** A string that keeps every {{placeholder}} of the English text S. */
+type Keeps<S extends string> = [Placeholders<S>] extends [never]
+  ? string
+  : Intersect<Placeholders<S> extends infer V extends string ? `${string}{{${V}}}${string}` : never>
+
+/**
+ * Same keys and placeholders as English. A plural `x_one` / `x_other` pair becomes `x_other` (required)
+ * plus any of the language's other categories; the test checks each language has exactly its own.
+ */
+type Strings<T> = {
+  -readonly [K in keyof T as K extends `${string}_${PluralCategory}` ? never : K]: T[K] extends string ? Keeps<T[K]> : Strings<T[K]>
+} & {
+  -readonly [K in keyof T as K extends `${string}_other` ? K : never]: T[K] extends string ? Keeps<T[K]> : never
+} & {
+  -readonly [K in keyof T as K extends `${infer B}_other` ? `${B}_${Exclude<PluralCategory, 'other'>}` : never]?: string
+}
 export type Translation = Strings<typeof en>
+
+/** Names of the built-in templates, as in the template data. */
+export type BuiltinName = keyof typeof en.builtin
+export const isBuiltinName = (name: string): name is BuiltinName => Object.hasOwn(en.builtin, name)

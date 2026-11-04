@@ -1,21 +1,51 @@
-// UI language: English or Hebrew, picked from the browser and remembered on this device.
+// UI language: picked from the browser and remembered on this device. English ships in the
+// main bundle; every other language is its own chunk, fetched when it is first used.
 
-import i18n from 'i18next'
+import i18n, { type BackendModule } from 'i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 import { initReactI18next } from 'react-i18next'
-import { en } from './en'
-import { he } from './he'
+import { en, type Translation } from './en'
 
-export const LANGUAGES = ['en', 'he'] as const
-export type Language = (typeof LANGUAGES)[number]
+type Loader = () => Promise<{ default: Translation }>
+
+/** Every UI language but English, by BCP 47 code. A new language is one line here plus its file. */
+const LOCALES = {
+  ar: () => import('./locales/ar'),
+  de: () => import('./locales/de'),
+  es: () => import('./locales/es'),
+  he: () => import('./locales/he'),
+  pl: () => import('./locales/pl'),
+  ru: () => import('./locales/ru'),
+} as const satisfies Record<string, Loader>
+
+export type Language = 'en' | keyof typeof LOCALES
+export const LANGUAGES = ['en', ...Object.keys(LOCALES)] as Language[]
+const isLanguage = (lng: string): lng is Language => (LANGUAGES as string[]).includes(lng)
+
+/** Loads one language's text; tests use it to check every file. */
+export const loadTranslation = async (lng: Language): Promise<Translation> => (lng === 'en' ? en : (await LOCALES[lng]()).default)
 
 declare module 'i18next' {
   interface CustomTypeOptions {
     resources: { translation: typeof en }
+    // `defaultValue` cannot hide a missing key.
+    strictKeyChecks: true
   }
 }
 
-// The page's lang and direction follow the language, so Hebrew lays out right to left.
+const backend: BackendModule = {
+  type: 'backend',
+  init() {},
+  read(lng, _ns, done) {
+    if (!isLanguage(lng)) return done(null, false)
+    loadTranslation(lng).then(
+      (text) => done(null, text),
+      (error: Error) => done(error, false),
+    )
+  },
+}
+
+// The page's lang and direction follow the language, so Arabic, Hebrew, Persian and Urdu lay out right to left.
 i18n.on('languageChanged', (lng) => {
   if (typeof document === 'undefined') return
   document.documentElement.lang = lng
@@ -23,10 +53,12 @@ i18n.on('languageChanged', (lng) => {
 })
 
 i18n
+  .use(backend)
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    resources: { en: { translation: en }, he: { translation: he } },
+    resources: { en: { translation: en } },
+    partialBundledLanguages: true,
     supportedLngs: LANGUAGES,
     nonExplicitSupportedLngs: true,
     fallbackLng: 'en',
@@ -35,7 +67,5 @@ i18n
     detection: { order: ['querystring', 'localStorage', 'navigator'], caches: ['localStorage'] },
     interpolation: { escapeValue: false },
   })
-
-export const currentLanguage = (): Language => (i18n.resolvedLanguage === 'he' ? 'he' : 'en')
 
 export default i18n
