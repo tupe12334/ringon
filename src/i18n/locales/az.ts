@@ -9,6 +9,7 @@ const az: Translation = {
     /** Label of the language picker; each option shows its language's own name. */
     language: 'Dil',
   },
+  theme: { change: 'Mövzu: {{name}}. Dəyişmək üçün toxunun.', emerald: 'Zümrüd', noir: 'Qara', light: 'Açıq' },
   tabs: {
     aria: 'Dizayn bölmələri',
     templates: 'Şablonlar',

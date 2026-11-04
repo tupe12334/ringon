@@ -9,6 +9,7 @@ const ky: Translation = {
     /** Label of the language picker; each option shows its language's own name. */
     language: 'Тил',
   },
+  theme: { change: 'Тема: {{name}}. Өзгөртүү үчүн басыңыз.', emerald: 'Зымырыт', noir: 'Кара', light: 'Ачык' },
   tabs: {
     aria: 'Дизайн бөлүмдөрү',
     templates: 'Үлгүлөр',

@@ -9,6 +9,7 @@ const ka: Translation = {
     /** Label of the language picker; each option shows its language's own name. */
     language: 'ენა',
   },
+  theme: { change: 'თემა: {{name}}. შესაცვლელად შეეხეთ.', emerald: 'ზურმუხტი', noir: 'შავი', light: 'ღია' },
   tabs: {
     aria: 'დიზაინის სექციები',
     templates: 'შაბლონები',
