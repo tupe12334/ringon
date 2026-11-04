@@ -8,6 +8,7 @@ const vi: Translation = {
     loadingTryOn: 'Đang tải thử đeo…',
     language: 'Ngôn ngữ',
   },
+  theme: { change: 'Giao diện: {{name}}. Chạm để đổi.', emerald: 'Ngọc lục bảo', noir: 'Noir', light: 'Sáng' },
   tabs: {
     aria: 'Các phần thiết kế',
     templates: 'Mẫu',

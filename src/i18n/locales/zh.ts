@@ -8,6 +8,7 @@ const zh: Translation = {
     loadingTryOn: '正在加载试戴…',
     language: '语言',
   },
+  theme: { change: '主题：{{name}}。点按切换。', emerald: '祖母绿', noir: '暗夜', light: '浅色' },
   tabs: {
     aria: '设计项目',
     templates: '模板',

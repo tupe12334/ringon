@@ -1,9 +1,10 @@
 // Live try-on: the camera feed with the ring tracked onto a finger, in real time.
 
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, type CSSProperties, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import * as THREE from 'three'
+import { rulerTicks } from '../customizer/controls'
 import { LostContextRetry } from '../LostContextRetry'
 import { RingModel, StudioEnvironment } from '../ring/RingModel'
 import { CAMERA_LIGHTING } from './cameraExposure'
@@ -18,6 +19,7 @@ import { loadHandTracker, type HandTracker } from './tracker'
 import { useCamera, type Facing } from './camera'
 import { snapshotReport, TrackLog, type ReportDraft } from './report'
 import { ReportSheet } from './ReportSheet'
+import { CaptureDock } from './CaptureDock'
 import { Coaching, TryOnError, TryOnLoading } from './TryOnLoading'
 
 /** One frame's landmarks, as MediaPipe returned them. */
@@ -352,23 +354,11 @@ export function TryOn({ onBack }: { onBack: () => void }) {
                 </button>
               ))}
             </div>
-            <div className="row">
-              <label className="fit">
-                {t('tryon.fit')}
-                <input type="range" min={0.7} max={1.3} step={0.01} value={fit} onChange={(e) => setFit(Number(e.target.value))} aria-label={t('tryon.fitAria')} />
-              </label>
-              <button type="button" onClick={() => setFlip((v) => !v)} aria-pressed={flip}>
-                {t('tryon.flip')}
-              </button>
-            </div>
-            <div className="row capture">
-              <button type="button" onClick={recorder.snapshot} disabled={!video}>
-                {t('tryon.photo')}
-              </button>
-              <button type="button" className={recorder.recording ? 'record on' : 'record'} onClick={recorder.recording ? recorder.stop : recorder.start} disabled={!video || !recorder.supported}>
-                {recorder.recording ? t('tryon.stop', { seconds: recorder.seconds }) : t('tryon.record')}
-              </button>
-            </div>
+            <label className="fit">
+              {t('tryon.fit')}
+              <input type="range" className="ruler" style={{ '--ticks': rulerTicks(0.7, 1.3, 0.01) } as CSSProperties} min={0.7} max={1.3} step={0.01} value={fit} onChange={(e) => setFit(Number(e.target.value))} aria-label={t('tryon.fitAria')} />
+            </label>
+            <CaptureDock recorder={recorder} ready={!!video} flip={flip} onFlip={() => setFlip((v) => !v)} />
           </div>
         </>
       )}

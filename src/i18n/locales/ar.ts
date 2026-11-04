@@ -8,6 +8,7 @@ const ar: Translation = {
     loadingTryOn: 'جارٍ تحميل التجربة…',
     language: 'اللغة',
   },
+  theme: { change: 'السمة: {{name}}. انقر للتغيير.', emerald: 'زمردي', noir: 'أسود', light: 'فاتح' },
   tabs: {
     aria: 'أقسام التصميم',
     templates: 'القوالب',

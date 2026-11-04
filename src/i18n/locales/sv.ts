@@ -8,6 +8,7 @@ const sv: Translation = {
     loadingTryOn: 'Laddar provning…',
     language: 'Språk',
   },
+  theme: { change: 'Färgtema: {{name}}. Tryck för att byta.', emerald: 'Smaragd', noir: 'Noir', light: 'Ljus' },
   tabs: {
     aria: 'Designdelar',
     templates: 'Mallar',

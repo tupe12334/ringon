@@ -8,6 +8,7 @@ const hy: Translation = {
     loadingTryOn: 'Փորձարկումը բեռնվում է…',
     language: 'Լեզու',
   },
+  theme: { change: 'Գունային թեմա՝ {{name}}։ Հպեք՝ փոխելու համար։', emerald: 'Զմրուխտ', noir: 'Նուար', light: 'Բաց' },
   tabs: {
     aria: 'Դիզայնի բաժիններ',
     templates: 'Ձևանմուշներ',

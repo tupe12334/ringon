@@ -8,6 +8,7 @@ const mr: Translation = {
     loadingTryOn: 'चाचणी लोड होत आहे…',
     language: 'भाषा',
   },
+  theme: { change: 'थीम: {{name}}. बदलण्यासाठी टॅप करा.', emerald: 'पाचू', noir: 'न्वार', light: 'फिकट' },
   tabs: {
     aria: 'डिझाइन विभाग',
     templates: 'टेम्प्लेट',

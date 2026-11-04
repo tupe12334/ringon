@@ -8,6 +8,7 @@ const ml: Translation = {
     loadingTryOn: 'പരീക്ഷണം ലോഡ് ചെയ്യുന്നു…',
     language: 'ഭാഷ',
   },
+  theme: { change: 'തീം: {{name}}. മാറ്റാൻ ടാപ്പ് ചെയ്യുക.', emerald: 'മരതകം', noir: 'നോയർ', light: 'ലൈറ്റ്' },
   tabs: {
     aria: 'ഡിസൈൻ വിഭാഗങ്ങൾ',
     templates: 'ടെംപ്ലേറ്റുകൾ',

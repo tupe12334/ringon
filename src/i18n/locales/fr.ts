@@ -8,6 +8,7 @@ const fr: Translation = {
     loadingTryOn: 'Chargement de l’essayage…',
     language: 'Langue',
   },
+  theme: { change: 'Thème : {{name}}. Touchez pour changer.', emerald: 'Émeraude', noir: 'Noir', light: 'Clair' },
   tabs: {
     aria: 'Sections du design',
     templates: 'Modèles',

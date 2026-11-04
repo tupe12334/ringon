@@ -380,3 +380,16 @@ export function TaperIcon({ taper }: { taper: number }) {
     </Svg>
   )
 }
+
+/** Theme button: a moon for the dark themes, a sun for Light. */
+export const themeIcons = {
+  dark: <Svg><path d="M20 14A8 8 0 1 1 10 4a7 7 0 0 0 10 10z" /></Svg>,
+  light: <Svg><circle cx={12} cy={12} r={4} /><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5" /></Svg>,
+}
+
+/** The "Try on my hand" button: a raised hand. */
+export const handIcon = (
+  <Svg strokeWidth={2}>
+    <path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V12m0-1V4.5a1.5 1.5 0 0 1 3 0V12m0-.5V6a1.5 1.5 0 0 1 3 0v7c0 4-2.5 7-6 7s-5-2-6.5-4.5L3 12.5a1.4 1.4 0 0 1 2.3-1.6L8 14" />
+  </Svg>
+)

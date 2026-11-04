@@ -8,6 +8,7 @@ const fi: Translation = {
     loadingTryOn: 'Ladataan sovitusta…',
     language: 'Kieli',
   },
+  theme: { change: 'Väriteema: {{name}}. Vaihda napauttamalla.', emerald: 'Smaragdi', noir: 'Noir', light: 'Vaalea' },
   tabs: {
     aria: 'Suunnittelun osat',
     templates: 'Mallit',

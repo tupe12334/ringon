@@ -8,6 +8,7 @@ const gl: Translation = {
     loadingTryOn: 'Cargando a proba…',
     language: 'Idioma',
   },
+  theme: { change: 'Tema de cor: {{name}}. Toca para cambiar.', emerald: 'Esmeralda', noir: 'Noir', light: 'Claro' },
   tabs: {
     aria: 'Seccións do deseño',
     templates: 'Modelos',

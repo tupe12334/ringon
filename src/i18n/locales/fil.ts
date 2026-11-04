@@ -8,6 +8,7 @@ const fil: Translation = {
     loadingTryOn: 'Nilo-load ang pagsubok…',
     language: 'Wika',
   },
+  theme: { change: 'Tema: {{name}}. I-tap para palitan.', emerald: 'Esmeralda', noir: 'Noir', light: 'Maliwanag' },
   tabs: {
     aria: 'Mga bahagi ng disenyo',
     templates: 'Mga template',

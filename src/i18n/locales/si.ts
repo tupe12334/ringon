@@ -8,6 +8,7 @@ const si: Translation = {
     loadingTryOn: 'උත්සාහය පූරණය වෙමින්…',
     language: 'භාෂාව',
   },
+  theme: { change: 'වර්ණ තේමාව: {{name}}. මාරු කිරීමට තට්ටු කරන්න.', emerald: 'මරකත', noir: 'කළු', light: 'ලා' },
   tabs: {
     aria: 'සැලසුම් කොටස්',
     templates: 'අච්චු',

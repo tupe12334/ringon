@@ -8,6 +8,7 @@ const bs: Translation = {
     loadingTryOn: 'Učitavanje probe…',
     language: 'Jezik',
   },
+  theme: { change: 'Tema boja: {{name}}. Dodirnite za promjenu.', emerald: 'Smaragd', noir: 'Noir', light: 'Svijetla' },
   tabs: {
     aria: 'Dijelovi dizajna',
     templates: 'Šabloni',

@@ -8,6 +8,7 @@ const tr: Translation = {
     loadingTryOn: 'Deneme yükleniyor…',
     language: 'Dil',
   },
+  theme: { change: 'Tema: {{name}}. Değiştirmek için dokunun.', emerald: 'Zümrüt', noir: 'Noir', light: 'Açık' },
   tabs: {
     aria: 'Tasarım bölümleri',
     templates: 'Şablonlar',

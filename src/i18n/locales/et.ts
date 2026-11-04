@@ -8,6 +8,7 @@ const et: Translation = {
     loadingTryOn: 'Proovimise laadimine…',
     language: 'Keel',
   },
+  theme: { change: 'Teema: {{name}}. Puuduta muutmiseks.', emerald: 'Smaragd', noir: 'Noir', light: 'Hele' },
   tabs: {
     aria: 'Disaini jaotised',
     templates: 'Mallid',

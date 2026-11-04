@@ -9,6 +9,7 @@ const ta: Translation = {
     /** Label of the language picker; each option shows its language's own name. */
     language: 'மொழி',
   },
+  theme: { change: 'தீம்: {{name}}. மாற்றத் தட்டவும்.', emerald: 'மரகதம்', noir: 'நுவார்', light: 'வெளிர்' },
   tabs: {
     aria: 'வடிவமைப்புப் பிரிவுகள்',
     templates: 'வார்ப்புருக்கள்',

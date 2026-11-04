@@ -8,6 +8,7 @@ const km: Translation = {
     loadingTryOn: 'កំពុងផ្ទុកការសាក…',
     language: 'ភាសា',
   },
+  theme: { change: 'ពណ៌រចនា៖ {{name}}។ ចុចដើម្បីប្ដូរ។', emerald: 'មរកត', noir: 'ខ្មៅ', light: 'ភ្លឺ' },
   tabs: {
     aria: 'ផ្នែកនៃការរចនា',
     templates: 'គំរូ',

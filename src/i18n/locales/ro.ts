@@ -8,6 +8,7 @@ const ro: Translation = {
     loadingTryOn: 'Se încarcă proba…',
     language: 'Limbă',
   },
+  theme: { change: 'Temă: {{name}}. Atinge pentru a schimba.', emerald: 'Smarald', noir: 'Noir', light: 'Luminoasă' },
   tabs: {
     aria: 'Secțiunile designului',
     templates: 'Șabloane',

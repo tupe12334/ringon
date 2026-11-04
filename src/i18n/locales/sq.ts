@@ -8,6 +8,7 @@ const sq: Translation = {
     loadingTryOn: 'Duke ngarkuar provën…',
     language: 'Gjuha',
   },
+  theme: { change: 'Tema e ngjyrave: {{name}}. Prek për ta ndryshuar.', emerald: 'Smerald', noir: 'Noir', light: 'E çelët' },
   tabs: {
     aria: 'Seksionet e dizajnit',
     templates: 'Shabllone',

@@ -8,6 +8,7 @@ const nb: Translation = {
     loadingTryOn: 'Laster prøving…',
     language: 'Språk',
   },
+  theme: { change: 'Fargetema: {{name}}. Trykk for å bytte.', emerald: 'Smaragd', noir: 'Noir', light: 'Lys' },
   tabs: {
     aria: 'Designdeler',
     templates: 'Maler',

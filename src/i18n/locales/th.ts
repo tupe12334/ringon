@@ -8,6 +8,7 @@ const th: Translation = {
     loadingTryOn: 'กำลังโหลดการลองสวม…',
     language: 'ภาษา',
   },
+  theme: { change: 'ธีม: {{name}} แตะเพื่อเปลี่ยน', emerald: 'มรกต', noir: 'นัวร์', light: 'สว่าง' },
   tabs: {
     aria: 'ส่วนของการออกแบบ',
     templates: 'เทมเพลต',

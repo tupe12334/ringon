@@ -8,6 +8,7 @@ const he: Translation = {
     loadingTryOn: 'טוען מדידה…',
     language: 'שפה',
   },
+  theme: { change: 'ערכת צבעים: {{name}}. הקישו כדי להחליף.', emerald: 'אמרלד', noir: 'נואר', light: 'בהירה' },
   tabs: {
     aria: 'חלקי העיצוב',
     templates: 'תבניות',

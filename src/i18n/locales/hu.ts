@@ -8,6 +8,7 @@ const hu: Translation = {
     loadingTryOn: 'Próba betöltése…',
     language: 'Nyelv',
   },
+  theme: { change: 'Téma: {{name}}. Koppintson a váltáshoz.', emerald: 'Smaragd', noir: 'Noir', light: 'Világos' },
   tabs: {
     aria: 'Tervezési szakaszok',
     templates: 'Sablonok',

@@ -8,6 +8,7 @@ const bn: Translation = {
     loadingTryOn: 'চেষ্টা লোড হচ্ছে…',
     language: 'ভাষা',
   },
+  theme: { change: 'থিম: {{name}}। বদলাতে ট্যাপ করুন।', emerald: 'পান্না', noir: 'নোয়া', light: 'হালকা' },
   tabs: {
     aria: 'ডিজাইনের বিভাগ',
     templates: 'টেমপ্লেট',

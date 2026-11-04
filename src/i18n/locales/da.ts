@@ -8,6 +8,7 @@ const da: Translation = {
     loadingTryOn: 'Indlæser prøvning…',
     language: 'Sprog',
   },
+  theme: { change: 'Farvetema: {{name}}. Tryk for at skifte.', emerald: 'Smaragd', noir: 'Noir', light: 'Lys' },
   tabs: {
     aria: 'Designdele',
     templates: 'Skabeloner',

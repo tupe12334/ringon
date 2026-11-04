@@ -8,6 +8,7 @@ const zhHant: Translation = {
     loadingTryOn: '正在載入試戴…',
     language: '語言',
   },
+  theme: { change: '主題：{{name}}。點按切換。', emerald: '祖母綠', noir: '暗夜', light: '淺色' },
   tabs: {
     aria: '設計區塊',
     templates: '範本',

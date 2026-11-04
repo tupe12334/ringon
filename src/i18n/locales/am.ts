@@ -8,6 +8,7 @@ const am: Translation = {
     loadingTryOn: 'ሙከራ በመጫን ላይ…',
     language: 'ቋንቋ',
   },
+  theme: { change: 'ገጽታ፦ {{name}}። ለመቀየር ይንኩ።', emerald: 'ኤመራልድ', noir: 'ጥቁር', light: 'ብሩህ' },
   tabs: {
     aria: 'የንድፍ ክፍሎች',
     templates: 'አብነቶች',

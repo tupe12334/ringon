@@ -8,6 +8,7 @@ const pl: Translation = {
     loadingTryOn: 'Wczytywanie przymierzania…',
     language: 'Język',
   },
+  theme: { change: 'Motyw: {{name}}. Dotknij, aby zmienić.', emerald: 'Szmaragd', noir: 'Noir', light: 'Jasny' },
   tabs: {
     aria: 'Sekcje projektu',
     templates: 'Szablony',

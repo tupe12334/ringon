@@ -8,6 +8,7 @@ const pa: Translation = {
     loadingTryOn: 'ਅਜ਼ਮਾਇਸ਼ ਲੋਡ ਹੋ ਰਹੀ ਹੈ…',
     language: 'ਭਾਸ਼ਾ',
   },
+  theme: { change: 'ਰੰਗ ਥੀਮ: {{name}}। ਬਦਲਣ ਲਈ ਟੈਪ ਕਰੋ।', emerald: 'ਪੰਨਾ', noir: 'ਨੋਆਰ', light: 'ਹਲਕਾ' },
   tabs: {
     aria: 'ਡਿਜ਼ਾਈਨ ਭਾਗ',
     templates: 'ਟੈਮਪਲੇਟ',

@@ -8,6 +8,7 @@ const ne: Translation = {
     loadingTryOn: 'प्रयास लोड हुँदैछ…',
     language: 'भाषा',
   },
+  theme: { change: 'रङ थिम: {{name}}। बदल्न ट्याप गर्नुहोस्।', emerald: 'पन्ना', noir: 'नोआर', light: 'उज्यालो' },
   tabs: {
     aria: 'डिजाइन खण्डहरू',
     templates: 'टेम्प्लेटहरू',

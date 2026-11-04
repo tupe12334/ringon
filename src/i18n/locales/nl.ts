@@ -8,6 +8,7 @@ const nl: Translation = {
     loadingTryOn: 'Pasfunctie laden…',
     language: 'Taal',
   },
+  theme: { change: 'Kleurthema: {{name}}. Tik om te wisselen.', emerald: 'Smaragd', noir: 'Noir', light: 'Licht' },
   tabs: {
     aria: 'Ontwerponderdelen',
     templates: 'Sjablonen',

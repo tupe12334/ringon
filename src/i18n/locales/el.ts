@@ -8,6 +8,7 @@ const el: Translation = {
     loadingTryOn: 'Φόρτωση δοκιμής…',
     language: 'Γλώσσα',
   },
+  theme: { change: 'Θέμα: {{name}}. Πατήστε για αλλαγή.', emerald: 'Σμαράγδι', noir: 'Νουάρ', light: 'Φωτεινό' },
   tabs: {
     aria: 'Ενότητες σχεδίασης',
     templates: 'Πρότυπα',

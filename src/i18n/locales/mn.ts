@@ -8,6 +8,7 @@ const mn: Translation = {
     loadingTryOn: 'Туршилтыг ачаалж байна…',
     language: 'Хэл',
   },
+  theme: { change: 'Өнгөний загвар: {{name}}. Солихын тулд товшино уу.', emerald: 'Маргад', noir: 'Хар', light: 'Цайвар' },
   tabs: {
     aria: 'Загварын хэсгүүд',
     templates: 'Загварууд',

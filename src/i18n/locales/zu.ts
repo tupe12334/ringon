@@ -8,6 +8,7 @@ const zu: Translation = {
     loadingTryOn: 'Ilayisha ukuzama…',
     language: 'Ulimi',
   },
+  theme: { change: 'Itimu yemibala: {{name}}. Thepha ukuze ushintshe.', emerald: 'I-Emerald', noir: 'I-Noir', light: 'Ekhanyayo' },
   tabs: {
     aria: 'Izingxenye zomklamo',
     templates: 'Amathempulethi',
