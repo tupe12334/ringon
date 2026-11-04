@@ -9,6 +9,7 @@ const uz: Translation = {
     /** Label of the language picker; each option shows its language's own name. */
     language: 'Til',
   },
+  theme: { change: 'Rang mavzusi: {{name}}. Almashtirish uchun bosing.', emerald: 'Zumrad', noir: 'Noir', light: 'Yorqin' },
   tabs: {
     aria: 'Dizayn bo‘limlari',
     templates: 'Shablonlar',
