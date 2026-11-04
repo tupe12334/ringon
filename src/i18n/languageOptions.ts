@@ -20,7 +20,7 @@ export const NATIVE_NAMES: Partial<Record<Language, string>> = {
   ig: 'Igbo', ii: 'ꆈꌠꉙ', is: 'íslenska', jv: 'Jawa', ka: 'ქართული', kl: 'kalaallisut', km: 'ខ្មែរ', ks: 'کٲشُر',
   ku: 'kurdî (kurmancî)', kw: 'kernewek', ky: 'кыргызча', lb: 'Lëtzebuergesch', lg: 'Luganda', ln: 'lingála',
   lo: 'ລາວ', mg: 'Malagasy', mk: 'македонски', mn: 'монгол', mt: 'Malti', my: 'မြန်မာ', nd: 'isiNdebele',
-  ne: 'नेपाली', om: 'Oromoo', or: 'ଓଡ଼ିଆ', os: 'ирон', ps: 'پښتو', rm: 'rumantsch', sat: 'ᱥᱟᱱᱛᱟᱲᱤ', sc: 'sardu',
+  ne: 'नेपाली', nn: 'norsk nynorsk', om: 'Oromoo', or: 'ଓଡ଼ିଆ', os: 'ирон', ps: 'پښتو', rm: 'rumantsch', sat: 'ᱥᱟᱱᱛᱟᱲᱤ', sc: 'sardu',
   se: 'davvisámegiella', sg: 'Sängö', si: 'සිංහල', sn: 'chiShona', so: 'Soomaali', sq: 'shqip', st: 'Sesotho',
   su: 'Basa Sunda', ti: 'ትግርኛ', tk: 'türkmen dili', tn: 'Setswana', to: 'lea fakatonga', ug: 'ئۇيغۇرچە', wo: 'Wolof',
   xh: 'IsiXhosa', yi: 'ייִדיש', yo: 'Èdè Yorùbá', yue: '粵語', zu: 'isiZulu',
