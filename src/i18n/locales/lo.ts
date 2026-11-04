@@ -130,7 +130,7 @@ const lo: Translation = {
     eternity: 'ອີເຕີນິຕີເຕັມ',
     'half-eternity': 'ອີເຕີນິຕີເຄິ່ງ',
   },
-  font: { serif: 'Serif', sans: 'Sans', script: 'ລາຍມື' },
+  font: { serif: 'ມີຫາງ', sans: 'ບໍ່ມີຫາງ', script: 'ລາຍມື' },
 
   size: {
     system: 'ລະບົບຂະໜາດ',

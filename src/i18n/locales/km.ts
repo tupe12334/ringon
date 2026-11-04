@@ -130,7 +130,7 @@ const km: Translation = {
     eternity: 'អេទឺនីតេពេញ',
     'half-eternity': 'អេទឺនីតេកន្លះ',
   },
-  font: { serif: 'Serif', sans: 'Sans', script: 'ស្លាកដៃ' },
+  font: { serif: 'សេរីហ្វ', sans: 'គ្មានសេរីហ្វ', script: 'ស្លាកដៃ' },
 
   size: {
     system: 'ប្រព័ន្ធទំហំ',

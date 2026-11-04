@@ -130,7 +130,7 @@ const mn: Translation = {
     eternity: 'Бүтэн eternity',
     'half-eternity': 'Хагас eternity',
   },
-  font: { serif: 'Serif', sans: 'Sans', script: 'Гар бичмэл' },
+  font: { serif: 'Сериф', sans: 'Санс', script: 'Гар бичмэл' },
 
   size: {
     system: 'Хэмжээний систем',
@@ -199,7 +199,7 @@ const mn: Translation = {
     low: 'бага',
     medium: 'дунд',
     high: 'өндөр',
-    halo: 'Halo',
+    halo: 'Хало',
     haloStyle: 'Halo загвар',
     haloClassic: 'Сонгодог (чулууны эргэн тойронд)',
     haloHidden: 'Нуугдсан (чулууны доор)',
@@ -382,7 +382,7 @@ const mn: Translation = {
     remove: 'Устгах',
     notes: 'Нэмэлт заавар',
     notesPlaceholder: 'жишээ нь: зөөлөн өдрийн гэрэл, улаан хумсны будаг',
-    prompt: 'Prompt',
+    prompt: 'Промпт',
     copy: 'Prompt хуулах',
     copied: 'Хуулагдлаа',
     generateTitle: 'Өөрийн API түлхүүрээр үүсгэх',

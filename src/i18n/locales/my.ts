@@ -130,7 +130,7 @@ const my: Translation = {
     eternity: 'အပြည့် ထာဝရ',
     'half-eternity': 'တစ်ဝက် ထာဝရ',
   },
-  font: { serif: 'Serif', sans: 'Sans', script: 'လက်ရေး' },
+  font: { serif: 'ဆေရစ်ပါ', sans: 'ဆေရစ်မပါ', script: 'လက်ရေး' },
 
   size: {
     system: 'အရွယ်အစားစနစ်',
@@ -381,14 +381,14 @@ const my: Translation = {
     remove: 'ဖယ်ရှားရန်',
     notes: 'နောက်ထပ် ညွှန်ကြားချက်များ',
     notesPlaceholder: 'ဥပမာ: နူးညံ့သော နေ့ရောင်၊ အနီရောင် လက်သည်းဆိုး',
-    prompt: 'Prompt',
+    prompt: 'တောင်းဆိုချက်',
     copy: 'Prompt ကူးယူရန်',
     copied: 'ကူးယူပြီးပါပြီ',
     generateTitle: 'သင့်ကိုယ်ပိုင် API key ဖြင့် ဖန်တီးရန်',
     service: 'ဝန်ဆောင်မှု',
     model: 'မော်ဒယ်',
     modelDefault: 'လွတ်ထား = {{model}}',
-    key: '{{service}} API key',
+    key: '{{service}} API သော့',
     getKey: '{{service}} key ရယူရန်',
     remember: 'ဤ browser တွင် key ကို မှတ်ထားရန်',
     privacy:
