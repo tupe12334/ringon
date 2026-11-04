@@ -25,7 +25,9 @@ export function TemplatesPanel() {
   const addTemplates = useStore((s) => s.addTemplates)
   const { t } = useTranslation()
   const builtinName = (name: string) => (isBuiltinName(name) ? t(`builtin.${name}`) : name)
-  const [name, setName] = useState(() => builtinName(spec.name))
+  // Follows the design (and the language) until the user types a name of their own.
+  const [typed, setName] = useState<string | null>(null)
+  const name = typed ?? builtinName(spec.name)
   const [message, setMessage] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
 
@@ -127,7 +129,7 @@ export function TemplatesPanel() {
               className="template"
               onClick={() => {
                 setSpec({ ...b, innerDiameterMm: spec.innerDiameterMm })
-                setName(builtinName(b.name))
+                setName(null)
               }}
             >
               <DesignIcon spec={b} />

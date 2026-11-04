@@ -176,6 +176,7 @@ test('switches to Hebrew, right to left, and remembers it', async ({ page }) => 
   await page.getByRole('combobox', { name: 'Language' }).selectOption('he')
   await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
   await expect(page.locator('html')).toHaveAttribute('lang', 'he')
+  await expect(page.getByRole('textbox', { name: 'שם התבנית' })).toHaveValue(/[\u0590-\u05FF]/)
   await expect(summary).toContainText('זהב צהוב 18K')
 
   await page.getByRole('tab', { name: 'מתכת' }).click()
