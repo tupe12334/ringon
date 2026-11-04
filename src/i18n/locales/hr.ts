@@ -7,6 +7,7 @@ const hr: Translation = {
     tryOn: 'Isprobaj na ruci',
     loadingTryOn: 'Učitavanje isprobavanja…',
     language: 'Jezik',
+    suggested: 'Prijedlozi',
   },
   theme: { change: 'Tema: {{name}}. Dodirnite za promjenu.', emerald: 'Smaragd', noir: 'Tamna', light: 'Svijetla' },
   tabs: {

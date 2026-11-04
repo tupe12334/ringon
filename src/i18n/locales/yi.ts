@@ -7,6 +7,7 @@ const yi: Translation = {
     tryOn: 'פּרוּווען אויף מײַן האַנט',
     loadingTryOn: 'לאָדן פּרוּווען…',
     language: 'שפּראַך',
+    suggested: 'פֿאָרשלאָגן',
   },
   theme: { change: 'טעמע: {{name}}. טאַפּ צו ענדערן.', emerald: 'סמאַראַגד', noir: 'נואַר', light: 'ליכט' },
   tabs: {

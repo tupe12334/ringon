@@ -7,6 +7,7 @@ const mk: Translation = {
     tryOn: 'Пробај на мојата рака',
     loadingTryOn: 'Се вчитува пробата…',
     language: 'Јазик',
+    suggested: 'Предлози',
   },
   theme: { change: 'Тема на бои: {{name}}. Допрете за промена.', emerald: 'Смарагд', noir: 'Ноар', light: 'Светла' },
   tabs: {

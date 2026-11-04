@@ -7,6 +7,7 @@ const mn: Translation = {
     tryOn: 'Гар дээрээ туршиж үзэх',
     loadingTryOn: 'Туршилтыг ачаалж байна…',
     language: 'Хэл',
+    suggested: 'Санал болгох',
   },
   theme: { change: 'Өнгөний загвар: {{name}}. Солихын тулд товшино уу.', emerald: 'Маргад', noir: 'Хар', light: 'Цайвар' },
   tabs: {

@@ -7,6 +7,7 @@ const am: Translation = {
     tryOn: 'በእጄ ላይ ሞክር',
     loadingTryOn: 'ሙከራ በመጫን ላይ…',
     language: 'ቋንቋ',
+    suggested: 'ጥቆማዎች',
   },
   theme: { change: 'ገጽታ፦ {{name}}። ለመቀየር ይንኩ።', emerald: 'ኤመራልድ', noir: 'ጥቁር', light: 'ብሩህ' },
   tabs: {

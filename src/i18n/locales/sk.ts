@@ -7,6 +7,7 @@ const sk: Translation = {
     tryOn: 'Vyskúšať na ruke',
     loadingTryOn: 'Načítava sa skúšanie…',
     language: 'Jazyk',
+    suggested: 'Návrhy',
   },
   theme: { change: 'Motív: {{name}}. Ťuknutím zmeníte.', emerald: 'Smaragd', noir: 'Tmavá', light: 'Svetlý' },
   tabs: {

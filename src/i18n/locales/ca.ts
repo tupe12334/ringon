@@ -7,6 +7,7 @@ const ca: Translation = {
     tryOn: 'Prova-ho a la meva mà',
     loadingTryOn: 'Carregant la prova…',
     language: 'Idioma',
+    suggested: 'Suggeriments',
   },
   theme: { change: 'Tema: {{name}}. Toca per canviar-lo.', emerald: 'Maragda', noir: 'Negre', light: 'Clar' },
   tabs: {

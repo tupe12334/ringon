@@ -7,6 +7,7 @@ const ast: Translation = {
     tryOn: 'Probar nes mio mano',
     loadingTryOn: 'Cargando la prueba…',
     language: 'Idioma',
+    suggested: 'Suxerencies',
   },
   theme: { change: 'Tema: {{name}}. Toca pa cambiar.', emerald: 'Esmeralda', noir: 'Negru', light: 'Claru' },
   tabs: {

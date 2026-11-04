@@ -7,6 +7,7 @@ const bn: Translation = {
     tryOn: 'আমার হাতে চেষ্টা করুন',
     loadingTryOn: 'চেষ্টা লোড হচ্ছে…',
     language: 'ভাষা',
+    suggested: 'প্রস্তাবিত',
   },
   theme: { change: 'থিম: {{name}}। বদলাতে ট্যাপ করুন।', emerald: 'পান্না', noir: 'নোয়া', light: 'হালকা' },
   tabs: {

@@ -7,6 +7,7 @@ const sw: Translation = {
     tryOn: 'Jaribu kwenye mkono wangu',
     loadingTryOn: 'Inapakia majaribio…',
     language: 'Lugha',
+    suggested: 'Mapendekezo',
   },
   theme: { change: 'Mandhari: {{name}}. Gusa ili kubadilisha.', emerald: 'Zumaridi', noir: 'Nyeusi', light: 'Angavu' },
   tabs: {

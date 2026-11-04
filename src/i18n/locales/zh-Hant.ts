@@ -7,6 +7,7 @@ const zhHant: Translation = {
     tryOn: '在我的手上試戴',
     loadingTryOn: '正在載入試戴…',
     language: '語言',
+    suggested: '建議',
   },
   theme: { change: '主題：{{name}}。點按切換。', emerald: '祖母綠', noir: '暗夜', light: '淺色' },
   tabs: {

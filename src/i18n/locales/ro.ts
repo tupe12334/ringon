@@ -7,6 +7,7 @@ const ro: Translation = {
     tryOn: 'Probează pe mâna mea',
     loadingTryOn: 'Se încarcă proba…',
     language: 'Limbă',
+    suggested: 'Sugestii',
   },
   theme: { change: 'Temă: {{name}}. Atinge pentru a schimba.', emerald: 'Smarald', noir: 'Întunecată', light: 'Luminoasă' },
   tabs: {

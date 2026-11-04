@@ -7,6 +7,7 @@ const he: Translation = {
     tryOn: 'מדידה על היד',
     loadingTryOn: 'טוען מדידה…',
     language: 'שפה',
+    suggested: 'הצעות',
   },
   theme: { change: 'ערכת צבעים: {{name}}. הקישו כדי להחליף.', emerald: 'אמרלד', noir: 'נואר', light: 'בהירה' },
   tabs: {

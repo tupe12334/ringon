@@ -7,6 +7,7 @@ const eo: Translation = {
     tryOn: 'Provi sur mia mano',
     loadingTryOn: 'Ŝarĝado de provo…',
     language: 'Lingvo',
+    suggested: 'Sugestoj',
   },
   theme: { change: 'Temo: {{name}}. Tuŝu por ŝanĝi.', emerald: 'Smeraldo', noir: 'Nigra', light: 'Hela' },
   tabs: {

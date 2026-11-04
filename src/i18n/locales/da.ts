@@ -7,6 +7,7 @@ const da: Translation = {
     tryOn: 'Prøv på min hånd',
     loadingTryOn: 'Indlæser prøvning…',
     language: 'Sprog',
+    suggested: 'Forslag',
   },
   theme: { change: 'Farvetema: {{name}}. Tryk for at skifte.', emerald: 'Smaragd', noir: 'Sort', light: 'Lys' },
   tabs: {

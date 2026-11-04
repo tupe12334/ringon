@@ -7,6 +7,7 @@ const kok: Translation = {
     tryOn: 'माजे हातार घालून पळय',
     loadingTryOn: 'घालून पळोवचें लोड जाता…',
     language: 'भास',
+    suggested: 'Suggestions',
   },
   theme: { change: 'थीम: {{name}}. बदलपाक टॅप करात.', emerald: 'पाचू', noir: 'नुआर', light: 'उजवाड' },
   tabs: {

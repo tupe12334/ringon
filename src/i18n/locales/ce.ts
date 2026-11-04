@@ -7,6 +7,7 @@ const ce: Translation = {
     tryOn: 'Сан куьгахь хьажа',
     loadingTryOn: 'Хьажар ладугӀуш бу…',
     language: 'Мотт',
+    suggested: 'Suggestions',
   },
   theme: { change: 'Тема: {{name}}. Хийцарехь цкъа тӀехь хьажа.', emerald: 'Изумруд', noir: 'Нуар', light: 'Йозанан' },
   tabs: {

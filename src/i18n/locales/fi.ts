@@ -7,6 +7,7 @@ const fi: Translation = {
     tryOn: 'Sovita kädelle',
     loadingTryOn: 'Ladataan sovitusta…',
     language: 'Kieli',
+    suggested: 'Ehdotukset',
   },
   theme: { change: 'Väriteema: {{name}}. Vaihda napauttamalla.', emerald: 'Smaragdi', noir: 'Tumma', light: 'Vaalea' },
   tabs: {

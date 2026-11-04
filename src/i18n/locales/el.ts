@@ -7,6 +7,7 @@ const el: Translation = {
     tryOn: 'Δοκιμή στο χέρι μου',
     loadingTryOn: 'Φόρτωση δοκιμής…',
     language: 'Γλώσσα',
+    suggested: 'Προτάσεις',
   },
   theme: { change: 'Θέμα: {{name}}. Πατήστε για αλλαγή.', emerald: 'Σμαράγδι', noir: 'Νουάρ', light: 'Φωτεινό' },
   tabs: {

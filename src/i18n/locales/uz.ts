@@ -8,6 +8,7 @@ const uz: Translation = {
     loadingTryOn: 'Sinov yuklanmoqda…',
     /** Label of the language picker; each option shows its language's own name. */
     language: 'Til',
+    suggested: 'Tavsiyalar',
   },
   theme: { change: 'Rang mavzusi: {{name}}. Almashtirish uchun bosing.', emerald: 'Zumrad', noir: 'Qora', light: 'Yorqin' },
   tabs: {

@@ -8,6 +8,7 @@ const gu: Translation = {
     loadingTryOn: 'ટ્રાય-ઑન લોડ થઈ રહ્યું છે…',
     /** Label of the language picker; each option shows its language's own name. */
     language: 'ભાષા',
+    suggested: 'સૂચનો',
   },
   theme: { change: 'થીમ: {{name}}. બદલવા માટે ટેપ કરો.', emerald: 'નીલમણિ', noir: 'નોઆર', light: 'આછી' },
   tabs: {

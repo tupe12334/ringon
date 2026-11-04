@@ -7,6 +7,7 @@ const tn: Translation = {
     tryOn: 'Leka mo letsogong la me',
     loadingTryOn: 'Go tsenya go leka…',
     language: 'Puo',
+    suggested: 'Ditshitshinyo',
   },
   theme: { change: 'Mebala: {{name}}. Tobetsa go fetola.', emerald: 'Emerald', noir: 'Tshweu le ntsho', light: 'Lesedi' },
   tabs: {

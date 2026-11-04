@@ -7,6 +7,7 @@ const ar: Translation = {
     tryOn: 'جرّب على يدي',
     loadingTryOn: 'جارٍ تحميل التجربة…',
     language: 'اللغة',
+    suggested: 'اقتراحات',
   },
   theme: { change: 'السمة: {{name}}. انقر للتغيير.', emerald: 'زمردي', noir: 'أسود', light: 'فاتح' },
   tabs: {

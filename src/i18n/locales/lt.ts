@@ -7,6 +7,7 @@ const lt: Translation = {
     tryOn: 'Išbandyti ant mano rankos',
     loadingTryOn: 'Įkeliamas bandymas…',
     language: 'Kalba',
+    suggested: 'Pasiūlymai',
   },
   theme: { change: 'Tema: {{name}}. Bakstelėkite, kad pakeistumėte.', emerald: 'Smaragdas', noir: 'Tamsi', light: 'Šviesi' },
   tabs: {

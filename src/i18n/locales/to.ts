@@ -7,6 +7,7 @@ const to: Translation = {
     tryOn: 'Feinga ʻi hoku nima',
     loadingTryOn: 'Ko e ʻai ʻo e feinga…',
     language: 'Lea',
+    suggested: 'Ngaahi fokotuʻu',
   },
   theme: { change: 'Kaveinga: {{name}}. Tāpuni ke liliu.', emerald: 'Emeletiti', noir: 'Uli', light: 'Maama' },
   tabs: {

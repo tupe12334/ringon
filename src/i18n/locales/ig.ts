@@ -7,6 +7,7 @@ const ig: Translation = {
     tryOn: 'Nwalee n’aka m',
     loadingTryOn: 'Na-ebu nnwale…',
     language: 'Asụsụ',
+    suggested: 'Ndụmọdụ',
   },
   theme: { change: 'Ụdị: {{name}}. Pịa iji gbanwee.', emerald: 'Akwụkwọ ndụ', noir: 'Oji', light: 'Ìhè' },
   tabs: {

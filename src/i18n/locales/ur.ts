@@ -7,6 +7,7 @@ const ur: Translation = {
     tryOn: 'اپنے ہاتھ پر آزمائیں',
     loadingTryOn: 'آزمائش لوڈ ہو رہی ہے…',
     language: 'زبان',
+    suggested: 'تجاویز',
   },
   theme: { change: 'تھیم: {{name}}۔ بدلنے کے لیے ٹیپ کریں۔', emerald: 'زمرد', noir: 'نوار', light: 'ہلکی' },
   tabs: {

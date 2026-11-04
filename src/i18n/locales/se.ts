@@ -7,6 +7,7 @@ const se: Translation = {
     tryOn: 'Vuvdde mu gieđas',
     loadingTryOn: 'Ladde vuvddu…',
     language: 'Giella',
+    suggested: 'Evttohusat',
   },
   theme: { change: 'Fáddá: {{name}}. Čuoggá, jos háliidat rievdadit.', emerald: 'Smaragda', noir: 'Čáhppes', light: 'Čuovgga' },
   tabs: {

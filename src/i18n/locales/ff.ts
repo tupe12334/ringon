@@ -7,6 +7,7 @@ const ff: Translation = {
     tryOn: 'Gaɗa ɓoɗɗo am',
     loadingTryOn: 'Ɗum ɗo ɓooɗi gaɗa…',
     language: 'Ɗemngal',
+    suggested: 'Suggestions',
   },
   theme: { change: 'Jiyal: {{name}}. Taɓɓu ngam hooɓugo.', emerald: 'Émeraude', noir: 'Ɓaleeŋ', light: 'Leeri' },
   tabs: {

@@ -7,6 +7,7 @@ const my: Translation = {
     tryOn: 'ကျွန်ုပ်၏လက်ပေါ်တွင် စမ်းကြည့်ရန်',
     loadingTryOn: 'စမ်းကြည့်မှုကို ဖွင့်နေသည်…',
     language: 'ဘာသာစကား',
+    suggested: 'အကြံပြုချက်များ',
   },
   theme: { change: 'အရောင်ပုံစံ- {{name}}။ ပြောင်းရန် တို့ပါ။', emerald: 'မြ', noir: 'အမည်း', light: 'အလင်း' },
   tabs: {

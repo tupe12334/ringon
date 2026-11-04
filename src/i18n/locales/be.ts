@@ -7,6 +7,7 @@ const be: Translation = {
     tryOn: 'Прымерыць на сваёй руцэ',
     loadingTryOn: 'Загрузка прымеркі…',
     language: 'Мова',
+    suggested: 'Прапановы',
   },
   theme: { change: 'Колеравая тэма: {{name}}. Націсніце, каб змяніць.', emerald: 'Смарагд', noir: 'Нуар', light: 'Светлая' },
   tabs: {

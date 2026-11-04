@@ -7,6 +7,7 @@ const lv: Translation = {
     tryOn: 'Izmēģināt uz manas rokas',
     loadingTryOn: 'Ielādē izmēģinājumu…',
     language: 'Valoda',
+    suggested: 'Ieteikumi',
   },
   theme: { change: 'Motīvs: {{name}}. Pieskarieties, lai mainītu.', emerald: 'Smaragds', noir: 'Tumšs', light: 'Gaišs' },
   tabs: {

@@ -7,6 +7,7 @@ const ie: Translation = {
     tryOn: 'Prova sur mi mano',
     loadingTryOn: 'Carga del prova…',
     language: 'Lingue',
+    suggested: 'Suggestiones',
   },
   theme: { change: 'Tema: {{name}}. Tucha por changear.', emerald: 'Smaragd', noir: 'Nigri', light: 'Clar' },
   tabs: {

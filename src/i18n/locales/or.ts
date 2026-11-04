@@ -7,6 +7,7 @@ const or: Translation = {
     tryOn: 'ମୋ ହାତରେ ଚେଷ୍ଟା କରନ୍ତୁ',
     loadingTryOn: 'ଚେଷ୍ଟା ଲୋଡ୍ ହେଉଛି…',
     language: 'ଭାଷା',
+    suggested: 'ପରାମର୍ଶ',
   },
   theme: { change: 'ରଙ୍ଗ ଥିମ୍: {{name}}। ବଦଳାଇବାକୁ ଟ୍ୟାପ୍ କରନ୍ତୁ।', emerald: 'ପାନ୍ନା', noir: 'ନୋଆର୍', light: 'ହାଲୁକା' },
   tabs: {

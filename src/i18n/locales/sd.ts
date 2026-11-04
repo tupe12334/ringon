@@ -7,6 +7,7 @@ const sd: Translation = {
     tryOn: 'پنهنجي هٿ تي آزمايو',
     loadingTryOn: 'آزمائش لوڊ ٿي رهي آهي…',
     language: 'ٻولي',
+    suggested: 'تجويزون',
   },
   theme: { change: 'رنگ: {{name}}. تبديل ڪرڻ لاءِ ٽيپ ڪريو.', emerald: 'زمرد', noir: 'ڪارو', light: 'روشن' },
   tabs: {

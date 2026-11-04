@@ -7,6 +7,7 @@ const nb: Translation = {
     tryOn: 'Prøv på hånden min',
     loadingTryOn: 'Laster prøving…',
     language: 'Språk',
+    suggested: 'Forslag',
   },
   theme: { change: 'Fargetema: {{name}}. Trykk for å bytte.', emerald: 'Smaragd', noir: 'Mørk', light: 'Lys' },
   tabs: {

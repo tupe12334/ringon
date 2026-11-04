@@ -7,6 +7,7 @@ const ps: Translation = {
     tryOn: 'په خپل لاس باندې وازمویئ',
     loadingTryOn: 'د ازموینې بار کېږي…',
     language: 'ژبه',
+    suggested: 'وړاندیزونه',
   },
   theme: { change: 'رنګ: {{name}}. د بدلولو لپاره ټک وکړئ.', emerald: 'زمرد', noir: 'تور', light: 'روښانه' },
   tabs: {

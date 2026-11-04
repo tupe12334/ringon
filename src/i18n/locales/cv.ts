@@ -7,6 +7,7 @@ const cv: Translation = {
     tryOn: 'Хамӑн алӑра тӑрӑш',
     loadingTryOn: 'Тӑрӑшу тиеннӗ…',
     language: 'Чӗлхе',
+    suggested: 'Сӗнӳсем',
   },
   theme: { change: 'Тема: {{name}}. Улӑштарма пӑсӑн.', emerald: 'Изумруд', noir: 'Нуар', light: 'Ҫутӑ' },
   tabs: {

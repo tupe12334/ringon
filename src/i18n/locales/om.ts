@@ -7,6 +7,7 @@ const om: Translation = {
     tryOn: 'Harka kootti yaali',
     loadingTryOn: 'Yaaliin fe’amaa jira…',
     language: 'Afaan',
+    suggested: 'Yaadota',
   },
   theme: { change: 'Haala mul’ataa: {{name}}. Jijjiiruuf tuqi.', emerald: 'Emerald', noir: 'Gurraacha', light: 'Ifa' },
   tabs: {

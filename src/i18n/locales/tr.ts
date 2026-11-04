@@ -7,6 +7,7 @@ const tr: Translation = {
     tryOn: 'Elime tak',
     loadingTryOn: 'Deneme yükleniyor…',
     language: 'Dil',
+    suggested: 'Öneriler',
   },
   theme: { change: 'Tema: {{name}}. Değiştirmek için dokunun.', emerald: 'Zümrüt', noir: 'Siyah', light: 'Açık' },
   tabs: {

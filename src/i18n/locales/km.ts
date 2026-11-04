@@ -7,6 +7,7 @@ const km: Translation = {
     tryOn: 'សាកលើដៃខ្ញុំ',
     loadingTryOn: 'កំពុងផ្ទុកការសាក…',
     language: 'ភាសា',
+    suggested: 'ការណែនាំ',
   },
   theme: { change: 'ពណ៌រចនា៖ {{name}}។ ចុចដើម្បីប្ដូរ។', emerald: 'មរកត', noir: 'ខ្មៅ', light: 'ភ្លឺ' },
   tabs: {

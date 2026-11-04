@@ -7,6 +7,7 @@ const yo: Translation = {
     tryOn: 'Dán wò lórí ọwọ́ mi',
     loadingTryOn: 'Ń ṣí dídán wò…',
     language: 'Èdè',
+    suggested: 'Àwọn àbá',
   },
   theme: { change: 'Àwọ̀: {{name}}. Tẹ̀ láti yí padà.', emerald: 'Emerald', noir: 'Dúdú', light: 'Ìmọ́lẹ̀' },
   tabs: {

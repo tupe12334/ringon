@@ -8,6 +8,7 @@ const az: Translation = {
     loadingTryOn: 'Sınaq yüklənir…',
     /** Label of the language picker; each option shows its language's own name. */
     language: 'Dil',
+    suggested: 'Təkliflər',
   },
   theme: { change: 'Rəng mövzusu: {{name}}. Dəyişmək üçün toxunun.', emerald: 'Zümrüd', noir: 'Qara', light: 'Açıq' },
   tabs: {

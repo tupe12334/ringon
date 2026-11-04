@@ -7,6 +7,7 @@ const nl: Translation = {
     tryOn: 'Probeer op mijn hand',
     loadingTryOn: 'Pasfunctie laden…',
     language: 'Taal',
+    suggested: 'Suggesties',
   },
   theme: { change: 'Kleurthema: {{name}}. Tik om te wisselen.', emerald: 'Smaragd', noir: 'Zwart', light: 'Licht' },
   tabs: {

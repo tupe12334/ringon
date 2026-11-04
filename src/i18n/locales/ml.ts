@@ -7,6 +7,7 @@ const ml: Translation = {
     tryOn: 'എന്റെ കൈയിൽ പരീക്ഷിക്കുക',
     loadingTryOn: 'പരീക്ഷണം ലോഡ് ചെയ്യുന്നു…',
     language: 'ഭാഷ',
+    suggested: 'നിർദ്ദേശങ്ങൾ',
   },
   theme: { change: 'തീം: {{name}}. മാറ്റാൻ ടാപ്പ് ചെയ്യുക.', emerald: 'മരതകം', noir: 'നോയർ', light: 'ലൈറ്റ്' },
   tabs: {

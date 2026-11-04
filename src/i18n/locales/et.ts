@@ -7,6 +7,7 @@ const et: Translation = {
     tryOn: 'Proovi minu käel',
     loadingTryOn: 'Proovimise laadimine…',
     language: 'Keel',
+    suggested: 'Soovitused',
   },
   theme: { change: 'Teema: {{name}}. Puuduta muutmiseks.', emerald: 'Smaragd', noir: 'Tume', light: 'Hele' },
   tabs: {

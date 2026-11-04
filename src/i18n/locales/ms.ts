@@ -7,6 +7,7 @@ const ms: Translation = {
     tryOn: 'Cuba di tangan saya',
     loadingTryOn: 'Memuatkan cubaan…',
     language: 'Bahasa',
+    suggested: 'Cadangan',
   },
   theme: { change: 'Tema: {{name}}. Ketik untuk menukar.', emerald: 'Zamrud', noir: 'Gelap', light: 'Cerah' },
   tabs: {

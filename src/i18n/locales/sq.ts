@@ -7,6 +7,7 @@ const sq: Translation = {
     tryOn: 'Provo në dorën time',
     loadingTryOn: 'Duke ngarkuar provën…',
     language: 'Gjuha',
+    suggested: 'Sugjerime',
   },
   theme: { change: 'Tema e ngjyrave: {{name}}. Prek për ta ndryshuar.', emerald: 'Smerald', noir: 'E zezë', light: 'E çelët' },
   tabs: {

@@ -7,6 +7,7 @@ const kl: Translation = {
     tryOn: 'Qaammammut tiguusiuk',
     loadingTryOn: 'Tiguusiuneq illuutinneqarpoq…',
     language: 'Oqaasiit',
+    suggested: 'Suggestions',
   },
   theme: { change: 'Tema: {{name}}. Allanngortitsinermut tapiit.', emerald: 'Smaragd', noir: 'Qaleruaq', light: 'Qaamaq' },
   tabs: {

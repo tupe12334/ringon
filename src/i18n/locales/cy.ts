@@ -7,6 +7,7 @@ const cy: Translation = {
     tryOn: 'Rhowch gynnig arni ar fy llaw',
     loadingTryOn: 'Yn llwytho rhoi cynnig arni…',
     language: 'Iaith',
+    suggested: 'Awgrymiadau',
   },
   theme: { change: 'Thema lliw: {{name}}. Tapiwch i newid.', emerald: 'Emrallt', noir: 'Tywyll', light: 'Golau' },
   tabs: {

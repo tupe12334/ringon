@@ -7,6 +7,7 @@ const is: Translation = {
     tryOn: 'Máta á höndina mína',
     loadingTryOn: 'Hleð mátun…',
     language: 'Tungumál',
+    suggested: 'Tillögur',
   },
   theme: { change: 'Litaþema: {{name}}. Ýttu til að skipta.', emerald: 'Smaragður', noir: 'Dökkt', light: 'Ljóst' },
   tabs: {

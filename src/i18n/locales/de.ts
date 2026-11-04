@@ -7,6 +7,7 @@ const de: Translation = {
     tryOn: 'An meiner Hand anprobieren',
     loadingTryOn: 'Anprobe wird geladen…',
     language: 'Sprache',
+    suggested: 'Vorschläge',
   },
   theme: { change: 'Farbschema: {{name}}. Tippen zum Wechseln.', emerald: 'Smaragd', noir: 'Schwarz', light: 'Hell' },
   tabs: {

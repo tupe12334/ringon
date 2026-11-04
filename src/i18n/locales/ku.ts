@@ -7,6 +7,7 @@ const ku: Translation = {
     tryOn: 'Li ser destê min biceribîne',
     loadingTryOn: 'Biceribandin tê barkirin…',
     language: 'Ziman',
+    suggested: 'Pêşniyar',
   },
   theme: { change: 'Rengdêr: {{name}}. Bitikîne da ku biguherînî.', emerald: 'Zumurrud', noir: 'Reş', light: 'Ronahî' },
   tabs: {

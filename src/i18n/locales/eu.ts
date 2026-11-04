@@ -7,6 +7,7 @@ const eu: Translation = {
     tryOn: 'Probatu nire eskuan',
     loadingTryOn: 'Probaren zamara…',
     language: 'Hizkuntza',
+    suggested: 'Iradokizunak',
   },
   theme: { change: 'Kolore-gaia: {{name}}. Sakatu aldatzeko.', emerald: 'Esmeralda', noir: 'Beltza', light: 'Argia' },
   tabs: {

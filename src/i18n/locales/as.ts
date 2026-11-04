@@ -7,6 +7,7 @@ const as: Translation = {
     tryOn: 'মোৰ হাতত চেষ্টা কৰক',
     loadingTryOn: 'চেষ্টা লোড হৈ আছে…',
     language: 'ভাষা',
+    suggested: 'পৰামৰ্শ',
   },
   theme: { change: 'ৰং থিম: {{name}}। সলনি কৰিবলৈ টিপক।', emerald: 'পান্না', noir: 'নোৱাৰ', light: 'পোহৰ' },
   tabs: {

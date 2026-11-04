@@ -7,6 +7,7 @@ const fa: Translation = {
     tryOn: 'امتحان روی دستم',
     loadingTryOn: 'در حال بارگذاری امتحان…',
     language: 'زبان',
+    suggested: 'پیشنهادها',
   },
   theme: { change: 'پوسته: {{name}}. برای تغییر لمس کنید.', emerald: 'زمردی', noir: 'نوآر', light: 'روشن' },
   tabs: {

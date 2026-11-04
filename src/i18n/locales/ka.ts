@@ -8,6 +8,7 @@ const ka: Translation = {
     loadingTryOn: 'მოსინჯვა იტვირთება…',
     /** Label of the language picker; each option shows its language's own name. */
     language: 'ენა',
+    suggested: 'შემოთავაზებები',
   },
   theme: { change: 'ფერთა თემა: {{name}}. შეეხეთ შესაცვლელად.', emerald: 'ზურმუხტი', noir: 'ნუარი', light: 'ნათელი' },
   tabs: {

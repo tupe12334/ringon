@@ -7,6 +7,7 @@ const mr: Translation = {
     tryOn: 'माझ्या हातावर वापरून पहा',
     loadingTryOn: 'चाचणी लोड होत आहे…',
     language: 'भाषा',
+    suggested: 'सूचना',
   },
   theme: { change: 'थीम: {{name}}. बदलण्यासाठी टॅप करा.', emerald: 'पाचू', noir: 'न्वार', light: 'फिकट' },
   tabs: {
