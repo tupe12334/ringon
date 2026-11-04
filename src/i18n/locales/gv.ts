@@ -7,6 +7,7 @@ const gv: Translation = {
     tryOn: 'Feddyn er my laue',
     loadingTryOn: 'Ta feddyn lowit…',
     language: 'Çhengey',
+    suggested: 'Coyrlyn',
   },
   theme: { change: 'Thaymey: {{name}}. Tap dy cheayn.', emerald: 'Smaragd', noir: 'Dhoo', light: 'Soilshean' },
   tabs: {

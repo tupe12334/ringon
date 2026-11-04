@@ -7,6 +7,7 @@ const ee: Translation = {
     tryOn: 'Nye ɖa ɖe nye asi dzi',
     loadingTryOn: 'Le ɖa ɖe asi dzi…',
     language: 'Gbe',
+    suggested: 'Aɖaŋuɖoɖowo',
   },
   theme: { change: 'Nuŋlɔ: {{name}}. Tsɔ ɖe ɖa be yewoatrɔ.', emerald: 'Emerald', noir: 'Ʋu', light: 'Ƒelã' },
   tabs: {

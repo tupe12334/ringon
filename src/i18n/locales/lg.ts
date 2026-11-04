@@ -7,6 +7,7 @@ const lg: Translation = {
     tryOn: 'Gezaako ku mukono gwange',
     loadingTryOn: 'Eteekateeka okugezesa…',
     language: 'Olulimi',
+    suggested: 'Ebiteeso',
   },
   theme: { change: 'Langi: {{name}}. Koona okukyusa.', emerald: 'Emerald', noir: 'Kiragala', light: 'Ennyangavu' },
   tabs: {

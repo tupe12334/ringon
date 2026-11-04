@@ -7,6 +7,7 @@ const sc: Translation = {
     tryOn: 'Proa in sa manu mea',
     loadingTryOn: 'Carrighende sa proa…',
     language: 'Limba',
+    suggested: 'Cussìgios',
   },
   theme: { change: 'Tema: {{name}}. Toca pro cambiare.', emerald: 'Smeraldu', noir: 'Nieddu', light: 'Craru' },
   tabs: {

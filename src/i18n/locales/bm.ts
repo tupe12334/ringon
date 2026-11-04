@@ -7,6 +7,7 @@ const bm: Translation = {
     tryOn: 'Bagu ɲɛfɛ n bolo kan',
     loadingTryOn: 'Ka ɲɛfɛ bɛ kɛ…',
     language: 'Kan',
+    suggested: 'Laadiliw',
   },
   theme: { change: 'Thème: {{name}}. Tappez pour changer.', emerald: 'Émeraude', noir: 'Fin', light: 'Clair' },
   tabs: {

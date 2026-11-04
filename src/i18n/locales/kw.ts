@@ -7,6 +7,7 @@ const kw: Translation = {
     tryOn: 'Previ war ow dorn',
     loadingTryOn: 'Ow karga prevans…',
     language: 'Yethoedh',
+    suggested: 'Profyansow',
   },
   theme: { change: 'Tema: {{name}}. Tappa rag chanjya.', emerald: 'Smaragd', noir: 'Du', light: 'Golow' },
   tabs: {
