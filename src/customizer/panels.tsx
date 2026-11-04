@@ -21,6 +21,7 @@ import {
   type Gem,
   type StoneShape,
 } from '../ring/spec'
+import { num } from '../i18n/number'
 import { useStore } from '../templates/store'
 import { Chips, ColorInput, Field, Slider, Toggle } from './controls'
 import {
@@ -47,7 +48,7 @@ import {
 /** "2.0 mm", in the current language. */
 export function useMm() {
   const { t } = useTranslation()
-  return (v: number) => t('mm', { v: v.toFixed(1) })
+  return (v: number) => t('mm', { v: num(v, 1) })
 }
 
 export function SizePanel() {
@@ -66,7 +67,7 @@ export function SizePanel() {
   return (
     <>
       <Chips label={t('size.system')} icon={fi.system} value={system} options={SIZE_SYSTEMS} labels={systemLabels} onChange={setSystem} />
-      <Field label={t('size.ring')} icon={fi.size} hint={t('size.hint', { inside: mm(spec.innerDiameterMm), around: (spec.innerDiameterMm * Math.PI).toFixed(1) })}>
+      <Field label={t('size.ring')} icon={fi.size} hint={t('size.hint', { inside: mm(spec.innerDiameterMm), around: num(spec.innerDiameterMm * Math.PI, 1) })}>
         <select
           aria-label={t('size.ring')}
           value={current.label}
@@ -105,7 +106,7 @@ export function BandPanel() {
         min={LIMITS.taper[0]}
         max={LIMITS.taper[1]}
         step={0.05}
-        format={(v) => (v >= 1 ? t('band.taperNone') : t('band.taperValue', { pct: Math.round((1 - v) * 100) }))}
+        format={(v) => (v >= 1 ? t('band.taperNone') : t('band.taperValue', { pct: num((1 - v) * 100, 0) }))}
         onChange={(v) => update((d) => void (d.band.taper = v))}
       />
       <Toggle label={t('band.comfortFit')} icon={fi.comfort} value={band.comfortFit} onChange={(v) => update((d) => void (d.band.comfortFit = v))} />
@@ -142,7 +143,7 @@ export function StonePanel() {
             min={LIMITS.carat[0]}
             max={LIMITS.carat[1]}
             step={0.05}
-            format={(v) => t('stone.caratValue', { carat: v.toFixed(2), length: dims.length.toFixed(1), width: dims.width.toFixed(1) })}
+            format={(v) => t('stone.caratValue', { carat: num(v, 2), length: num(dims.length, 1), width: num(dims.width, 1) })}
             onChange={(v) => update((d) => void (d.stone.carat = v))}
           />
           <GemPicker
@@ -194,7 +195,7 @@ export function BezelControls() {
         min={LIMITS.bezelLip[0]}
         max={LIMITS.bezelLip[1]}
         step={0.05}
-        format={(v) => (v === 0 ? t('bezel.lipFlush') : t('bezel.lipValue', { pct: Math.round(v * 100) }))}
+        format={(v) => (v === 0 ? t('bezel.lipFlush') : t('bezel.lipValue', { pct: num(v * 100, 0) }))}
         onChange={(v) => set({ lip: v })}
       />
       <Chips label={t('bezel.edge')} value={bz.edge} options={BEZEL_EDGES} icons={bezelEdgeIcons} labels={{ plain: t('bezel.plain'), rounded: t('bezel.rounded'), milgrain: t('bezel.milgrain') }} onChange={(v) => set({ edge: v })} />
@@ -237,7 +238,7 @@ export function SettingPanel() {
           {halo.style === 'classic' && (
             <Chips label={t('settingPanel.haloRows')} value={String(halo.rows)} options={['1', '2'] as const} icons={haloRowIcons} labels={{ '1': t('settingPanel.single'), '2': t('settingPanel.double') }} onChange={(v) => update((d) => void (d.halo.rows = Number(v)))} />
           )}
-          <Slider label={t('settingPanel.haloStoneSize')} icon={fi.melee} value={halo.stoneMm} min={LIMITS.haloStoneMm[0]} max={LIMITS.haloStoneMm[1]} step={0.05} format={(v) => t('settingPanel.haloStoneValue', { size: mm(v), carat: meleeCarat(v).toFixed(3) })} onChange={(v) => update((d) => void (d.halo.stoneMm = v))} />
+          <Slider label={t('settingPanel.haloStoneSize')} icon={fi.melee} value={halo.stoneMm} min={LIMITS.haloStoneMm[0]} max={LIMITS.haloStoneMm[1]} step={0.05} format={(v) => t('settingPanel.haloStoneValue', { size: mm(v), carat: num(meleeCarat(v), 3) })} onChange={(v) => update((d) => void (d.halo.stoneMm = v))} />
           <GemPicker title={t('settingPanel.haloGem')} value={halo.gem} color={halo.customColor} onGem={(v) => update((d) => void (d.halo.gem = v))} onColor={(v) => update((d) => void (d.halo.customColor = v))} />
         </>
       )}
@@ -282,7 +283,7 @@ export function SidesPanel() {
   const sizes = Array.from({ length: toi ? 1 : side.count }, (_, k) => {
     const carat = stone.carat * (side.ratio * side.graduation ** k) ** 3
     const d = stoneDimensions(shape, carat, side.gem)
-    return t('sides.stone', { carat: carat.toFixed(2), length: d.length.toFixed(1), width: d.width.toFixed(1) })
+    return t('sides.stone', { carat: num(carat, 2), length: num(d.length, 1), width: num(d.width, 1) })
   })
   return (
     <>
@@ -315,7 +316,7 @@ export function SidesPanel() {
             min={LIMITS.sideRatio[0]}
             max={LIMITS.sideRatio[1]}
             step={0.05}
-            format={(v) => t('sides.sizeValue', { pct: Math.round(v * 100), size: sizes[0] })}
+            format={(v) => t('sides.sizeValue', { pct: num(v * 100, 0), size: sizes[0] })}
             onChange={(v) => set({ ratio: v })}
           />
           {!toi && side.count > 1 && (
@@ -326,7 +327,7 @@ export function SidesPanel() {
               min={LIMITS.graduation[0]}
               max={LIMITS.graduation[1]}
               step={0.05}
-              format={(v) => (v >= 1 ? t('sides.allSame') : t('sides.graduationValue', { pct: Math.round(v * 100), sizes: sizes.slice(1).join(', ') }))}
+              format={(v) => (v >= 1 ? t('sides.allSame') : t('sides.graduationValue', { pct: num(v * 100, 0), sizes: sizes.slice(1).join(', ') }))}
               onChange={(v) => set({ graduation: v })}
             />
           )}
@@ -358,7 +359,7 @@ export function SidesPanel() {
             format={(v) => (v === 0 ? t('sides.inLine') : mm(v))}
             onChange={(v) => set({ offsetMm: v })}
           />
-          <Slider label={t('sides.height')} icon={fi.height} value={side.height} min={LIMITS.sideHeight[0]} max={LIMITS.sideHeight[1]} step={0.05} format={(v) => t('sides.heightValue', { pct: Math.round(v * 100) })} onChange={(v) => set({ height: v })} />
+          <Slider label={t('sides.height')} icon={fi.height} value={side.height} min={LIMITS.sideHeight[0]} max={LIMITS.sideHeight[1]} step={0.05} format={(v) => t('sides.heightValue', { pct: num(v * 100, 0) })} onChange={(v) => set({ height: v })} />
         </>
       )}
     </>
@@ -399,7 +400,7 @@ export function AccentsPanel() {
               min={LIMITS.coverageDeg[0]}
               max={LIMITS.coverageDeg[1]}
               step={5}
-              format={(v) => t('accents.coverageValue', { pct: Math.round((v / 180) * 100) })}
+              format={(v) => t('accents.coverageValue', { pct: num((v / 180) * 100, 0) })}
               onChange={(v) => update((d) => void (d.accents.coverageDeg = v))}
             />
           )}
