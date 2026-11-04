@@ -34,6 +34,13 @@ const LOCALES = {
   ro: () => import('./locales/ro'),
   he: () => import('./locales/he'),
   pl: () => import('./locales/pl'),
+  cs: () => import('./locales/cs'),
+  sk: () => import('./locales/sk'),
+  sl: () => import('./locales/sl'),
+  hr: () => import('./locales/hr'),
+  sr: () => import('./locales/sr'),
+  uk: () => import('./locales/uk'),
+  bg: () => import('./locales/bg'),
   ru: () => import('./locales/ru'),
 } as const satisfies Record<string, Loader>
 
