@@ -12,11 +12,25 @@ const globeIcon = (
   </Svg>
 )
 
+/** The viewer's country from the worker (GET /country), or undefined off ringon.app or on any failure. */
+function useCountry() {
+  const [country, setCountry] = useState<string>()
+  useEffect(() => {
+    fetch('/country')
+      .then((r) => (r.ok ? r.text() : ''))
+      // A dev or preview server answers with index.html instead; only a two-letter code counts.
+      .then((text) => /^[A-Z]{2}$/.test(text) && setCountry(text))
+      .catch(() => {})
+  }, [])
+  return country
+}
+
 export function LanguagePicker() {
   const { t, i18n } = useTranslation()
   const resolved = i18n.resolvedLanguage ?? 'en'
   const current = isLanguage(resolved) ? resolved : 'en'
-  const { suggested, all } = useMemo(() => languageOptions(LANGUAGES, current, navigator.languages ?? []), [current])
+  const country = useCountry()
+  const { suggested, all } = useMemo(() => languageOptions(LANGUAGES, current, navigator.languages ?? [], country), [current, country])
   // Typing "Ger" on a focused select steps through Galician first. Switching the whole UI at each letter would
   // re-sort the list under the typist, so a keyboard pick waits for typing to stop; a click or tap applies at once.
   const [picked, setPicked] = useState<string>()

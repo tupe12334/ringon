@@ -222,6 +222,13 @@ test('typing a language name switches once, to that language', async ({ page }) 
   expect(await page.evaluate(() => (window as unknown as { seenLangs: string[] }).seenLangs)).toEqual(['de'])
 })
 
+test("suggests the viewer's country languages near the top", async ({ page }) => {
+  await page.route('**/country', (route) => route.fulfill({ body: 'IL', contentType: 'text/plain' }))
+  await page.reload()
+  const top = page.getByRole('combobox', { name: 'Language' }).locator('optgroup option')
+  await expect(top).toHaveText(['English', 'Hebrew (עברית)'])
+})
+
 test('a ?lng=he link opens in Hebrew', async ({ page }) => {
   await page.goto('/?lng=he')
   await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')

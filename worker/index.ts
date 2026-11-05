@@ -1,4 +1,4 @@
-// Serves the built app (dist/) and takes analytics events at POST /e into D1 (migrations/).
+// Serves the built app (dist/), takes analytics events at POST /e into D1 (migrations/), and answers GET /country.
 import { MAX_BODY, toRow, type Cf } from './events'
 
 type D1 = { prepare(sql: string): { bind(...v: unknown[]): { run(): Promise<unknown> } } }
@@ -11,6 +11,11 @@ const INSERT = `INSERT INTO events (${COLUMNS.join(', ')}) VALUES (${COLUMNS.map
 export default {
   async fetch(req: Request, env: Env, ctx: Ctx): Promise<Response> {
     const url = new URL(req.url)
+    // The viewer's country, so the language picker can suggest its languages. Nothing is stored.
+    if (url.pathname === '/country') {
+      const country = ((req as Request & { cf?: Cf }).cf ?? {}).country ?? ''
+      return new Response(country, { headers: { 'content-type': 'text/plain', 'cache-control': 'private, no-store' } })
+    }
     if (url.pathname !== '/e') return env.ASSETS.fetch(req)
     if (req.method !== 'POST') return new Response(null, { status: 405 })
     const text = await req.text()
