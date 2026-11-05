@@ -1,6 +1,10 @@
 import { toUiLanguage, type Language } from '.'
 
-export type LanguageOption = { lng: Language; label: string }
+/** `search` is every name a viewer might type, folded by `fold`: the label, the English name and the code. */
+export type LanguageOption = { lng: Language; label: string; search: string }
+
+/** Lowercase without accents, so "francais" finds "Français". Marks are dropped from both sides alike. */
+const fold = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase()
 
 // Georgian has capital letters (Mtavruli) but never capitalizes names, so its names stay as they are.
 const capitalize = (s: string, lng: string) => (lng === 'ka' ? s : s.charAt(0).toLocaleUpperCase(lng) + s.slice(1))
@@ -62,7 +66,8 @@ export function languageOptions(languages: readonly Language[], current: Languag
     const native = nativeName(lng)
     const local = nameIn(lng, current)
     // The current language shows only its own name, also where the browser lacks data for it.
-    return { lng, label: lng === current || native === local ? native : `${local} (${native})` }
+    const label = lng === current || native === local ? native : `${local} (${native})`
+    return { lng, label, search: fold(`${label} ${nameIn(lng, 'en')} ${lng}`) }
   }
   const supported = new Set<string>(languages)
   const local = country ? countryLanguages(country, languages) : []
@@ -74,4 +79,15 @@ export function languageOptions(languages: readonly Language[], current: Languag
     .map(option)
     .sort((a, b) => collator.compare(a.label, b.label))
   return { suggested: suggested.map(option), all }
+}
+
+/**
+ * The options matching what the viewer typed, in the order given: names that start with it first ("Ger" →
+ * German before Algerian), then names that contain it. An empty query matches nothing.
+ */
+export function searchLanguages(options: readonly LanguageOption[], query: string): LanguageOption[] {
+  const q = fold(query.trim())
+  if (!q) return []
+  const starts = options.filter((o) => o.search.split(/[\s()]+/).some((word) => word.startsWith(q)))
+  return [...starts, ...options.filter((o) => !starts.includes(o) && o.search.includes(q))]
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { LANGUAGES } from '.'
-import { countryLanguages, languageOptions, NATIVE_NAMES } from './languageOptions'
+import { countryLanguages, languageOptions, NATIVE_NAMES, searchLanguages } from './languageOptions'
 
 describe('languageOptions', () => {
   it('puts the browser languages, then English, on top, skipping unsupported ones', () => {
@@ -50,5 +50,28 @@ describe('languageOptions', () => {
     expect(india).toEqual(expect.arrayContaining(['ta', 'te', 'mr']))
     // An unknown country falls back to the world's default, English.
     expect(countryLanguages('ZZ', LANGUAGES)).toEqual(['en'])
+  })
+
+  describe('search', () => {
+    const { suggested, all } = languageOptions(LANGUAGES, 'he', [])
+    const options = [...suggested, ...all]
+    const find = (q: string) => searchLanguages(options, q).map((o) => o.lng)
+
+    it('finds a language by its local, native or English name, or its code', () => {
+      expect(find('גרמנית')[0]).toBe('de')
+      expect(find('deutsch')[0]).toBe('de')
+      expect(find('German')[0]).toBe('de')
+      expect(find('ja')).toContain('ja')
+    })
+
+    it('ignores case and accents, and puts word starts first', () => {
+      expect(find('FRANCAIS')[0]).toBe('fr')
+      expect(find('ger')[0]).toBe('de')
+    })
+
+    it('matches nothing for an empty query or gibberish', () => {
+      expect(find('  ')).toEqual([])
+      expect(find('qqxz')).toEqual([])
+    })
   })
 })

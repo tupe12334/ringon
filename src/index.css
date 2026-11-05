@@ -155,11 +155,10 @@ input.ruler:focus-visible { outline-offset: 4px; border-radius: 6px; }
 .topbar h1 { font-family: var(--serif); font-weight: 600; font-size: 1.3rem; letter-spacing: 0.01em; }
 .topbar .row { gap: 0.4rem; min-width: 0; flex-shrink: 1; }
 .topbar h1 { flex: none; }
-.topbar select.language { width: auto; max-width: 7.5rem; min-height: 40px; border-radius: 999px; padding-inline: 0.7rem; font-size: 0.85rem; }
+.topbar button.language { display: inline-flex; align-items: center; gap: 0.35rem; max-width: 9rem; min-height: 40px; border-radius: 999px; padding-inline: 0.7rem; font-size: 0.85rem; }
+.topbar button.language span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* The globe sits inside the pill, so the picker reads as "language" in any script. */
-.language-pick { position: relative; display: inline-flex; align-items: center; min-width: 0; }
-.language-pick .ico { position: absolute; inset-inline-start: 0.6rem; width: 16px; height: 16px; color: var(--accent); pointer-events: none; }
-.topbar .language-pick select.language { padding-inline-start: 1.85rem; }
+.topbar button.language .ico { width: 16px; height: 16px; color: var(--accent); }
 .theme-btn { display: inline-flex; align-items: center; gap: 0.35rem; padding-inline: 0.75rem; font-size: 0.85rem; font-weight: 600; white-space: nowrap; }
 .theme-btn .ico { width: 16px; height: 16px; color: var(--accent); }
 /* Phones: the theme button shows its icon only (its aria-label still names the theme). */
@@ -355,3 +354,27 @@ input.ruler:focus-visible { outline-offset: 4px; border-radius: 6px; }
 .crash p { margin: 0; line-height: 1.5; }
 .crash-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .crash pre { margin: 0; color: var(--muted); font-size: 0.8rem; white-space: pre-wrap; }
+
+/* Language search: a dialog over the page; full height on a phone so the keyboard leaves room for results. */
+.language-dialog {
+  width: min(26rem, 100% - 2rem); max-height: min(36rem, 100% - 2rem); padding: 0; display: none; flex-direction: column;
+  border: 1px solid var(--line); border-radius: 16px; background: var(--surface); color: var(--text);
+}
+.language-dialog[open] { display: flex; }
+.language-dialog::backdrop { background: rgb(0 0 0 / 0.45); }
+.language-search { display: flex; align-items: center; gap: 0.5rem; margin: 0.75rem; position: relative; }
+.language-search .ico { position: absolute; inset-inline-start: 0.7rem; width: 18px; height: 18px; color: var(--muted); pointer-events: none; }
+.language-search input { flex: 1; padding-inline-start: 2.2rem; }
+.language-close { flex: none; width: 42px; min-height: 42px; padding: 0; font-size: 1.4rem; line-height: 1; border-radius: 999px; }
+.language-dialog ul { list-style: none; margin: 0; padding: 0; }
+#language-list { overflow-y: auto; padding: 0 0.5rem 0.75rem; }
+#language-list [role='option'] { padding: 0.6rem 0.75rem; border-radius: 10px; cursor: pointer; }
+#language-list [role='option'][aria-selected='true'] { background: var(--bg); outline: 1px solid var(--accent); }
+#language-list [role='option'].current { font-weight: 700; color: var(--accent); }
+#language-list [role='group'] { border-bottom: 1px solid var(--line); margin-bottom: 0.4rem; padding-bottom: 0.4rem; }
+.language-dialog .group-label { display: block; padding: 0.4rem 0.75rem; font-size: 0.75rem; font-weight: 600; color: var(--muted); }
+@media (max-width: 600px) {
+  .language-dialog { width: 100%; max-width: 100%; height: 100%; max-height: 100%; margin: 0; border-radius: 0; border: 0;
+    padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+}
+
