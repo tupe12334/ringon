@@ -4,6 +4,12 @@ import { expect, test, type Page } from '@playwright/test'
 const option = (page: Page, group: string, name: string) =>
   page.getByRole('radiogroup', { name: group, exact: true }).getByRole('radio', { name, exact: true })
 const pick = (page: Page, group: string, name: string) => option(page, group, name).click()
+/** Opens the language pill (named "<Language>: <current>") and picks a language by searching for it. */
+const chooseLanguage = async (page: Page, pill: string, search: string, name: string) => {
+  await page.getByRole('button', { name: pill }).click()
+  await page.getByRole('combobox', { name: pill }).fill(search)
+  await page.getByRole('option', { name }).first().click()
+}
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/')
@@ -173,7 +179,7 @@ test('opens every real-ring example', async ({ page }) => {
 
 test('switches to Hebrew, right to left, and remembers it', async ({ page }) => {
   const summary = page.getByTestId('summary')
-  await page.getByRole('combobox', { name: 'Language' }).selectOption('he')
+  await chooseLanguage(page, 'Language', 'hebrew', 'Hebrew')
   await expect(page.locator('html')).toHaveAttribute('dir', 'rtl', { timeout: 15_000 })
   await expect(page.locator('html')).toHaveAttribute('lang', 'he')
   await expect(page.getByRole('textbox', { name: 'שם התבנית' })).toHaveValue(/[\u0590-\u05FF]/)
@@ -186,19 +192,20 @@ test('switches to Hebrew, right to left, and remembers it', async ({ page }) => 
 
   await page.reload()
   await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
-  await page.getByRole('combobox', { name: 'שפה' }).selectOption('en')
+  await chooseLanguage(page, 'שפה', 'english', 'English')
   await expect(page.locator('html')).toHaveAttribute('dir', 'ltr')
   await expect(summary).toContainText('Platinum')
 })
 
 test('loads another language on demand and offers every language by its own name', async ({ page }) => {
-  const picker = page.getByRole('combobox', { name: 'Language' })
-  await expect(picker.getByRole('option', { name: 'Deutsch' })).toHaveCount(1)
-  await expect(picker.getByRole('option', { name: 'Русский' })).toHaveCount(1)
-  await picker.selectOption('de')
+  await page.getByRole('button', { name: 'Language' }).click()
+  const list = page.getByRole('listbox', { name: 'Language' })
+  await expect(list.getByRole('option', { name: 'Deutsch' })).toHaveCount(1)
+  await expect(list.getByRole('option', { name: 'Русский' })).toHaveCount(1)
+  await list.getByRole('option', { name: 'Deutsch' }).click()
   // Loading a language chunk while software WebGL and the try-on preload hold the CPU can pass 5 s on CI.
   await expect(page.locator('html')).toHaveAttribute('lang', 'de', { timeout: 15_000 })
-  await expect(page.getByRole('combobox', { name: 'Sprache' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Sprache' })).toBeVisible()
 })
 
 test.describe('a browser set to Taiwan Chinese', () => {
@@ -206,18 +213,20 @@ test.describe('a browser set to Taiwan Chinese', () => {
 
   test('opens in Traditional Chinese', async ({ page }) => {
     await expect(page.locator('html')).toHaveAttribute('lang', 'zh-Hant')
-    await expect(page.locator('select.language')).toHaveValue('zh-Hant')
+    await expect(page.getByRole('button', { name: /: 繁體中文/ })).toBeVisible()
   })
 })
 
-test('typing a language name switches once, to that language', async ({ page }) => {
+test('typing a name on the language pill searches, and Enter picks the first match', async ({ page }) => {
   await page.evaluate(() => {
     const seen: string[] = []
     Object.assign(window, { seenLangs: seen })
     new MutationObserver(() => seen.push(document.documentElement.lang)).observe(document.documentElement, { attributeFilter: ['lang'] })
   })
-  await page.getByRole('combobox', { name: 'Language' }).focus()
+  await page.getByRole('button', { name: 'Language' }).focus()
   await page.keyboard.type('Ger', { delay: 50 })
+  await expect(page.getByRole('combobox', { name: 'Language' })).toHaveValue('Ger')
+  await page.keyboard.press('Enter')
   await expect(page.locator('html')).toHaveAttribute('lang', 'de', { timeout: 15_000 })
   expect(await page.evaluate(() => (window as unknown as { seenLangs: string[] }).seenLangs)).toEqual(['de'])
 })
@@ -225,8 +234,22 @@ test('typing a language name switches once, to that language', async ({ page }) 
 test("suggests the viewer's country languages near the top", async ({ page }) => {
   await page.route('**/country', (route) => route.fulfill({ body: 'IL', contentType: 'text/plain' }))
   await page.reload()
-  const top = page.getByRole('combobox', { name: 'Language' }).locator('optgroup option')
+  await page.getByRole('button', { name: 'Language' }).click()
+  const top = page.getByRole('group', { name: 'Suggestions' }).getByRole('option')
   await expect(top).toHaveText(['English', 'Hebrew (עברית)'])
+})
+
+test('the language search closes on Escape or its close button and keeps the language', async ({ page }) => {
+  await page.getByRole('button', { name: 'Language' }).click()
+  await page.getByRole('combobox', { name: 'Language' }).fill('jap')
+  await expect(page.getByRole('option').first()).toHaveText('Japanese (日本語)')
+  await page.keyboard.press('Escape')
+  await expect(page.getByRole('dialog')).toBeHidden()
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en')
+  // On a phone the dialog fills the screen, so it has its own close button.
+  await page.getByRole('button', { name: 'Language' }).click()
+  await page.getByRole('dialog').getByRole('button', { name: 'Close' }).click()
+  await expect(page.getByRole('dialog')).toBeHidden()
 })
 
 test('a ?lng=he link opens in Hebrew', async ({ page }) => {
