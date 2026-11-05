@@ -33,12 +33,31 @@ const nativeName = (lng: Language) => {
 }
 
 /**
- * The picker's two parts. The top is the browser's languages, then English, so most people find theirs on top.
+ * The languages of a country (ISO 3166 code, e.g. "IN"): its main language, then each language whose main
+ * country it is, from the browser's own likely-subtags data, so no table to keep.
+ * shortcut: a language is listed only where it is most spoken (Arabic not for Israel, French not for Belgium);
+ * upgrade to CLDR territory data if people miss theirs.
+ */
+export function countryLanguages(country: string, languages: readonly Language[]): Language[] {
+  const region = (tag: string) => {
+    try {
+      return new Intl.Locale(tag).maximize().region
+    } catch {
+      return undefined
+    }
+  }
+  const main = new Intl.Locale('und', { region: country }).maximize().language
+  return [...new Set([main, ...languages.filter((lng) => region(lng) === country)])].filter((lng): lng is Language => languages.includes(lng as Language))
+}
+
+/**
+ * The picker's two parts. The top is the browser's languages, then the languages of the viewer's country, then
+ * English, so most people find theirs on top.
  * Below is every other language, sorted by its name in the current language. Each label leads with that name, so the
  * order reads right and typing "G" finds German, then adds the native name when it differs ("German (Deutsch)"),
  * so a reader stuck in an unknown script can still find theirs.
  */
-export function languageOptions(languages: readonly Language[], current: Language, preferred: readonly string[]) {
+export function languageOptions(languages: readonly Language[], current: Language, preferred: readonly string[], country?: string) {
   const option = (lng: Language): LanguageOption => {
     const native = nativeName(lng)
     const local = nameIn(lng, current)
@@ -46,7 +65,8 @@ export function languageOptions(languages: readonly Language[], current: Languag
     return { lng, label: lng === current || native === local ? native : `${local} (${native})` }
   }
   const supported = new Set<string>(languages)
-  const suggested = [...new Set([...preferred.map(toUiLanguage), 'en'])].filter((lng): lng is Language => supported.has(lng))
+  const local = country ? countryLanguages(country, languages) : []
+  const suggested = [...new Set([...preferred.map(toUiLanguage), ...local, 'en'])].filter((lng): lng is Language => supported.has(lng))
   const collator = new Intl.Collator(current)
   // The top languages are not repeated below, so a screen reader names each language once.
   const all = languages

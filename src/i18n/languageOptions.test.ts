@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { LANGUAGES } from '.'
-import { languageOptions, NATIVE_NAMES } from './languageOptions'
+import { countryLanguages, languageOptions, NATIVE_NAMES } from './languageOptions'
 
 describe('languageOptions', () => {
   it('puts the browser languages, then English, on top, skipping unsupported ones', () => {
@@ -37,5 +37,18 @@ describe('languageOptions', () => {
   it('leaves Georgian names lowercase, as Georgian writes them', () => {
     const { suggested } = languageOptions(LANGUAGES, 'ka', ['ka'])
     expect(suggested[0].label).toBe('ქართული')
+  })
+
+  it("suggests the viewer's country languages after the browser's, before English", () => {
+    const { suggested } = languageOptions(LANGUAGES, 'en', ['ru'], 'IL')
+    expect(suggested.map((o) => o.lng)).toEqual(['ru', 'he', 'en'])
+  })
+
+  it('names a country by its main language first, then its regional languages', () => {
+    const india = countryLanguages('IN', LANGUAGES)
+    expect(india[0]).toBe('hi')
+    expect(india).toEqual(expect.arrayContaining(['ta', 'te', 'mr']))
+    // An unknown country falls back to the world's default, English.
+    expect(countryLanguages('ZZ', LANGUAGES)).toEqual(['en'])
   })
 })
