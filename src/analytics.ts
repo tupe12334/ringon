@@ -1,5 +1,5 @@
 // First-party analytics: events go to POST https://ringon.app/e (worker/index.ts), stored in D1.
-// A random id in this browser's storage tells returning users apart; links made by "Share" carry
+// A random id in this browser's storage and a cookie tells returning users apart; links made by "Share" carry
 // the sharer's id as ?from= (see withFrom), so we can count who brought whom. Nothing is sent when the browser asks
 // not to be tracked (Global Privacy Control or Do Not Track). See README "Privacy".
 import { LIVE_HOSTS } from './usage-counter'
@@ -25,6 +25,51 @@ function storedId(store: () => Storage, key: string): string {
   } catch {
     return crypto.randomUUID() // storage blocked: one id per page load
   }
+}
+
+const COOKIE = 'ringon-id'
+
+/** The id in a `document.cookie` string, or null. */
+export function cookieId(cookie: string): string | null {
+  const v = cookie
+    .split(/;\s*/)
+    .find((c) => c.startsWith(`${COOKIE}=`))
+    ?.slice(COOKIE.length + 1)
+  return v && ID.test(v) ? v : null
+}
+
+/** The `document.cookie` assignment that keeps `id` for a year. */
+export const idCookie = (id: string) => `${COOKIE}=${id}; Max-Age=31536000; Path=/; SameSite=Lax; Secure`
+
+/**
+ * This browser's id, kept in localStorage and a first-party cookie. Some browsers (seen: Chrome on
+ * iOS, 2026-11) lose localStorage between visits but keep cookies, and counted as a new user each time.
+ */
+function userId(): string {
+  let id = ''
+  try {
+    const v = localStorage.getItem(COOKIE)
+    if (v && ID.test(v)) id = v
+  } catch {
+    // storage blocked: try the cookie
+  }
+  try {
+    id ||= cookieId(document.cookie) ?? ''
+  } catch {
+    // cookies blocked
+  }
+  id ||= crypto.randomUUID()
+  try {
+    localStorage.setItem(COOKIE, id)
+  } catch {
+    // storage blocked
+  }
+  try {
+    document.cookie = idCookie(id) // also renews the year on each visit
+  } catch {
+    // cookies blocked: one id per page load if storage is blocked too
+  }
+  return id
 }
 
 /**
@@ -74,7 +119,7 @@ function refHost(): string | null {
 export function initAnalytics(): void {
   const live = LIVE_HOSTS.includes(location.hostname) && !optedOut()
   if (live) {
-    uid = storedId(() => localStorage, 'ringon-id')
+    uid = userId()
     sid = storedId(() => sessionStorage, 'ringon-session')
   }
   const swapped = swapFrom(location.search, live ? uid : null)

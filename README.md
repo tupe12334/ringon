@@ -54,11 +54,12 @@ served from this app (no third-party requests).
 
 Everything runs on your device. The camera feed, hand tracking, photos and clips never leave the
 browser unless you share them; designs and saved templates stay in this browser's storage. No
-accounts or cookies.
+accounts. The only cookie is the analytics id below.
 
 Usage analytics: the live site sends a few events (page opened, try-on opened, photo or clip taken,
 link or media shared, app installed) to its own server (`POST /e`, [`worker/`](worker/), stored in
-Cloudflare D1). Each event carries a random id kept in this browser's storage, a random id per tab,
+Cloudflare D1). Each event carries a random id kept in this browser's storage and in a first-party cookie
+(`ringon-id`, one year; some browsers clear storage but keep cookies), a random id per tab,
 the referring site's name, `utm_` tags, language, time zone, screen size, and whether the app is
 installed. The server adds the country, region and city Cloudflare derives from your IP address, the
 network owner (ASN) and your browser's user agent; it does not store the IP address. Links made by
