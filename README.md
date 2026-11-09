@@ -62,8 +62,8 @@ Cloudflare D1). Each event carries a random id kept in this browser's storage, a
 the referring site's name, `utm_` tags, language, time zone, screen size, and whether the app is
 installed. The server adds the country, region and city Cloudflare derives from your IP address, the
 network owner (ASN) and your browser's user agent; it does not store the IP address. Links made by
-**Share**, and the address bar, carry your random id as `?from=`, so we can count how many people a
-shared link brings; the app reads and then replaces it when the link is opened. No camera data,
+**Share** carry your random id as `?from=`, so we can count how many people a shared link brings;
+the app reads and then removes it from the address bar when the link is opened. No camera data,
 photos, designs or names are sent. Nothing is sent when your browser sends Global Privacy Control
 or Do Not Track. Schema: [`migrations/`](migrations/).
 
