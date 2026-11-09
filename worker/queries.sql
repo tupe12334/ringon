@@ -27,3 +27,32 @@ FROM events WHERE from_uid IS NOT NULL GROUP BY from_uid, uid ORDER BY first_ope
 -- Viral factor: new users brought by links per user who shared.
 SELECT round(1.0 * (SELECT count(DISTINCT uid) FROM events WHERE from_uid IS NOT NULL)
   / nullif((SELECT count(DISTINCT uid) FROM events WHERE event IN ('share_link', 'share_media')), 0), 2) AS k;
+
+-- Likely real people per day: drops data-centre networks, headless defaults (tz UTC, 800x600) and
+-- runs that rotate the language each load. Heuristic: extend the network list as new bots show up.
+-- devices (user agent + screen) is the better people count: some browsers lose their stored id, so
+-- one person can show up as a new uid on every load.
+WITH real AS (
+  SELECT * FROM events
+  WHERE coalesce(json_extract(props, '$.tz'), '') NOT IN ('', 'UTC', 'Etc/Unknown')
+    AND coalesce(json_extract(props, '$.screen'), '') NOT LIKE '800x600@%'
+    AND coalesce(as_org, '') NOT LIKE '%Amazon%' AND coalesce(as_org, '') NOT LIKE '%Google%'
+    AND coalesce(as_org, '') NOT LIKE '%Microsoft%' AND coalesce(as_org, '') NOT LIKE '%YouTube%'
+    AND coalesce(as_org, '') NOT LIKE '%Palo Alto%' AND coalesce(as_org, '') NOT LIKE '%Fortinet%'
+    AND coalesce(as_org, '') NOT LIKE '%HostRoyale%' AND coalesce(as_org, '') NOT LIKE '%Scaleway%'
+    AND coalesce(as_org, '') NOT LIKE '%Leaseweb%' AND coalesce(as_org, '') NOT LIKE '%LogicWeb%'
+    AND coalesce(as_org, '') NOT LIKE '%code200%' AND coalesce(as_org, '') NOT LIKE '%Hosting%'
+    AND coalesce(as_org, '') NOT LIKE '%Data Center%' AND coalesce(as_org, '') NOT LIKE '%Cloud%'
+    AND coalesce(as_org, '') NOT LIKE '%HostPapa%' AND coalesce(as_org, '') NOT LIKE '%Railway%'
+    AND coalesce(as_org, '') NOT LIKE '%OCULUS%' AND coalesce(as_org, '') NOT LIKE '%FASTPLANET%'
+    AND coalesce(as_org, '') NOT LIKE '%Subnet Digital%' AND coalesce(as_org, '') NOT LIKE '%BraveWay%'
+    AND ua NOT LIKE '%Headless%'
+    AND (host, coalesce(ua, '')) NOT IN (
+      SELECT host, coalesce(ua, '') FROM events GROUP BY host, ua, as_org
+      HAVING count(DISTINCT json_extract(props, '$.lang')) > 2
+    )
+)
+SELECT date(ts / 1000, 'unixepoch') AS day, count(DISTINCT ua || json_extract(props, '$.screen')) AS devices,
+  count(DISTINCT uid) AS uids, count(*) AS events,
+  group_concat(DISTINCT country || ' ' || coalesce(as_org, '?')) AS networks
+FROM real GROUP BY day ORDER BY day;
