@@ -18,6 +18,15 @@ describe('toRow', () => {
     expect(toRow(null, cf, null, 0)).toBeNull()
   })
 
+  it('flags likely bots in props.bot', () => {
+    const at = (props: object, org: string, ua = 'UA') => JSON.parse(toRow({ event: 'page_view', uid, sid, props }, { asOrganization: org }, ua, 0)?.props ?? '{}').bot
+    expect(at({ tz: 'Asia/Jerusalem' }, 'Amazon Data Services Northern Virginia')).toBe('network')
+    expect(at({ tz: 'Asia/Jerusalem' }, 'Bezeq', 'HeadlessChrome/150')).toBe('headless')
+    expect(at({ tz: 'UTC' }, 'Bezeq')).toBe('tz')
+    expect(at({ tz: 'Asia/Singapore', screen: '800x600@1' }, 'SingTel Mobile')).toBe('screen')
+    expect(at({ tz: 'Asia/Singapore', screen: '393x852@3' }, 'SingTel Mobile')).toBeUndefined()
+  })
+
   it('ignores a link the user opened from themselves', () => {
     expect(toRow({ event: 'page_view', uid, sid, from: uid }, cf, null, 0)?.from_uid).toBeNull()
   })
