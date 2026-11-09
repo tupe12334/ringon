@@ -2,6 +2,7 @@
 // on screen (#r=..., #try&r=... in the camera view), so it is a share link.
 // #r= is deflated JSON, base64url; #d= (older links) is plain JSON, base64url.
 
+import { withFrom } from '../analytics'
 import { deflateSync, inflateSync, strFromU8, strToU8 } from 'fflate'
 import { DEFAULT_SPEC, sanitizeSpec, type RingSpec } from '../ring/spec'
 
@@ -48,7 +49,7 @@ export const specHash = (spec: RingSpec, tryOn = false) => `#${tryOn ? 'try&' : 
 export function shareUrl(spec: RingSpec, base = location.href) {
   const url = new URL(base)
   url.hash = specHash(spec)
-  return url.toString()
+  return withFrom(url.toString())
 }
 
 export function specFromHash(hash = location.hash): RingSpec | null {

@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { swapFrom } from './analytics'
+import { swapFrom, withFrom } from './analytics'
 
 const a = '11111111-1111-4111-8111-111111111111'
 const b = '22222222-2222-4222-8222-222222222222'
 
 describe('swapFrom', () => {
-  it('reads the sharer and puts our id in the link', () => {
-    expect(swapFrom(`?from=${a}&utm_source=x`, b)).toEqual({ from: a, search: `?utm_source=x&from=${b}` })
+  it('reads the sharer and keeps our id out of the address bar', () => {
+    expect(swapFrom(`?from=${a}&utm_source=x`, b)).toEqual({ from: a, search: '?utm_source=x' })
   })
 
   it('ignores our own id and junk', () => {
@@ -17,5 +17,11 @@ describe('swapFrom', () => {
   it('only strips the id when analytics is off', () => {
     expect(swapFrom(`?from=${a}`, null)).toEqual({ from: a, search: '' })
     expect(swapFrom('', null)).toEqual({ from: null, search: '' })
+  })
+})
+
+describe('withFrom', () => {
+  it('leaves links alone when analytics is off', () => {
+    expect(withFrom('https://ringon.app/#r=x')).toBe('https://ringon.app/#r=x')
   })
 })

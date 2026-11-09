@@ -1,6 +1,6 @@
 // First-party analytics: events go to POST https://ringon.app/e (worker/index.ts), stored in D1.
-// A random id in this browser's storage tells returning users apart; share links carry the
-// sharer's id as ?from=, so we can count who brought whom. Nothing is sent when the browser asks
+// A random id in this browser's storage tells returning users apart; links made by "Share" carry
+// the sharer's id as ?from= (see withFrom), so we can count who brought whom. Nothing is sent when the browser asks
 // not to be tracked (Global Privacy Control or Do Not Track). See README "Privacy".
 import { LIVE_HOSTS } from './usage-counter'
 
@@ -28,18 +28,26 @@ function storedId(store: () => Storage, key: string): string {
 }
 
 /**
- * Reads the sharer's id from the query string and puts ours in its place, so a link copied from
- * the address bar or made by "Share" credits this user.
+ * Reads the sharer's id from the query string and strips it. Our own id never goes into the
+ * address bar: a reload or bookmark of it, after this browser lost its stored id, would count as a
+ * referral from ourselves (seen in D1, 2026-11-09).
  * @param search location.search
- * @param own this user's id, or null to only strip the incoming one
+ * @param own this user's id, or null when analytics is off
  */
 export function swapFrom(search: string, own: string | null): { from: string | null; search: string } {
   const q = new URLSearchParams(search)
   const got = q.get('from')
   q.delete('from')
-  if (own) q.set('from', own)
   const s = q.toString()
   return { from: got && ID.test(got) && got !== own ? got : null, search: s ? `?${s}` : '' }
+}
+
+/** Adds this user's id as ?from= to a link they share; unchanged when analytics is off. */
+export function withFrom(link: string): string {
+  if (!uid) return link
+  const url = new URL(link)
+  url.searchParams.set('from', uid)
+  return url.toString()
 }
 
 /** Sends one event; a no-op off the live site or when the user opted out. */
