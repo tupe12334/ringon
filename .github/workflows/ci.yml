@@ -65,9 +65,9 @@ jobs:
             test-results
             playwright-report
 
+  # The app lives on ringon.app (Cloudflare). Pages only redirects old /ringon/ links and retires the old PWA service worker.
   deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [test, webkit]
     runs-on: ubuntu-latest
     permissions:
       pages: write
@@ -77,17 +77,9 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm build
-        env:
-          BASE_PATH: /${{ github.event.repository.name }}/
+      - run: cp pages-redirect/index.html pages-redirect/404.html
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: pages-redirect
       - id: deployment
         uses: actions/deploy-pages@v4
